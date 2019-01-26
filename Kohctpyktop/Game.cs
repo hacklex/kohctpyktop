@@ -291,15 +291,19 @@ namespace Kohctpyktop
             }
         }
 
+        private static readonly DColor BorderColor = DColor.Black;
         private static readonly DColor BgColor = "959595".AsDColor();
         private static readonly DBrush PBrush = new SolidBrush("FFF6FF00".AsDColor());
         private static readonly DBrush NBrush = new SolidBrush("FFB60000".AsDColor());
         private static readonly DBrush PGateBrush = new SolidBrush("FF860000".AsDColor());
         private static readonly DBrush NGateBrush = new SolidBrush("FFEDC900".AsDColor());
         private static readonly DBrush MetalBrush = new SolidBrush("80FFFFFF".AsDColor());
+        private static readonly DBrush BorderBrush = new SolidBrush(BorderColor);
         private static readonly DPen GridPen = new DPen(DColor.FromArgb(60, DColor.Black));
-        private static readonly DPen LightnessPen = new DPen(DColor.FromArgb(250, DColor.White));
-        private static readonly DPen DarknessPen = new DPen(DColor.FromArgb(250, DColor.Black));
+        private static readonly DPen BorderPen = new DPen(BorderBrush);
+        private static readonly DPen PPen = new DPen(PBrush);
+        private static readonly DPen NPen = new DPen(NBrush);
+        private static readonly DPen MetalPen = new DPen(MetalBrush);
         
         void DrawGrid()
         {
@@ -311,44 +315,7 @@ namespace Kohctpyktop
                 Graphics.DrawLine(GridPen, 0, i, w, i);
             }
         }
-
-        static Rectangle GetLinkRectangle(int cx, int cy, int neighborIndex)
-        {
-            const int linkPenetration = 5;
-            
-            switch (neighborIndex)
-            {
-                case 0: return new Rectangle(cx - (linkPenetration / 2 + 1), cy, linkPenetration, CellSize - 1);
-                case 1: return new Rectangle(cx, cy - (linkPenetration / 2 + 1), CellSize - 1, linkPenetration);
-//                case 2: return new Rectangle(cx + CellSize, cy, 1, CellSize); //to draw over grid
-//                case 3: return new Rectangle(cx, cy + CellSize, CellSize, 1); //to draw over grid
-                default: throw new ArgumentException("Expected index from 0 to 1");
-            }
-        }
-
-        (DPen pen, PointF from, PointF to) GetBorderLineInfo(int cx, int cy, int neighborIndex)
-        {
-            switch (neighborIndex)
-            {
-                case 0: return (LightnessPen, 
-                        new PointF(cx + 2, cy + 2), 
-                        new PointF(cx + 2, cy + CellSize - 2) );
-                case 1:
-                    return (LightnessPen,
-                        new PointF(cx + 2, cy + 2),
-                        new PointF(cx + CellSize - 2, cy + 2) );
-                case 2:
-                    return (DarknessPen,
-                        new PointF(cx + CellSize - 2, cy + 2),
-                        new PointF(cx + CellSize - 2, cy + CellSize - 2));
-                case 3:
-                    return (DarknessPen,
-                        new PointF(cx + 2, cy + CellSize - 2),
-                        new PointF(cx + CellSize - 2, cy + CellSize - 2));
-                default: throw new ArgumentException("Expected neighborIndex between 0 and 3");
-            }
-        }
-
+        
         private const int CellInsets = 2;
 
         private static Rectangle GetCellBounds(int x, int y)
@@ -414,14 +381,15 @@ namespace Kohctpyktop
                 new DPoint(farHorz, nearVert));
         }
 
-        private static (DBrush NonGate, DBrush Gate) SelectSiliconBrush(Cell cell)
+        private static (DPen NonGatePen, DBrush NonGateBrush, DBrush GateBrush) 
+            SelectSiliconBrush(Cell cell)
         {
             return cell.HasP || cell.HasPGate
                 ? cell.HasN || cell.HasNGate
                     ? throw new InvalidOperationException("both P and N silicon on single cell")
-                    : (PBrush, PGateBrush)
+                    : (PPen, PBrush, PGateBrush)
                 : cell.HasN || cell.HasNGate
-                    ? (NBrush, NGateBrush)
+                    ? (NPen, NBrush, NGateBrush)
                     : throw new InvalidOperationException("no silicon on cell");
         }
 
@@ -439,7 +407,7 @@ namespace Kohctpyktop
         
         private void SiliconCellSide(Cell cell, Side side, Rectangle cellBounds)
         {
-            var (brush, gateBrush) = SelectSiliconBrush(cell);
+            var (_, brush, gateBrush) = SelectSiliconBrush(cell);
 
             var link = cell.NeighborInfos[(int) side]?.SiliconLink ?? SiliconLink.None;
             var oppositeLink = cell.NeighborInfos[(int) GetOppositeSide(side)]?.SiliconLink ?? SiliconLink.None;
@@ -451,8 +419,8 @@ namespace Kohctpyktop
             Graphics.FillRectangle(actualBrush, rect);
             
             // todo);
-            if (link == SiliconLink.None || hasSlaveLinkInDimension) Graphics.FillRectangle(Brushes.Black, nearToBounds);
-            if (cell.HasGate && !hasSlaveLinkInDimension) Graphics.FillRectangle(Brushes.Black, nearToCenter);
+            if (link == SiliconLink.None || hasSlaveLinkInDimension) Graphics.FillRectangle(BorderBrush, nearToBounds);
+            if (cell.HasGate && !hasSlaveLinkInDimension) Graphics.FillRectangle(BorderBrush, nearToCenter);
         }
         
         private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds)
@@ -461,12 +429,12 @@ namespace Kohctpyktop
             Graphics.FillRectangle(MetalBrush, rect);
             
             // todo);
-            if (!(cell.NeighborInfos[(int) side]?.HasMetalLink ?? false)) Graphics.FillRectangle(Brushes.Black, nearToBounds);
+            if (!(cell.NeighborInfos[(int) side]?.HasMetalLink ?? false)) Graphics.FillRectangle(BorderBrush, nearToBounds);
         }
 
         private void SiliconCellCorner(Cell cell, Corner corner, bool linked, Rectangle cellBounds)
         {
-            var (brush, _) = SelectSiliconBrush(cell);
+            var (pen, brush, _) = SelectSiliconBrush(cell);
 
             var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
             
@@ -479,27 +447,23 @@ namespace Kohctpyktop
             // todo remove copypaste
             if (hasHorzLink && hasVertLink)
             {
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.FillPolygon(brush, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, DColor.Black);
+                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, BorderColor);
             }
             else if (hasHorzLink)
             {
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.FillPolygon(brush, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.DrawLine(Pens.Black, nearToBounds, nearVertLink);
+                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(BorderPen, nearToBounds, nearVertLink);
             }
             else if (hasVertLink)
             {
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.FillPolygon(brush, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.DrawLine(Pens.Black, nearHorzLink, nearToBounds);
+                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(BorderPen, nearHorzLink, nearToBounds);
             }
             else
             {
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearHorzLink, nearVertLink, nearToCenter });
-                Graphics.FillPolygon(brush, new[] { nearHorzLink, nearVertLink, nearToCenter });
-                Graphics.DrawLine(Pens.Black, nearHorzLink, nearVertLink);
+                Graphics.DrawPolygon(pen, new[] { nearHorzLink, nearVertLink, nearToCenter });
+                Graphics.DrawLine(BorderPen, nearHorzLink, nearVertLink);
             }
             
             if (cell.HasGate) // overdraw!!!
@@ -509,14 +473,14 @@ namespace Kohctpyktop
                     (vertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave ||
                     (oppositeVertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave;
                 
-                if (isVerticalGate) Graphics.DrawLine(Pens.Black, nearVertLink, nearToCenter);
-                else Graphics.DrawLine(Pens.Black, nearHorzLink, nearToCenter);
+                if (isVerticalGate) Graphics.DrawLine(BorderPen, nearVertLink, nearToCenter);
+                else Graphics.DrawLine(BorderPen, nearHorzLink, nearToCenter);
             }
         }
 
         private void MetalCellCorner(Cell cell, Corner corner, bool linked, Rectangle cellBounds)
         {
-            var brush = MetalBrush;
+            var pen = MetalPen;
 
             var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
             
@@ -530,23 +494,23 @@ namespace Kohctpyktop
             if (hasHorzLink && hasVertLink)
             {
                 // that won't work on insets larger than 2 (System.Drawing sucks)
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, DColor.Black);
+                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, BorderColor);
             }
             else if (hasHorzLink)
             {
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.DrawLine(Pens.Black, nearToBounds, nearVertLink);
+                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(BorderPen, nearToBounds, nearVertLink);
             }
             else if (hasVertLink)
             {
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.DrawLine(Pens.Black, nearHorzLink, nearToBounds);
+                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(BorderPen, nearHorzLink, nearToBounds);
             }
             else
             {
-                Graphics.DrawPolygon(new DPen(brush), new[] { nearHorzLink, nearVertLink, nearToCenter });
-                Graphics.DrawLine(Pens.Black, nearHorzLink, nearVertLink);
+                Graphics.DrawPolygon(pen, new[] { nearHorzLink, nearVertLink, nearToCenter });
+                Graphics.DrawLine(BorderPen, nearHorzLink, nearVertLink);
             }
         }
 
@@ -554,15 +518,21 @@ namespace Kohctpyktop
         {
             if (siliconLink == SiliconLink.None) return;
 
-            
-            var brush =
-                cell.HasN ? NBrush : cell.HasP ? PBrush : siliconLink != SiliconLink.Slave ? cell.HasPGate ? PBrush : NBrush : cell.HasPGate ? NBrush : PBrush;
+
+            var pen = // todo: simplify
+                cell.HasN
+                    ? NPen
+                    : cell.HasP
+                        ? PPen
+                        : siliconLink != SiliconLink.Slave ^ cell.HasPGate
+                            ? NPen
+                            : PPen;
 
             if (isVertical)
             {
-                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, DColor.Black);
-                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, DColor.Black);
-                Graphics.DrawLine(new DPen(brush), 
+                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, BorderColor);
+                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, BorderColor);
+                Graphics.DrawLine(pen, 
                     cellBounds.Left + 1, 
                     cellBounds.Top - 1, 
                     cellBounds.Right - 2,
@@ -570,9 +540,9 @@ namespace Kohctpyktop
             } 
             else 
             {
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, DColor.Black);
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, DColor.Black);
-                Graphics.DrawLine(new DPen(brush), 
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, BorderColor);
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, BorderColor);
+                Graphics.DrawLine(pen, 
                     cellBounds.Left - 1, 
                     cellBounds.Top + 1, 
                     cellBounds.Left - 1,
@@ -586,8 +556,8 @@ namespace Kohctpyktop
 
             if (isVertical)
             {
-                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, DColor.Black);
-                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, DColor.Black);
+                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, BorderColor);
+                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, BorderColor);
                 Graphics.DrawLine(new DPen(brush), 
                     cellBounds.Left + 1, 
                     cellBounds.Top - 1, 
@@ -596,8 +566,8 @@ namespace Kohctpyktop
             } 
             else 
             {
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, DColor.Black);
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, DColor.Black);
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, BorderColor);
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, BorderColor);
                 Graphics.DrawLine(new DPen(brush), 
                     cellBounds.Left - 1, 
                     cellBounds.Top + 1, 
@@ -616,7 +586,7 @@ namespace Kohctpyktop
 
                 if (cell.HasN || cell.HasP || cell.HasNGate || cell.HasPGate)
                 {
-                    var (brush, gateBrush) = SelectSiliconBrush(cell);
+                    var (_, brush, gateBrush) = SelectSiliconBrush(cell);
                     FillMid(cell.HasGate ? gateBrush : brush, bounds);
 
                     // todo
@@ -638,10 +608,10 @@ namespace Kohctpyktop
                         var viaX = bounds.X + (bounds.Width - ViaSize) / 2;
                         var viaY = bounds.Y + (bounds.Height - ViaSize) / 2;
 
-                        Graphics.DrawLine(Pens.Black, viaX + 1, viaY, viaX + ViaSize - 2, viaY);
-                        Graphics.DrawLine(Pens.Black, viaX + 1, viaY + ViaSize - 1, viaX + ViaSize - 2, viaY + ViaSize - 1);
-                        Graphics.DrawLine(Pens.Black,viaX, viaY + 1, viaX, viaY + ViaSize - 2);
-                        Graphics.DrawLine(Pens.Black, viaX + ViaSize - 1, viaY + 1, viaX + ViaSize - 1, viaY + ViaSize - 2);
+                        Graphics.DrawLine(BorderPen, viaX + 1, viaY, viaX + ViaSize - 2, viaY);
+                        Graphics.DrawLine(BorderPen, viaX + 1, viaY + ViaSize - 1, viaX + ViaSize - 2, viaY + ViaSize - 1);
+                        Graphics.DrawLine(BorderPen,viaX, viaY + 1, viaX, viaY + ViaSize - 2);
+                        Graphics.DrawLine(BorderPen, viaX + ViaSize - 1, viaY + 1, viaX + ViaSize - 1, viaY + ViaSize - 2);
                     }
                 }
 
@@ -665,35 +635,12 @@ namespace Kohctpyktop
                 }
             }
         }
-
-        void DrawMetal()
-        {
-            for (int i = 0; i < Level.Height; i++)
-                for (int j = 0; j < Level.Width; j++)
-                {
-                    var cell = Level.Cells[i, j];
-                    var x0 = 1 + j * (CellSize + 1);
-                    var y0 = 1 + i * (CellSize + 1);
-                    if (!cell.HasMetal) continue;
-                    Graphics.FillRectangle(MetalBrush, x0, y0, CellSize, CellSize);
-                    for (int k = 0; k < 2; k++)
-                    {
-                        var rect = GetLinkRectangle(x0, y0, k);
-                        var ni = cell.NeighborInfos[k];
-                        if (ni == null) continue;
-                        if (ni.HasMetalLink)
-                            Graphics.FillRectangle(MetalBrush, rect);
-                    }
-                }
-        }
-
-
+        
         public void RebuildModel()
         {
             Graphics.Clear(BgColor);
             DrawGrid();
             DrawSiliconAndMetal();
-            // DrawMetal();
             BitmapImage bmpImage = new BitmapImage();
             MemoryStream stream = new MemoryStream();
             Bitmap.Save(stream, ImageFormat.Bmp);
