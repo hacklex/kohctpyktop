@@ -35,10 +35,11 @@
                                  Grid.Column="1"
                                  HorizontalAlignment="Center"
                                  UseLayoutRounding="True" SnapsToDevicePixels="True">
-                                 <!-- WPF does not support inset strokes -->
                                  <controls:BeveledSquare Selected="{TemplateBinding IsChecked}"/>
+                                 <ContentControl Margin="3" Content="{Binding Tag.(local:ToolInfoHolder.Icon), RelativeSource={RelativeSource TemplatedParent}}"
+                                                 Width="23" Height="23"/>
                              </Grid>
-                             <TextBlock Text="{TemplateBinding Tag}" Grid.Row="1" Grid.Column="2"
+                             <TextBlock Text="{Binding Tag.(local:ToolInfoHolder.Index), RelativeSource={RelativeSource TemplatedParent}}" Grid.Row="1" Grid.Column="2"
                                         FontFamily="pack://application:,,,/Fonts/#Poco"
                                         TextOptions.TextFormattingMode="Display"
                                         TextOptions.TextRenderingMode="Grayscale"
@@ -49,6 +50,7 @@
                      </ControlTemplate>
                      <Style TargetType="RadioButton" x:Key="ToolRadioButtonStyle">
                          <Setter Property="Template" Value="{StaticResource ToolRadioButtonTemplate}"/>
+                         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                      </Style>
                  </ResourceDictionary>
              </ResourceDictionary.MergedDictionaries>

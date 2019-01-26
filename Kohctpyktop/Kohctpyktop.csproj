@@ -74,6 +74,7 @@
     <Compile Include="SiliconLink.cs" />
     <Compile Include="SiliconTypes.cs" />
     <Compile Include="SimpleCommand.cs" />
+    <Compile Include="ToolInfoHolder.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

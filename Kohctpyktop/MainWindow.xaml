@@ -16,6 +16,39 @@
         <local:BooleanChoiceConverter x:Key="SiliconTypeConverter" OnFalse="SILICON (N)" OnTrue="SILICON (P)"/>
         <local:BooleanChoiceConverter x:Key="DeleteTypeConverter" OnFalse="DELETE SILICON" OnTrue="DELETE METAL"/>
         <local:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
+        
+        <local:ToolInfoHolder x:Key="SiliconToolHolder" Index="1">
+            <local:ToolInfoHolder.Icon>
+                <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+            </local:ToolInfoHolder.Icon>
+        </local:ToolInfoHolder>
+        <local:ToolInfoHolder x:Key="MetalToolHolder" Index="2">
+            <local:ToolInfoHolder.Icon>
+                <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#80FFFFFF"/>
+            </local:ToolInfoHolder.Icon>
+        </local:ToolInfoHolder>
+        <local:ToolInfoHolder x:Key="SelectionToolHolder" Index="3">
+            <local:ToolInfoHolder.Icon>
+                <Path Data="F1 M2,5 H6 L11,11 L18,5 H21 L13,12 L20,20 H17 L11,13 L12,13 L6,20 H3 L10,12 Z" Fill="#cccccc"
+                      RenderOptions.EdgeMode="Aliased"/>
+            </local:ToolInfoHolder.Icon>
+        </local:ToolInfoHolder>
+        <local:ToolInfoHolder x:Key="ViaToolHolder" Index="4">
+            <local:ToolInfoHolder.Icon>
+                <Grid>
+                    <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+                    <Border Margin="9,10" BorderThickness="1,0" BorderBrush="Black"/>
+                    <Border Margin="10,9" BorderThickness="0,1" BorderBrush="Black"/>
+                    <Border Margin="6,0,6,6" BorderThickness="1,0,1,1" BorderBrush="Black" Background="#80FFFFFF"/>
+                </Grid>
+            </local:ToolInfoHolder.Icon>
+        </local:ToolInfoHolder>
+        <local:ToolInfoHolder x:Key="DeleteToolHolder" Index="5">
+            <local:ToolInfoHolder.Icon>
+                <Path Data="F1 M2,5 H6 L11,11 L18,5 H21 L13,12 L20,20 H17 L11,13 L12,13 L6,20 H3 L10,12 Z" Fill="#d70000"
+                      RenderOptions.EdgeMode="Aliased"/>
+            </local:ToolInfoHolder.Icon>
+        </local:ToolInfoHolder>
     </Window.Resources>
     <DockPanel>
         <Image 
@@ -28,14 +61,21 @@
             <StackPanel.Resources>
                 <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
             </StackPanel.Resources>
-            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" Tag="1"
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
+                         Tag="{StaticResource SiliconToolHolder}"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
-            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" Tag="2"
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" 
+                         Tag="{StaticResource MetalToolHolder}"
                          Content="METAL"/>
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Selection}" 
+                         Tag="{StaticResource SelectionToolHolder}"
+                         Content="SELECT" IsEnabled="False"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=AddOrDeleteVia}"
-                         Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}" Tag="3"/>
+                         Tag="{StaticResource ViaToolHolder}"
+                         Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
-                         Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}" Tag="4"/>
+                         Tag="{StaticResource DeleteToolHolder}"
+                         Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
         </StackPanel>
     </DockPanel>
 </Window>
