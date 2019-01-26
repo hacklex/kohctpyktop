@@ -411,7 +411,7 @@ namespace Kohctpyktop
             }
         }
         
-        private void SiliconCellSide(Cell cell, Side side, in Rectangle cellBounds)
+        private void SiliconCellSide(Cell cell, Side side, Rectangle cellBounds)
         {
             var (_, brush, gateBrush) = SelectSiliconBrush(cell);
 
@@ -428,7 +428,7 @@ namespace Kohctpyktop
             if (cell.HasGate && !hasSlaveLinkInDimension) Graphics.FillRectangle(BorderBrush, nearToCenter);
         }
         
-        private void MetalCellSide(Cell cell, Side side, in Rectangle cellBounds)
+        private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds)
         {
             var (rect, nearToBounds, _) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
             Graphics.FillRectangle(MetalBrush, rect);
@@ -463,7 +463,7 @@ namespace Kohctpyktop
             }
         }
 
-        private void SiliconCellCorner(Cell cell, Corner corner, in Rectangle cellBounds)
+        private void SiliconCellCorner(Cell cell, Corner corner, Rectangle cellBounds)
         {
             var (pen, _, _) = SelectSiliconBrush(cell);
 
@@ -490,7 +490,7 @@ namespace Kohctpyktop
             }
         }
 
-        private void MetalCellCorner(Cell cell, Corner corner, in Rectangle cellBounds)
+        private void MetalCellCorner(Cell cell, Corner corner, Rectangle cellBounds)
         {
             var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
             
@@ -504,7 +504,7 @@ namespace Kohctpyktop
                 nearToCenter, nearToBounds, nearHorzLink, nearVertLink);
         }
 
-        private void GenericIntercellular(in Rectangle cellBounds, Pen pen, bool isVertical)
+        private void GenericIntercellular(Rectangle cellBounds, Pen pen, bool isVertical)
         {
             if (isVertical)
             {
@@ -528,7 +528,7 @@ namespace Kohctpyktop
             }
         }
         
-        private void SiliconIntercellular(Cell cell, bool isVertical, SiliconLink siliconLink, in Rectangle cellBounds)
+        private void SiliconIntercellular(Cell cell, bool isVertical, SiliconLink siliconLink, Rectangle cellBounds)
         {
             if (siliconLink == SiliconLink.None) return;
 
@@ -544,7 +544,7 @@ namespace Kohctpyktop
             GenericIntercellular(cellBounds, pen, isVertical);
         }
 
-        private void MetalIntercellular(bool isVertical, in Rectangle cellBounds)
+        private void MetalIntercellular(bool isVertical, Rectangle cellBounds)
         {
             GenericIntercellular(cellBounds, MetalPen, isVertical);
         }
