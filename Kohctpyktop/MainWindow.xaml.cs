@@ -49,5 +49,36 @@ namespace Kohctpyktop
             if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Released)
                 Model?.ReleaseMouse(e.GetPosition((Image)sender));
         }
+
+        private void WindowKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftShift && Model != null)
+                Model.IsShiftPressed = false;
+        }
+
+        private void WindowKeyDown(object sender, KeyEventArgs e)
+        {
+            if (Model is Game model)
+            {
+                switch (e.Key)
+                {
+                    case Key.LeftShift:
+                        model.IsShiftPressed = true;
+                        break;
+                    case Key.D1:
+                        model.SelectedTool = SelectedTool.Silicon;
+                        break;
+                    case Key.D2:
+                        model.SelectedTool = SelectedTool.Metal;
+                        break;
+                    case Key.D3:
+                        model.SelectedTool = SelectedTool.AddOrDeleteVia;
+                        break;
+                    case Key.D4:
+                        model.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
+                        break;
+                }
+            }
+        }
     }
 }

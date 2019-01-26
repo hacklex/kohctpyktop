@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using DColor = System.Drawing.Color;
 using DPen = System.Drawing.Pen;
@@ -19,7 +20,9 @@ namespace Kohctpyktop
     public class Game : INotifyPropertyChanged, IDisposable
     {
         private BitmapSource _bitmapSource;
+        private SelectedTool _selectedTool;
         private DrawMode _drawMode;
+        private bool _isShiftPressed;
         public Level Level { get; }
 
         private const int CellSize = 12;
@@ -27,6 +30,8 @@ namespace Kohctpyktop
 
         public Game(Level level)
         {
+            SelectedTool = SelectedTool.Silicon;
+            
             Level = level;
             Bitmap = new Bitmap(
                 (CellSize + 1) * level.Cells.GetLength(1) + 1, 
@@ -49,6 +54,18 @@ namespace Kohctpyktop
             Bitmap?.Dispose();
         }
 
+        public bool IsShiftPressed
+        {
+            get => _isShiftPressed;
+            set
+            {
+                if (_isShiftPressed == value) return;
+                _isShiftPressed = value;
+                DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
+                OnPropertyChanged();
+            }
+        }
+
         public (int Row, int Col) OldMouseSpot { get; set; } = (-1, -1);
 
         public void ProcessMouse(Point pt)
@@ -67,7 +84,7 @@ namespace Kohctpyktop
                 OldMouseSpot = (y, x);
             }
         }
-
+        
         public void ReleaseMouse(Point pt)
         {
             OldMouseSpot = (-1, -1);
@@ -411,7 +428,7 @@ namespace Kohctpyktop
             }
         }
         
-        private void SiliconCellSide(Cell cell, Side side, in Rectangle cellBounds)
+        private void SiliconCellSide(Cell cell, Side side, Rectangle cellBounds)
         {
             var (_, brush, gateBrush) = SelectSiliconBrush(cell);
 
@@ -428,7 +445,7 @@ namespace Kohctpyktop
             if (cell.HasGate && !hasSlaveLinkInDimension) Graphics.FillRectangle(BorderBrush, nearToCenter);
         }
         
-        private void MetalCellSide(Cell cell, Side side, in Rectangle cellBounds)
+        private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds)
         {
             var (rect, nearToBounds, _) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
             Graphics.FillRectangle(MetalBrush, rect);
@@ -463,7 +480,7 @@ namespace Kohctpyktop
             }
         }
 
-        private void SiliconCellCorner(Cell cell, Corner corner, in Rectangle cellBounds)
+        private void SiliconCellCorner(Cell cell, Corner corner, Rectangle cellBounds)
         {
             var (pen, _, _) = SelectSiliconBrush(cell);
 
@@ -490,7 +507,7 @@ namespace Kohctpyktop
             }
         }
 
-        private void MetalCellCorner(Cell cell, Corner corner, in Rectangle cellBounds)
+        private void MetalCellCorner(Cell cell, Corner corner, Rectangle cellBounds)
         {
             var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
             
@@ -504,7 +521,7 @@ namespace Kohctpyktop
                 nearToCenter, nearToBounds, nearHorzLink, nearVertLink);
         }
 
-        private void GenericIntercellular(in Rectangle cellBounds, Pen pen, bool isVertical)
+        private void GenericIntercellular(Rectangle cellBounds, Pen pen, bool isVertical)
         {
             if (isVertical)
             {
@@ -528,7 +545,7 @@ namespace Kohctpyktop
             }
         }
         
-        private void SiliconIntercellular(Cell cell, bool isVertical, SiliconLink siliconLink, in Rectangle cellBounds)
+        private void SiliconIntercellular(Cell cell, bool isVertical, SiliconLink siliconLink, Rectangle cellBounds)
         {
             if (siliconLink == SiliconLink.None) return;
 
@@ -544,7 +561,7 @@ namespace Kohctpyktop
             GenericIntercellular(cellBounds, pen, isVertical);
         }
 
-        private void MetalIntercellular(bool isVertical, in Rectangle cellBounds)
+        private void MetalIntercellular(bool isVertical, Rectangle cellBounds)
         {
             GenericIntercellular(cellBounds, MetalPen, isVertical);
         }
@@ -640,6 +657,19 @@ namespace Kohctpyktop
             //LevelModel = result;
         }
 
+        private static DrawMode GetDrawMode(SelectedTool tool, bool isShiftHeld)
+        {
+            switch (tool)
+            {
+                case SelectedTool.AddOrDeleteVia: return isShiftHeld ? DrawMode.DeleteVia : DrawMode.Via;
+                case SelectedTool.Metal: return DrawMode.Metal;
+                case SelectedTool.Silicon: return isShiftHeld ? DrawMode.PType : DrawMode.NType;
+                case SelectedTool.DeleteMetalOrSilicon:
+                    return isShiftHeld ? DrawMode.DeleteMetal : DrawMode.DeleteSilicon;
+                default: throw new ArgumentException("Invalid tool type");
+            }
+        }
+
         public DrawMode DrawMode
         {
             get => _drawMode;
@@ -647,6 +677,18 @@ namespace Kohctpyktop
             {
                 if (value == _drawMode) return;
                 _drawMode = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public SelectedTool SelectedTool
+        {
+            get => _selectedTool;
+            set
+            {
+                if (value == _selectedTool) return;
+                _selectedTool = value;
+                DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
                 OnPropertyChanged();
             }
         }

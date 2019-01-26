@@ -5,23 +5,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Kohctpyktop"
         mc:Ignorable="d" SizeToContent="WidthAndHeight"
-        Title="MainWindow" >
+        Title="MainWindow"
+        KeyDown="WindowKeyDown"
+        KeyUp="WindowKeyUp">
     <Window.DataContext>
         <local:Game></local:Game>
     </Window.DataContext>
     <Window.Resources>
         <local:EnumBooleanConverter x:Key="EnumBooleanConverter"></local:EnumBooleanConverter>
+        <local:BooleanChoiceConverter x:Key="SiliconTypeConverter" OnFalse="SILICON (N)" OnTrue="SILICON (P)"/>
+        <local:BooleanChoiceConverter x:Key="DeleteTypeConverter" OnFalse="DELETE SILICON" OnTrue="DELETE METAL"/>
+        <local:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
     </Window.Resources>
-    <StackPanel>
-        <StackPanel Margin="5" Orientation="Horizontal">
-            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" Margin="5 0">Metal</RadioButton>
-            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=PType}" Margin="5 0">P-Silicon</RadioButton>
-            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=NType}" Margin="5 0">N-Silicon</RadioButton>
-            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Via}" Margin="5 0">Via</RadioButton>
-            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetal}" Margin="5 0">Delete Metal</RadioButton>
-            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteSilicon}" Margin="5 0">Delete Silicon</RadioButton>
-            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteVia}" Margin="5 0">Delete Via</RadioButton>
-        </StackPanel> 
-        <Image MouseDown="ImageMouseDown" MouseMove="ImageMouseMove" MouseUp="ImageMouseUp" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" Source="{Binding BitmapSource}"></Image>
-    </StackPanel>
+    <DockPanel>
+        <Image 
+            MouseDown="ImageMouseDown" 
+            MouseMove="ImageMouseMove" 
+            MouseUp="ImageMouseUp" 
+            Stretch="None" 
+            Source="{Binding BitmapSource}"/>
+        <StackPanel Margin="5" DockPanel.Dock="Right" Grid.IsSharedSizeScope="True">
+            <StackPanel.Resources>
+                <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
+            </StackPanel.Resources>
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" Tag="1"
+                         Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" Tag="2"
+                         Content="METAL"/>
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=AddOrDeleteVia}"
+                         Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}" Tag="3"/>
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
+                         Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}" Tag="4"/>
+        </StackPanel>
+    </DockPanel>
 </Window>

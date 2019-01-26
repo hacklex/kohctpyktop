@@ -13,7 +13,7 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -59,7 +59,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BooleanChoiceConverter.cs" />
     <Compile Include="Cell.cs" />
+    <Compile Include="Controls\BeveledSquare.cs" />
     <Compile Include="DrawArgs.cs" />
     <Compile Include="DrawMode.cs" />
     <Compile Include="EnumBooleanConverter.cs" />
@@ -68,6 +70,7 @@
     <Compile Include="Pin.cs" />
     <Compile Include="SchemeGate.cs" />
     <Compile Include="SchemeNode.cs" />
+    <Compile Include="SelectedTool.cs" />
     <Compile Include="SiliconLink.cs" />
     <Compile Include="SiliconTypes.cs" />
     <Compile Include="SimpleCommand.cs" />
@@ -112,6 +115,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Fonts\Poco.ttf" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
