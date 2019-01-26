@@ -5,7 +5,7 @@ namespace Kohctpyktop.Controls
 {
     public class BeveledSquare : FrameworkElement
     {
-        private static readonly PathGeometry StrokePath, OutlinePath, FillPath;
+        private static readonly Geometry StrokePath, OutlinePath, FillPath;
 
         private static readonly Brush FillBrush = new SolidColorBrush(Color.FromRgb(0x94, 0x94, 0x94));
         private static readonly Brush OutlineBrush = new SolidColorBrush(Color.FromRgb(0xb5, 0, 0));
@@ -14,50 +14,10 @@ namespace Kohctpyktop.Controls
 
         static BeveledSquare()
         {
-            // this is not actually beveled square, but there are tweaks for make wpf renderer suck less
-            // PLS REPLACE ME!!!!!!!!
-            StrokePath = new PathGeometry(new[]
-            {
-                new PathFigure(new Point(5, 2),
-                    new PathSegment[]
-                    {
-                        new LineSegment(new Point(24, 2), false),
-                        new LineSegment(new Point(27, 4), false),
-                        new LineSegment(new Point(27, 25), false),
-                        new LineSegment(new Point(25, 27), false),
-                        new LineSegment(new Point(4, 27), false),
-                        new LineSegment(new Point(2, 24), false),
-                        new LineSegment(new Point(2, 4), false)
-                    }, true)
-            });
-            OutlinePath = new PathGeometry(new[]
-            {
-                new PathFigure(new Point(4, 0),
-                    new PathSegment[]
-                    {
-                        new LineSegment(new Point(26, 0), false),
-                        new LineSegment(new Point(29, 3), false),
-                        new LineSegment(new Point(29, 26), false),
-                        new LineSegment(new Point(26, 29), false),
-                        new LineSegment(new Point(4, 29), false),
-                        new LineSegment(new Point(0, 26), false),
-                        new LineSegment(new Point(0, 3), false)
-                    }, true)
-            });
-            FillPath = new PathGeometry(new[]
-            {
-                new PathFigure(new Point(5, 3),
-                    new PathSegment[]
-                    {
-                        new LineSegment(new Point(24.5, 3), false),
-                        new LineSegment(new Point(26, 4.5), false),
-                        new LineSegment(new Point(26.5, 24), false),
-                        new LineSegment(new Point(24, 26.5), false),
-                        new LineSegment(new Point(4.5, 26), false),
-                        new LineSegment(new Point(3, 24.5), false),
-                        new LineSegment(new Point(3, 4.5), false)
-                    }, true)
-            });
+            // added little offset (.01) - avoiding misplaced line bug
+            StrokePath = Geometry.Parse("M 2,5 5,2 H 24.01 l 3,3 V 24 l -3,3 H 5 L 2,24 Z");
+            OutlinePath = Geometry.Parse("M 0,4 4,0 H 25.01 l 4,4 V 25 l -4,4 H 4 L 0,25 Z");
+            FillPath = Geometry.Parse("M 3,5 5,3 H 24.01 l 2,2 V 24 l -2,2 H 5 L 3,24 Z");
         }
 
         public BeveledSquare()

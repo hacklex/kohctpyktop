@@ -34,7 +34,7 @@
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="SelectionToolHolder" Index="3">
             <local:ToolInfoHolder.Icon>
-                <Path Data="F1 M2,5 H6 L11,11 L18,5 H21 L13,12 L20,20 H17 L11,13 L12,13 L6,20 H3 L10,12 Z" Fill="#cccccc"
+                <Path Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#cccccc"
                       RenderOptions.EdgeMode="Aliased"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
@@ -50,7 +50,7 @@
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="DeleteToolHolder" Index="5">
             <local:ToolInfoHolder.Icon>
-                <Path Data="F1 M2,5 H6 L11,11 L18,5 H21 L13,12 L20,20 H17 L11,13 L12,13 L6,20 H3 L10,12 Z" Fill="#d70000"
+                <Path Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#d70000"
                       RenderOptions.EdgeMode="Aliased"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
