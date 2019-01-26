@@ -17,9 +17,14 @@
         <local:BooleanChoiceConverter x:Key="DeleteTypeConverter" OnFalse="DELETE SILICON" OnTrue="DELETE METAL"/>
         <local:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
         
-        <local:ToolInfoHolder x:Key="SiliconToolHolder" Index="1">
+        <local:ToolInfoHolder x:Key="NSiliconToolHolder" Index="1">
             <local:ToolInfoHolder.Icon>
                 <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+            </local:ToolInfoHolder.Icon>
+        </local:ToolInfoHolder>
+        <local:ToolInfoHolder x:Key="PSiliconToolHolder" Index="1">
+            <local:ToolInfoHolder.Icon>
+                <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#f6ff00"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="MetalToolHolder" Index="2">
@@ -49,6 +54,10 @@
                       RenderOptions.EdgeMode="Aliased"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
+        
+        <local:BooleanChoiceConverter x:Key="SiliconHolderConverter" 
+                                      OnFalse="{StaticResource NSiliconToolHolder}" 
+                                      OnTrue="{StaticResource PSiliconToolHolder}"/>
     </Window.Resources>
     <DockPanel>
         <Image 
@@ -62,7 +71,7 @@
                 <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
             </StackPanel.Resources>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
-                         Tag="{StaticResource SiliconToolHolder}"
+                         Tag="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" 
                          Tag="{StaticResource MetalToolHolder}"

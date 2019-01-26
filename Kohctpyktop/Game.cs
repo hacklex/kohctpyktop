@@ -147,7 +147,7 @@ namespace Kohctpyktop
             var rotatedIndex1 = (indexForTarget + 1) % 4;
             var rotatedIndex2 = (indexForTarget + 3) % 4; // modular arithmetics, bitches
             //can only draw the gate into a line of at least 3 connected N cells
-            if (from.HasP && to.HasN && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
+            if (from.HasP && (to.HasN || to.HasNGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
                 to.NeighborInfos[rotatedIndex2]?.SiliconLink == SiliconLink.BiDirectional) return true;
             return false;
         }
@@ -162,7 +162,7 @@ namespace Kohctpyktop
             var rotatedIndex1 = (indexForTarget + 1) % 4;
             var rotatedIndex2 = (indexForTarget + 3) % 4; // modular arithmetics, bitches
             //can only draw the gate into a line of at least 3 connected N cells
-            if (from.HasN && to.HasP && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
+            if (from.HasN && (to.HasP || to.HasPGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
                 to.NeighborInfos[rotatedIndex2]?.SiliconLink == SiliconLink.BiDirectional) return true;
             return false;
         }
@@ -192,7 +192,7 @@ namespace Kohctpyktop
                 {
                     neighborInfo.SiliconLink = SiliconLink.BiDirectional;
                 }
-                else if (toCell.HasN)
+                else if (toCell.HasN || toCell.HasNGate)
                 {
                     //the gate direction is perpendicular to the link direction
                     toCell.SiliconLayerContent = toCell.IsHorizontalNeighborOf(fromCell)
@@ -214,7 +214,7 @@ namespace Kohctpyktop
                 {
                     neighborInfo.SiliconLink = SiliconLink.BiDirectional;
                 }
-                else if (toCell.HasP)
+                else if (toCell.HasP || toCell.HasPGate)
                 {
                     //the gate direction is perpendicular to the link direction
                     toCell.SiliconLayerContent = toCell.IsHorizontalNeighborOf(fromCell)
