@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Brushes = System.Drawing.Brushes;
 using DColor = System.Drawing.Color;
 using DPen = System.Drawing.Pen;
 using DBrush = System.Drawing.Brush;
 using Point = System.Windows.Point;
+using Rectangle = System.Drawing.Rectangle;
+using DPoint = System.Drawing.Point;
 
 namespace Kohctpyktop
 {
@@ -20,7 +25,8 @@ namespace Kohctpyktop
         private DrawMode _drawMode;
         public Level Level { get; }
 
-        private const int CellSize = 16;
+        private const int CellSize = 12;
+        private const int ViaSize = 6;
 
         public Game(Level level)
         {
@@ -29,6 +35,10 @@ namespace Kohctpyktop
                 (CellSize + 1) * level.Cells.GetLength(1) + 1, 
                 (CellSize + 1) * level.Cells.GetLength(0) + 1);
             Graphics = Graphics.FromImage(Bitmap);
+            Graphics.CompositingQuality = CompositingQuality.HighSpeed; // quality is not required actually, rendering is pixel-perfect
+            Graphics.InterpolationMode = InterpolationMode.NearestNeighbor; // this too
+            Graphics.SmoothingMode = SmoothingMode.None; // causes artifacts
+            Graphics.PixelOffsetMode = PixelOffsetMode.None; // this too
             RebuildModel();
         }
 
@@ -281,13 +291,16 @@ namespace Kohctpyktop
             }
         }
 
-        private static readonly DColor BgColor = "7F8AFF".AsDColor();
-        private static readonly DBrush PBrush = new SolidBrush("A0B6BD00".AsDColor());
-        private static readonly DBrush NBrush = new SolidBrush("60800000".AsDColor());
+        private static readonly DColor BgColor = "959595".AsDColor();
+        private static readonly DBrush PBrush = new SolidBrush("FFF6FF00".AsDColor());
+        private static readonly DBrush NBrush = new SolidBrush("FFB60000".AsDColor());
+        private static readonly DBrush PGateBrush = new SolidBrush("FF860000".AsDColor());
+        private static readonly DBrush NGateBrush = new SolidBrush("FFEDC900".AsDColor());
         private static readonly DBrush MetalBrush = new SolidBrush("80FFFFFF".AsDColor());
         private static readonly DPen GridPen = new DPen(DColor.FromArgb(60, DColor.Black));
         private static readonly DPen LightnessPen = new DPen(DColor.FromArgb(250, DColor.White));
         private static readonly DPen DarknessPen = new DPen(DColor.FromArgb(250, DColor.Black));
+        
         void DrawGrid()
         {
             var w = Bitmap.Width;
@@ -301,13 +314,15 @@ namespace Kohctpyktop
 
         static Rectangle GetLinkRectangle(int cx, int cy, int neighborIndex)
         {
+            const int linkPenetration = 5;
+            
             switch (neighborIndex)
             {
-                case 0: return new Rectangle(cx, cy + 2, 2, CellSize - 4);
-                case 1: return new Rectangle(cx + 2, cy, CellSize - 4, 2);
-                case 2: return new Rectangle(cx + CellSize - 2, cy + 2, 3, CellSize - 4); //to draw over grid
-                case 3: return new Rectangle(cx + 2, cy + CellSize - 2, CellSize - 4, 3); //to draw over grid
-                default: throw new ArgumentException("Expected index from 0 to 3");
+                case 0: return new Rectangle(cx - (linkPenetration / 2 + 1), cy, linkPenetration, CellSize - 1);
+                case 1: return new Rectangle(cx, cy - (linkPenetration / 2 + 1), CellSize - 1, linkPenetration);
+//                case 2: return new Rectangle(cx + CellSize, cy, 1, CellSize); //to draw over grid
+//                case 3: return new Rectangle(cx, cy + CellSize, CellSize, 1); //to draw over grid
+                default: throw new ArgumentException("Expected index from 0 to 1");
             }
         }
 
@@ -334,93 +349,323 @@ namespace Kohctpyktop
             }
         }
 
-        void DrawAuxLines(int cx, int cy, int sideIndex, NeighborInfo[] neighborInfos)
+        private const int CellInsets = 2;
+
+        private static Rectangle GetCellBounds(int x, int y)
         {
-            if (sideIndex == 0)
+            return new Rectangle(1 + x * (CellSize + 1), 1 + y * (CellSize + 1), CellSize, CellSize);
+        }
+        
+        public enum Side { Left, Top, Right, Bottom }
+
+        [Flags]
+        public enum Corner
+        {
+            Near = 0, 
+            FarX = 1, 
+            FarY = 2, 
+            Far = FarX | FarY
+        }
+        
+        private void FillMid(DBrush brush, Rectangle cellBounds)
+        {
+            cellBounds.Inflate(-CellInsets, -CellInsets);
+            Graphics.FillRectangle(brush, cellBounds);
+        }
+
+        private static bool IsHorizontalSide(Side side) => side == Side.Left || side == Side.Right;
+        private static bool IsVerticalSide(Side side) => side == Side.Bottom || side == Side.Top;
+
+        private static bool IsSideNearToBoundsOrigin(Side side) => side == Side.Top || side == Side.Left;
+        private static bool IsSideFarFromBoundsOrigin(Side side) => side == Side.Right || side == Side.Bottom;
+
+        private static (Rectangle Rect, Rectangle NearToBounds, Rectangle NearToCenter) GetCellSideBounds(int originX, int originY, Side side)
+        {
+            var isFar = IsSideFarFromBoundsOrigin(side);
+
+            var rectOfs = isFar ? CellSize - CellInsets : 0;
+            var lineOfs = isFar ? CellSize - 1 : 0;
+            var centerOfs = isFar ? CellSize - CellInsets : CellInsets - 1;
+
+            return IsVerticalSide(side)
+                ? (new Rectangle(originX + CellInsets, originY + rectOfs, CellSize - 2 * CellInsets, CellInsets),
+                    new Rectangle(originX + CellInsets, originY + lineOfs, CellSize - 2 * CellInsets, 1),
+                    new Rectangle(originX + CellInsets, originY + centerOfs, CellSize - 2 * CellInsets, 1))
+                : (new Rectangle(originX + rectOfs, originY + CellInsets, CellInsets, CellSize - 2 * CellInsets),
+                    new Rectangle(originX + lineOfs, originY + CellInsets, 1, CellSize - 2 * CellInsets),
+                    new Rectangle(originX + centerOfs, originY + CellInsets, 1, CellSize - 2 * CellInsets));
+        }
+        
+        private static (DPoint NearToCenter, DPoint NearToBounds, DPoint NearHorzLink, DPoint NearVertLink) 
+            GetCellCornerBounds(int originX, int originY, Corner corner)
+        {
+            var isFarX = corner.HasFlag(Corner.FarX);
+            var isFarY = corner.HasFlag(Corner.FarY);
+
+            var nearHorz = originX + (isFarX ? CellSize - 1 : 0);
+            var nearVert = originY + (isFarY ? CellSize - 1 : 0);
+            var farHorz = originX + (isFarX ? CellSize - CellInsets : CellInsets - 1);
+            var farVert = originY + (isFarY ? CellSize - CellInsets : CellInsets - 1);
+
+            return (
+                new DPoint(farHorz, farVert),
+                new DPoint(nearHorz, nearVert),
+                new DPoint(nearHorz, farVert),
+                new DPoint(farHorz, nearVert));
+        }
+
+        private static (DBrush NonGate, DBrush Gate) SelectSiliconBrush(Cell cell)
+        {
+            return cell.HasP || cell.HasPGate
+                ? cell.HasN || cell.HasNGate
+                    ? throw new InvalidOperationException("both P and N silicon on single cell")
+                    : (PBrush, PGateBrush)
+                : cell.HasN || cell.HasNGate
+                    ? (NBrush, NGateBrush)
+                    : throw new InvalidOperationException("no silicon on cell");
+        }
+
+        private static Side GetOppositeSide(Side side)
+        {
+            switch (side)
             {
-                if (neighborInfos[1]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(LightnessPen, cx + 2, cy-1, cx + 2, cy + 3);
-                if (neighborInfos[3]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(LightnessPen, cx + 2, cy + CellSize - 2, cx + 2, cy + CellSize);
+                case Side.Top: return Side.Bottom;
+                case Side.Bottom: return Side.Top;
+                case Side.Left: return Side.Right;
+                case Side.Right: return Side.Left;
+                default: throw new InvalidOperationException("invalid side " + side); 
             }
-            if (sideIndex == 1)
+        }
+        
+        private void SiliconCellSide(Cell cell, Side side, Rectangle cellBounds)
+        {
+            var (brush, gateBrush) = SelectSiliconBrush(cell);
+
+            var link = cell.NeighborInfos[(int) side]?.SiliconLink ?? SiliconLink.None;
+            var oppositeLink = cell.NeighborInfos[(int) GetOppositeSide(side)]?.SiliconLink ?? SiliconLink.None;
+            var hasSlaveLinkInDimension = link == SiliconLink.Slave || oppositeLink == SiliconLink.Slave;
+            
+            var actualBrush = hasSlaveLinkInDimension ? gateBrush : brush;
+            
+            var (rect, nearToBounds, nearToCenter) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
+            Graphics.FillRectangle(actualBrush, rect);
+            
+            // todo);
+            if (link == SiliconLink.None || hasSlaveLinkInDimension) Graphics.FillRectangle(Brushes.Black, nearToBounds);
+            if (cell.HasGate && !hasSlaveLinkInDimension) Graphics.FillRectangle(Brushes.Black, nearToCenter);
+        }
+        
+        private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds)
+        {
+            var (rect, nearToBounds, _) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
+            Graphics.FillRectangle(MetalBrush, rect);
+            
+            // todo);
+            if (!(cell.NeighborInfos[(int) side]?.HasMetalLink ?? false)) Graphics.FillRectangle(Brushes.Black, nearToBounds);
+        }
+
+        private void SiliconCellCorner(Cell cell, Corner corner, bool linked, Rectangle cellBounds)
+        {
+            var (brush, _) = SelectSiliconBrush(cell);
+
+            var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
+            
+            var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
+            var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
+
+            var hasHorzLink = (horzNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
+            var hasVertLink = (vertNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
+
+            // todo remove copypaste
+            if (hasHorzLink && hasVertLink)
             {
-                if (neighborInfos[0]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(LightnessPen, cx, cy + 2, cx + 2, cy + 2);
-                if (neighborInfos[2]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(LightnessPen, cx + CellSize - 2, cy + 2, cx + CellSize, cy + 2);
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.FillPolygon(brush, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, DColor.Black);
             }
-            if (sideIndex == 2)
+            else if (hasHorzLink)
             {
-                if (neighborInfos[1]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(DarknessPen, cx + CellSize - 2, cy, cx + CellSize - 2, cy + 2);
-                if (neighborInfos[3]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(DarknessPen, cx + CellSize - 2, cy + CellSize - 2, cx + CellSize - 2,
-                        cy + CellSize);
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.FillPolygon(brush, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(Pens.Black, nearToBounds, nearVertLink);
             }
-            if (sideIndex == 3)
+            else if (hasVertLink)
             {
-                if (neighborInfos[0]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(DarknessPen, cx, cy + CellSize - 2, cx + 2, cy + CellSize - 2);
-                if (neighborInfos[2]?.SiliconLink != SiliconLink.None)
-                    Graphics.DrawLineEx(DarknessPen, cx + CellSize - 2, cy + CellSize - 2, cx + CellSize,
-                        cy + CellSize - 2);
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.FillPolygon(brush, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(Pens.Black, nearHorzLink, nearToBounds);
+            }
+            else
+            {
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearHorzLink, nearVertLink, nearToCenter });
+                Graphics.FillPolygon(brush, new[] { nearHorzLink, nearVertLink, nearToCenter });
+                Graphics.DrawLine(Pens.Black, nearHorzLink, nearVertLink);
+            }
+            
+            if (cell.HasGate) // overdraw!!!
+            {
+                var oppositeVertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 1 : 3];
+                var isVerticalGate =
+                    (vertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave ||
+                    (oppositeVertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave;
+                
+                if (isVerticalGate) Graphics.DrawLine(Pens.Black, nearVertLink, nearToCenter);
+                else Graphics.DrawLine(Pens.Black, nearHorzLink, nearToCenter);
             }
         }
 
-        void DrawSilicon()
+        private void MetalCellCorner(Cell cell, Corner corner, bool linked, Rectangle cellBounds)
         {
-            for (int i = 0; i < Level.Height; i++)
-                for (int j = 0; j < Level.Width; j++)
-                {
-                    var cell = Level.Cells[i, j];
-                    var x0 = 1 + j * (CellSize + 1);
-                    var y0 = 1 + i * (CellSize + 1);
-                    if (cell.HasNoSilicon) continue;
-                    if (cell.HasP) Graphics.FillRectangle(PBrush, x0 + 2, y0 + 2, CellSize - 4, CellSize - 4);
-                    if (cell.HasN) Graphics.FillRectangle(NBrush, x0 + 2, y0 + 2, CellSize - 4, CellSize - 4);
-                    if (cell.HasVia) Graphics.DrawEllipse(Pens.Black, x0 + 5, y0 + 5, CellSize - 10, CellSize - 10);
-                    if (cell.HasNGate)
-                    {
-                        Graphics.FillRectangle(NBrush, x0 + 2, y0 + 2, CellSize - 4, CellSize - 4);
-                        Graphics.FillRectangle(PBrush, x0 + 2, y0 + 2, CellSize - 4, CellSize - 4);
-                    }
-                    if (cell.HasPGate)
-                    {
-                        Graphics.FillRectangle(PBrush, x0 + 2, y0 + 2, CellSize - 4, CellSize - 4);
-                        Graphics.FillRectangle(NBrush, x0 + 2, y0 + 2, CellSize - 4, CellSize - 4);
-                    }
-                    for (int k = 0; k < 4; k++)
-                    {
-                        var rect = GetLinkRectangle(x0, y0, k);
-                        var ni = cell.NeighborInfos[k];
-                        if (ni.SiliconLink == SiliconLink.BiDirectional || ni.SiliconLink == SiliconLink.Master)
-                            Graphics.FillRectangle(cell.IsBaseN ? NBrush : PBrush, rect);
-                        //gate slave
-                        if (ni.SiliconLink == SiliconLink.Slave) Graphics.FillRectangle(cell.IsBaseN ? PBrush : NBrush, rect);
-                         
-                    }
-                }
+            var brush = MetalBrush;
+
+            var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
+            
+            var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
+            var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
+
+            var hasHorzLink = horzNeigh?.HasMetalLink ?? false;
+            var hasVertLink = vertNeigh?.HasMetalLink ?? false;
+
+            // todo remove copypaste
+            if (hasHorzLink && hasVertLink)
+            {
+                // that won't work on insets larger than 2 (System.Drawing sucks)
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, DColor.Black);
+            }
+            else if (hasHorzLink)
+            {
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(Pens.Black, nearToBounds, nearVertLink);
+            }
+            else if (hasVertLink)
+            {
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
+                Graphics.DrawLine(Pens.Black, nearHorzLink, nearToBounds);
+            }
+            else
+            {
+                Graphics.DrawPolygon(new DPen(brush), new[] { nearHorzLink, nearVertLink, nearToCenter });
+                Graphics.DrawLine(Pens.Black, nearHorzLink, nearVertLink);
+            }
+        }
+
+        private void SiliconIntercellular(Cell cell, bool isVertical, SiliconLink siliconLink, Rectangle cellBounds)
+        {
+            if (siliconLink == SiliconLink.None) return;
+
+            
+            var brush =
+                cell.HasN ? NBrush : cell.HasP ? PBrush : siliconLink != SiliconLink.Slave ? cell.HasPGate ? PBrush : NBrush : cell.HasPGate ? NBrush : PBrush;
+
+            if (isVertical)
+            {
+                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, DColor.Black);
+                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, DColor.Black);
+                Graphics.DrawLine(new DPen(brush), 
+                    cellBounds.Left + 1, 
+                    cellBounds.Top - 1, 
+                    cellBounds.Right - 2,
+                    cellBounds.Top - 1);
+            } 
+            else 
+            {
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, DColor.Black);
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, DColor.Black);
+                Graphics.DrawLine(new DPen(brush), 
+                    cellBounds.Left - 1, 
+                    cellBounds.Top + 1, 
+                    cellBounds.Left - 1,
+                    cellBounds.Bottom - 2);
+            }
+        }
+
+        private void MetalIntercellular(Cell cell, bool isVertical, Rectangle cellBounds)
+        {
+            var brush = MetalBrush;
+
+            if (isVertical)
+            {
+                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, DColor.Black);
+                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, DColor.Black);
+                Graphics.DrawLine(new DPen(brush), 
+                    cellBounds.Left + 1, 
+                    cellBounds.Top - 1, 
+                    cellBounds.Right - 2,
+                    cellBounds.Top - 1);
+            } 
+            else 
+            {
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, DColor.Black);
+                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, DColor.Black);
+                Graphics.DrawLine(new DPen(brush), 
+                    cellBounds.Left - 1, 
+                    cellBounds.Top + 1, 
+                    cellBounds.Left - 1,
+                    cellBounds.Bottom - 2);
+            }
+        }
+
+        void DrawSiliconAndMetal()
+        {
             for (int i = 0; i < Level.Height; i++)
             for (int j = 0; j < Level.Width; j++)
             {
                 var cell = Level.Cells[i, j];
-                if (cell.HasNoSilicon) continue;
-                var x0 = 1 + j * (CellSize + 1);
-                var y0 = 1 + i * (CellSize + 1);
-                for (int k = 0; k < 4; k++)
+                var bounds = GetCellBounds(j, i);
+
+                if (cell.HasN || cell.HasP || cell.HasNGate || cell.HasPGate)
                 {
-                    var ni = cell.NeighborInfos[k];
-                    if (ni.SiliconLink == SiliconLink.None)
+                    var (brush, gateBrush) = SelectSiliconBrush(cell);
+                    FillMid(cell.HasGate ? gateBrush : brush, bounds);
+
+                    // todo
+                    SiliconCellSide(cell, Side.Top, bounds);
+                    SiliconCellSide(cell, Side.Bottom, bounds);
+                    SiliconCellSide(cell, Side.Left, bounds);
+                    SiliconCellSide(cell, Side.Right, bounds);
+
+                    SiliconCellCorner(cell, Corner.Near, false, bounds);
+                    SiliconCellCorner(cell, Corner.FarX, false, bounds);
+                    SiliconCellCorner(cell, Corner.FarY, false, bounds);
+                    SiliconCellCorner(cell, Corner.Far, false, bounds);
+                    
+                    SiliconIntercellular(cell, false, cell.NeighborInfos[0]?.SiliconLink ?? SiliconLink.None, bounds);
+                    SiliconIntercellular(cell, true, cell.NeighborInfos[1]?.SiliconLink ?? SiliconLink.None, bounds);
+                    
+                    if (cell.HasVia) // in original game vias displaying under metal layer
                     {
-                        var nfo = GetBorderLineInfo(x0, y0, k);
-                        Graphics.DrawLine(nfo.pen, nfo.from, nfo.to);
+                        var viaX = bounds.X + (bounds.Width - ViaSize) / 2;
+                        var viaY = bounds.Y + (bounds.Height - ViaSize) / 2;
+
+                        Graphics.DrawLine(Pens.Black, viaX + 1, viaY, viaX + ViaSize - 2, viaY);
+                        Graphics.DrawLine(Pens.Black, viaX + 1, viaY + ViaSize - 1, viaX + ViaSize - 2, viaY + ViaSize - 1);
+                        Graphics.DrawLine(Pens.Black,viaX, viaY + 1, viaX, viaY + ViaSize - 2);
+                        Graphics.DrawLine(Pens.Black, viaX + ViaSize - 1, viaY + 1, viaX + ViaSize - 1, viaY + ViaSize - 2);
                     }
-                    DrawAuxLines(x0, y0, k, cell.NeighborInfos);
+                }
+
+                if (cell.HasMetal)
+                {
+                    FillMid(MetalBrush, bounds);
+
+                    // todo
+                    MetalCellSide(cell, Side.Top, bounds);
+                    MetalCellSide(cell, Side.Bottom, bounds);
+                    MetalCellSide(cell, Side.Left, bounds);
+                    MetalCellSide(cell, Side.Right, bounds);
+
+                    MetalCellCorner(cell, Corner.Near, false, bounds);
+                    MetalCellCorner(cell, Corner.FarX, false, bounds);
+                    MetalCellCorner(cell, Corner.FarY, false, bounds);
+                    MetalCellCorner(cell, Corner.Far, false, bounds);
+                    
+                    if (cell.NeighborInfos[0]?.HasMetalLink ?? false) MetalIntercellular(cell, false, bounds);
+                    if (cell.NeighborInfos[1]?.HasMetalLink ?? false) MetalIntercellular(cell, true, bounds);
                 }
             }
-
         }
+
         void DrawMetal()
         {
             for (int i = 0; i < Level.Height; i++)
@@ -430,8 +675,8 @@ namespace Kohctpyktop
                     var x0 = 1 + j * (CellSize + 1);
                     var y0 = 1 + i * (CellSize + 1);
                     if (!cell.HasMetal) continue;
-                    Graphics.FillRectangle(MetalBrush, x0 + 2, y0 + 2, CellSize - 4, CellSize - 4);
-                    for (int k = 0; k < 4; k++)
+                    Graphics.FillRectangle(MetalBrush, x0, y0, CellSize, CellSize);
+                    for (int k = 0; k < 2; k++)
                     {
                         var rect = GetLinkRectangle(x0, y0, k);
                         var ni = cell.NeighborInfos[k];
@@ -439,7 +684,6 @@ namespace Kohctpyktop
                         if (ni.HasMetalLink)
                             Graphics.FillRectangle(MetalBrush, rect);
                     }
-                    if (cell.HasVia) Graphics.DrawEllipse(Pens.Black, x0 + 3, y0 + 4, CellSize - 8, CellSize - 8);
                 }
         }
 
@@ -448,8 +692,8 @@ namespace Kohctpyktop
         {
             Graphics.Clear(BgColor);
             DrawGrid();
-            DrawSilicon();
-            DrawMetal();
+            DrawSiliconAndMetal();
+            // DrawMetal();
             BitmapImage bmpImage = new BitmapImage();
             MemoryStream stream = new MemoryStream();
             Bitmap.Save(stream, ImageFormat.Bmp);
