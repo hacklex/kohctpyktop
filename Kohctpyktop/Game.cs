@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Brushes = System.Drawing.Brushes;
 using DColor = System.Drawing.Color;
 using DPen = System.Drawing.Pen;
 using DBrush = System.Drawing.Brush;
@@ -405,7 +402,7 @@ namespace Kohctpyktop
             }
         }
         
-        private void SiliconCellSide(Cell cell, Side side, Rectangle cellBounds)
+        private void SiliconCellSide(Cell cell, Side side, in Rectangle cellBounds)
         {
             var (_, brush, gateBrush) = SelectSiliconBrush(cell);
 
@@ -418,79 +415,22 @@ namespace Kohctpyktop
             var (rect, nearToBounds, nearToCenter) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
             Graphics.FillRectangle(actualBrush, rect);
             
-            // todo);
             if (link == SiliconLink.None || hasSlaveLinkInDimension) Graphics.FillRectangle(BorderBrush, nearToBounds);
             if (cell.HasGate && !hasSlaveLinkInDimension) Graphics.FillRectangle(BorderBrush, nearToCenter);
         }
         
-        private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds)
+        private void MetalCellSide(Cell cell, Side side, in Rectangle cellBounds)
         {
             var (rect, nearToBounds, _) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
             Graphics.FillRectangle(MetalBrush, rect);
             
-            // todo);
-            if (!(cell.NeighborInfos[(int) side]?.HasMetalLink ?? false)) Graphics.FillRectangle(BorderBrush, nearToBounds);
+            if (!(cell.NeighborInfos[(int) side]?.HasMetalLink ?? false))
+                Graphics.FillRectangle(BorderBrush, nearToBounds);
         }
 
-        private void SiliconCellCorner(Cell cell, Corner corner, bool linked, Rectangle cellBounds)
+        private void GenericCellCorner(bool hasHorzLink, bool hasVertLink, DPen pen,
+            DPoint nearToCenter, DPoint nearToBounds, DPoint nearHorzLink, DPoint nearVertLink)
         {
-            var (pen, brush, _) = SelectSiliconBrush(cell);
-
-            var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
-            
-            var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
-            var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
-
-            var hasHorzLink = (horzNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
-            var hasVertLink = (vertNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
-
-            // todo remove copypaste
-            if (hasHorzLink && hasVertLink)
-            {
-                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, BorderColor);
-            }
-            else if (hasHorzLink)
-            {
-                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.DrawLine(BorderPen, nearToBounds, nearVertLink);
-            }
-            else if (hasVertLink)
-            {
-                Graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Graphics.DrawLine(BorderPen, nearHorzLink, nearToBounds);
-            }
-            else
-            {
-                Graphics.DrawPolygon(pen, new[] { nearHorzLink, nearVertLink, nearToCenter });
-                Graphics.DrawLine(BorderPen, nearHorzLink, nearVertLink);
-            }
-            
-            if (cell.HasGate) // overdraw!!!
-            {
-                var oppositeVertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 1 : 3];
-                var isVerticalGate =
-                    (vertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave ||
-                    (oppositeVertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave;
-                
-                if (isVerticalGate) Graphics.DrawLine(BorderPen, nearVertLink, nearToCenter);
-                else Graphics.DrawLine(BorderPen, nearHorzLink, nearToCenter);
-            }
-        }
-
-        private void MetalCellCorner(Cell cell, Corner corner, bool linked, Rectangle cellBounds)
-        {
-            var pen = MetalPen;
-
-            var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
-            
-            var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
-            var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
-
-            var hasHorzLink = horzNeigh?.HasMetalLink ?? false;
-            var hasVertLink = vertNeigh?.HasMetalLink ?? false;
-
-            // todo remove copypaste
             if (hasHorzLink && hasVertLink)
             {
                 // that won't work on insets larger than 2 (System.Drawing sucks)
@@ -514,20 +454,49 @@ namespace Kohctpyktop
             }
         }
 
-        private void SiliconIntercellular(Cell cell, bool isVertical, SiliconLink siliconLink, Rectangle cellBounds)
+        private void SiliconCellCorner(Cell cell, Corner corner, in Rectangle cellBounds)
         {
-            if (siliconLink == SiliconLink.None) return;
+            var (pen, _, _) = SelectSiliconBrush(cell);
 
+            var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
+            
+            var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
+            var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
 
-            var pen = // todo: simplify
-                cell.HasN
-                    ? NPen
-                    : cell.HasP
-                        ? PPen
-                        : siliconLink != SiliconLink.Slave ^ cell.HasPGate
-                            ? NPen
-                            : PPen;
+            var hasHorzLink = (horzNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
+            var hasVertLink = (vertNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
 
+            GenericCellCorner(hasHorzLink, hasVertLink, pen,
+                nearToCenter, nearToBounds, nearHorzLink, nearVertLink);
+            
+            if (cell.HasGate) // overdraw!!!
+            {
+                var oppositeVertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 1 : 3];
+                var isVerticalGate =
+                    (vertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave ||
+                    (oppositeVertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave;
+                
+                if (isVerticalGate) Graphics.DrawLine(BorderPen, nearVertLink, nearToCenter);
+                else Graphics.DrawLine(BorderPen, nearHorzLink, nearToCenter);
+            }
+        }
+
+        private void MetalCellCorner(Cell cell, Corner corner, in Rectangle cellBounds)
+        {
+            var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
+            
+            var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
+            var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
+
+            var hasHorzLink = horzNeigh?.HasMetalLink ?? false;
+            var hasVertLink = vertNeigh?.HasMetalLink ?? false;
+
+            GenericCellCorner(hasHorzLink, hasVertLink, MetalPen, 
+                nearToCenter, nearToBounds, nearHorzLink, nearVertLink);
+        }
+
+        private void GenericIntercellular(in Rectangle cellBounds, Pen pen, bool isVertical)
+        {
             if (isVertical)
             {
                 Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, BorderColor);
@@ -549,31 +518,26 @@ namespace Kohctpyktop
                     cellBounds.Bottom - 2);
             }
         }
-
-        private void MetalIntercellular(Cell cell, bool isVertical, Rectangle cellBounds)
+        
+        private void SiliconIntercellular(Cell cell, bool isVertical, SiliconLink siliconLink, in Rectangle cellBounds)
         {
-            var brush = MetalBrush;
+            if (siliconLink == SiliconLink.None) return;
 
-            if (isVertical)
-            {
-                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, BorderColor);
-                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, BorderColor);
-                Graphics.DrawLine(new DPen(brush), 
-                    cellBounds.Left + 1, 
-                    cellBounds.Top - 1, 
-                    cellBounds.Right - 2,
-                    cellBounds.Top - 1);
-            } 
-            else 
-            {
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, BorderColor);
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, BorderColor);
-                Graphics.DrawLine(new DPen(brush), 
-                    cellBounds.Left - 1, 
-                    cellBounds.Top + 1, 
-                    cellBounds.Left - 1,
-                    cellBounds.Bottom - 2);
-            }
+            var pen = // todo: simplify
+                cell.HasN
+                    ? NPen
+                    : cell.HasP
+                        ? PPen
+                        : siliconLink != SiliconLink.Slave ^ cell.HasPGate
+                            ? NPen
+                            : PPen;
+
+            GenericIntercellular(cellBounds, pen, isVertical);
+        }
+
+        private void MetalIntercellular(bool isVertical, in Rectangle cellBounds)
+        {
+            GenericIntercellular(cellBounds, MetalPen, isVertical);
         }
 
         void DrawSiliconAndMetal()
@@ -589,16 +553,15 @@ namespace Kohctpyktop
                     var (_, brush, gateBrush) = SelectSiliconBrush(cell);
                     FillMid(cell.HasGate ? gateBrush : brush, bounds);
 
-                    // todo
                     SiliconCellSide(cell, Side.Top, bounds);
                     SiliconCellSide(cell, Side.Bottom, bounds);
                     SiliconCellSide(cell, Side.Left, bounds);
                     SiliconCellSide(cell, Side.Right, bounds);
 
-                    SiliconCellCorner(cell, Corner.Near, false, bounds);
-                    SiliconCellCorner(cell, Corner.FarX, false, bounds);
-                    SiliconCellCorner(cell, Corner.FarY, false, bounds);
-                    SiliconCellCorner(cell, Corner.Far, false, bounds);
+                    SiliconCellCorner(cell, Corner.Near, bounds);
+                    SiliconCellCorner(cell, Corner.FarX, bounds);
+                    SiliconCellCorner(cell, Corner.FarY, bounds);
+                    SiliconCellCorner(cell, Corner.Far, bounds);
                     
                     SiliconIntercellular(cell, false, cell.NeighborInfos[0]?.SiliconLink ?? SiliconLink.None, bounds);
                     SiliconIntercellular(cell, true, cell.NeighborInfos[1]?.SiliconLink ?? SiliconLink.None, bounds);
@@ -619,19 +582,18 @@ namespace Kohctpyktop
                 {
                     FillMid(MetalBrush, bounds);
 
-                    // todo
                     MetalCellSide(cell, Side.Top, bounds);
                     MetalCellSide(cell, Side.Bottom, bounds);
                     MetalCellSide(cell, Side.Left, bounds);
                     MetalCellSide(cell, Side.Right, bounds);
 
-                    MetalCellCorner(cell, Corner.Near, false, bounds);
-                    MetalCellCorner(cell, Corner.FarX, false, bounds);
-                    MetalCellCorner(cell, Corner.FarY, false, bounds);
-                    MetalCellCorner(cell, Corner.Far, false, bounds);
+                    MetalCellCorner(cell, Corner.Near, bounds);
+                    MetalCellCorner(cell, Corner.FarX, bounds);
+                    MetalCellCorner(cell, Corner.FarY, bounds);
+                    MetalCellCorner(cell, Corner.Far, bounds);
                     
-                    if (cell.NeighborInfos[0]?.HasMetalLink ?? false) MetalIntercellular(cell, false, bounds);
-                    if (cell.NeighborInfos[1]?.HasMetalLink ?? false) MetalIntercellular(cell, true, bounds);
+                    if (cell.NeighborInfos[0]?.HasMetalLink ?? false) MetalIntercellular(false, bounds);
+                    if (cell.NeighborInfos[1]?.HasMetalLink ?? false) MetalIntercellular(true, bounds);
                 }
             }
         }
