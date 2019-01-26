@@ -247,6 +247,7 @@ namespace Kohctpyktop
             { SiliconTypes.PTypeHGate, SiliconTypes.PType },
             { SiliconTypes.PTypeVGate, SiliconTypes.PType }
         };
+        
         public void DeleteSilicon(int row, int col)
         {
             var cell = Level.Cells[row, col];
@@ -254,7 +255,15 @@ namespace Kohctpyktop
             foreach (var ni in cell.NeighborInfos)
             {
                 if (ni.SiliconLink != SiliconLink.None) ni.SiliconLink = SiliconLink.None;
-                if (ni.ToCell.HasGate) ni.ToCell.SiliconLayerContent = DeleteSiliconDic[ni.ToCell.SiliconLayerContent];
+                if (ni.ToCell.HasGate)
+                {
+                    ni.ToCell.SiliconLayerContent = DeleteSiliconDic[ni.ToCell.SiliconLayerContent];
+                    
+                    foreach (var innerNi in ni.ToCell.NeighborInfos)
+                    {
+                        if (innerNi.SiliconLink == SiliconLink.Slave) innerNi.SiliconLink = SiliconLink.None;
+                    }
+                }
             }
             cell.SiliconLayerContent = SiliconTypes.None;
             RebuildModel();
