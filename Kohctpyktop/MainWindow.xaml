@@ -1,0 +1,27 @@
+﻿<Window x:Class="Kohctpyktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Kohctpyktop"
+        mc:Ignorable="d" SizeToContent="WidthAndHeight"
+        Title="MainWindow" >
+    <Window.DataContext>
+        <local:Game></local:Game>
+    </Window.DataContext>
+    <Window.Resources>
+        <local:EnumBooleanConverter x:Key="EnumBooleanConverter"></local:EnumBooleanConverter>
+    </Window.Resources>
+    <StackPanel>
+        <StackPanel Margin="5" Orientation="Horizontal">
+            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" Margin="5 0">Metal</RadioButton>
+            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=PType}" Margin="5 0">P-Silicon</RadioButton>
+            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=NType}" Margin="5 0">N-Silicon</RadioButton>
+            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Via}" Margin="5 0">Via</RadioButton>
+            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetal}" Margin="5 0">Delete Metal</RadioButton>
+            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteSilicon}" Margin="5 0">Delete Silicon</RadioButton>
+            <RadioButton IsChecked="{Binding DrawMode, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteVia}" Margin="5 0">Delete Via</RadioButton>
+        </StackPanel> 
+        <Image MouseDown="ImageMouseDown" MouseMove="ImageMouseMove" MouseUp="ImageMouseUp" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top" Source="{Binding BitmapSource}"></Image>
+    </StackPanel>
+</Window>
