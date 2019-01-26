@@ -66,28 +66,114 @@ namespace Kohctpyktop
             }
         }
 
-        public (int Row, int Col) OldMouseSpot { get; set; } = (-1, -1);
+        private (int Row, int Col) _oldMouseSpot = (-1, -1);
 
+        private (int Row, int Col) _selectionStartSpot = (-1, -1);
+        private (int Row, int Col) _selectionEndSpot = (-1, -1);
+        private Point _initialDraggingPos, _currentDraggingPos;
+        private bool _selecting, _draggingSelection, _selectionVisible;
+
+        private bool SelectionVisible
+        {
+            get => _selectionVisible;
+            set
+            {
+                if (_selectionVisible == value) return;
+                _selectionVisible = value;
+                RebuildModel(); // todo - optimize
+            }
+        }
+
+        private (int Row, int Col) GetValidEndSpotPosition(int y, int x)
+        {
+            return (y <= _selectionStartSpot.Row ? y - 1 : y, x <= _selectionStartSpot.Col ? x - 1 : x);
+        }
+
+        private bool IsCursorInsideSelection(int x, int y)
+        {
+            var minX = Math.Min(_selectionEndSpot.Col, _selectionStartSpot.Col);
+            var minY = Math.Min(_selectionEndSpot.Row, _selectionStartSpot.Row);
+            var maxX = Math.Max(_selectionEndSpot.Col, _selectionStartSpot.Col);
+            var maxY = Math.Max(_selectionEndSpot.Row, _selectionStartSpot.Row);
+
+            return x >= minX && x <= maxX && y >= minY && y <= maxY;
+        }
+        
         public void ProcessMouse(Point pt)
         {
             if (pt.X < 1 || pt.Y < 1) return;
             var x = (Convert.ToInt32(pt.X) - 1) / (CellSize + 1);
             var y = (Convert.ToInt32(pt.Y) - 1) / (CellSize + 1);
-            if (OldMouseSpot.Row < 0)
+            
+            if (DrawMode == DrawMode.Selection)
             {
-                DrawSinglePoint((y, x));
-                OldMouseSpot = (y, x);
+                if (_draggingSelection)
+                {
+                    _currentDraggingPos = pt;
+                    RebuildModel();
+                }
+                else if (_selecting)
+                {
+                    _selectionEndSpot = GetValidEndSpotPosition(y + 1, x + 1);
+                    RebuildModel(); // todo: optimize
+                }
+                else if (SelectionVisible && IsCursorInsideSelection(x, y))
+                {
+                    _initialDraggingPos = _currentDraggingPos = pt;
+                    _draggingSelection = true;
+                    RebuildModel(); // todo: optimize
+                }
+                else 
+                {
+                    _selectionStartSpot = (y, x);
+                    _selectionEndSpot = (y + 1, x + 1);
+                    _selecting = true;
+                    SelectionVisible = true;
+                }
             }
             else
             {
-                DrawLine(OldMouseSpot, (y, x));
-                OldMouseSpot = (y, x);
+                if (_oldMouseSpot.Row < 0)
+                {
+                    DrawSinglePoint((y, x));
+                    _oldMouseSpot = (y, x);
+                }
+                else
+                {
+                    DrawLine(_oldMouseSpot, (y, x));
+                    _oldMouseSpot = (y, x);
+                }
             }
         }
         
         public void ReleaseMouse(Point pt)
         {
-            OldMouseSpot = (-1, -1);
+            _oldMouseSpot = (-1, -1);
+
+            if (_draggingSelection)
+            {
+                _draggingSelection = false;
+
+                var movedX = (int) Math.Round((pt.X - _initialDraggingPos.X) / (CellSize + 1));
+                var movedY = (int) Math.Round((pt.Y - _initialDraggingPos.Y) / (CellSize + 1));
+
+                _selectionStartSpot = (_selectionStartSpot.Row + movedY, _selectionStartSpot.Col + movedX);
+                _selectionEndSpot = (_selectionEndSpot.Row + movedY, _selectionEndSpot.Col + movedX);
+            }
+
+            if (_selecting)
+            {
+                _selecting = false;
+
+                if (pt.X >= 1 && pt.Y >= 1)
+                {
+                    var x = (Convert.ToInt32(pt.X) - 1) / (CellSize + 1);
+                    var y = (Convert.ToInt32(pt.Y) - 1) / (CellSize + 1);
+                    _selectionEndSpot = GetValidEndSpotPosition(y + 1, x + 1);
+                }
+            }
+
+            RebuildModel(); // todo optimize
         }
         void DrawLine((int Row, int Col) from, (int Row, int Col) to)
         {
@@ -623,12 +709,30 @@ namespace Kohctpyktop
                 }
             }
         }
+
+        private void DrawSelection()
+        {
+            if (!SelectionVisible) return;
+            
+            var minX = Math.Min(_selectionEndSpot.Col, _selectionStartSpot.Col);
+            var minY = Math.Min(_selectionEndSpot.Row, _selectionStartSpot.Row);
+            var maxX = Math.Max(_selectionEndSpot.Col, _selectionStartSpot.Col);
+            var maxY = Math.Max(_selectionEndSpot.Row, _selectionStartSpot.Row);
+
+            var ofsX = _draggingSelection ? (int) (_currentDraggingPos.X - _initialDraggingPos.X) : 0;
+            var ofsY = _draggingSelection ? (int) (_currentDraggingPos.Y - _initialDraggingPos.Y) : 0;
+            // todo - move to res section
+            Graphics.DrawRectangle(Pens.White, 
+                ofsX + minX * (CellSize + 1), ofsY + minY * (CellSize + 1),
+                (maxX - minX) * (CellSize + 1), (maxY - minY) * (CellSize + 1));
+        }
         
         public void RebuildModel()
         {
             Graphics.Clear(BgColor);
             DrawGrid();
             DrawSiliconAndMetal();
+            DrawSelection();
             BitmapImage bmpImage = new BitmapImage();
             MemoryStream stream = new MemoryStream();
             Bitmap.Save(stream, ImageFormat.Bmp);
@@ -666,6 +770,7 @@ namespace Kohctpyktop
                 case SelectedTool.Silicon: return isShiftHeld ? DrawMode.PType : DrawMode.NType;
                 case SelectedTool.DeleteMetalOrSilicon:
                     return isShiftHeld ? DrawMode.DeleteMetal : DrawMode.DeleteSilicon;
+                case SelectedTool.Selection: return DrawMode.Selection;
                 default: throw new ArgumentException("Invalid tool type");
             }
         }
@@ -677,6 +782,7 @@ namespace Kohctpyktop
             {
                 if (value == _drawMode) return;
                 _drawMode = value;
+                SelectionVisible = false;
                 OnPropertyChanged();
             }
         }

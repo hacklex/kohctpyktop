@@ -7,6 +7,6 @@ namespace Kohctpyktop
         AddOrDeleteVia,
         DeleteMetalOrSilicon,
         
-        Selection // TODO!!!
+        Selection
     }
 }

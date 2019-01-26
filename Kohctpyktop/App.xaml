@@ -11,9 +11,9 @@
                      <ControlTemplate TargetType="RadioButton" x:Key="ToolRadioButtonTemplate">
                          <Grid UseLayoutRounding="True" Margin="0,3,0,5">
                              <Grid.ColumnDefinitions>
-                                 <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
+                                 <ColumnDefinition Width="10" />
                                  <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonsAndTitles"/>
-                                 <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
+                                 <ColumnDefinition Width="10" />
                              </Grid.ColumnDefinitions>
                              <Grid.RowDefinitions>
                                  <RowDefinition Height="Auto"/>
@@ -29,6 +29,8 @@
                                         FontSize="10"
                                         TextWrapping="Wrap"
                                         TextAlignment="Center"
+                                        LineStackingStrategy="BlockLineHeight"
+                                        LineHeight="10"
                                         Text="{TemplateBinding Content}"/>
                              <Grid
                                  Grid.Row="1" 
