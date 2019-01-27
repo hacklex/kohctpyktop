@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using DColor = System.Drawing.Color;
 using DPen = System.Drawing.Pen;
 using DBrush = System.Drawing.Brush;
 using Point = System.Windows.Point;
-using Rectangle = System.Drawing.Rectangle;
 using DPoint = System.Drawing.Point;
 
 namespace Kohctpyktop
@@ -53,32 +49,34 @@ namespace Kohctpyktop
             }
         }
 
-        public (int Row, int Col) OldMouseSpot { get; set; } = (-1, -1);
+        public Position OldMouseSpot { get; set; } = Position.Invalid;
 
         public void ProcessMouse(Point pt)
         {
             if (pt.X < 1 || pt.Y < 1) return;
-            var x = (Convert.ToInt32(pt.X) - 1) / (Renderer.CellSize + 1);
-            var y = (Convert.ToInt32(pt.Y) - 1) / (Renderer.CellSize + 1);
+            var pos = Position.FromScreenPoint(pt);
+            
             if (OldMouseSpot.Row < 0)
             {
-                DrawSinglePoint((y, x));
-                OldMouseSpot = (y, x);
+                DrawSinglePoint(pos);
+                OldMouseSpot = pos;
             }
             else
             {
-                DrawLine(OldMouseSpot, (y, x));
-                OldMouseSpot = (y, x);
+                DrawLine(OldMouseSpot, pos);
+                OldMouseSpot = pos;
             }
         }
         
         public void ReleaseMouse(Point pt)
         {
-            OldMouseSpot = (-1, -1);
+            OldMouseSpot = Position.Invalid;
         }
-        void DrawLine((int Row, int Col) from, (int Row, int Col) to)
+        
+        void DrawLine(Position from, Position to)
         {
-            var args = new DrawArgs(from.Row, from.Col, to.Row, to.Col);
+            var args = new DrawArgs(from, to);
+            
             switch (DrawMode)
             {
                 case DrawMode.Metal: DrawMetal(args);
@@ -87,19 +85,19 @@ namespace Kohctpyktop
                     break;
                 case DrawMode.NType: DrawSilicon(args, false);
                     break;
-                case DrawMode.Via: PutVia(to.Row, to.Col);
+                case DrawMode.Via: PutVia(to);
                     break;
-                case DrawMode.DeleteMetal: DeleteMetal(to.Row, to.Col);
+                case DrawMode.DeleteMetal: DeleteMetal(to);
                     break;
-                case DrawMode.DeleteSilicon: DeleteSilicon(to.Row, to.Col);
+                case DrawMode.DeleteSilicon: DeleteSilicon(to);
                     break;
-                case DrawMode.DeleteVia: DeleteVia(to.Row, to.Col);
+                case DrawMode.DeleteVia: DeleteVia(to);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-        void DrawSinglePoint((int Row, int Col) pt)
+        void DrawSinglePoint(Position pt)
         {
             DrawLine(pt, pt);
         }
@@ -108,14 +106,14 @@ namespace Kohctpyktop
         {
             if (args.IsOnSingleCell)
             {
-                var cell = Level.Cells[args.FromRow, args.FromCol];
+                var cell = Level.Cells[args.From.Row, args.From.Col];
                 if (cell.HasMetal) return;
-                Level.Cells[args.FromRow, args.FromCol].HasMetal = true;
+                Level.Cells[args.From.Row, args.From.Col].HasMetal = true;
                 RebuildModel(); 
             }
             if (!args.IsBetweenNeighbors) return; //don't ruin the level!
-            var fromCell = Level.Cells[args.FromRow, args.FromCol];
-            var toCell = Level.Cells[args.ToRow, args.ToCol];
+            var fromCell = Level.Cells[args.From.Row, args.From.Col];
+            var toCell = Level.Cells[args.To.Row, args.To.Col];
             var neighborInfo = fromCell.GetNeighborInfo(toCell);
             if (fromCell.HasMetal && toCell.HasMetal && neighborInfo.HasMetalLink) return;
             fromCell.HasMetal = true;
@@ -142,7 +140,7 @@ namespace Kohctpyktop
             var indexForTarget = to.GetNeighborIndex(from);
             var rotatedIndex1 = (indexForTarget + 1) % 4;
             var rotatedIndex2 = (indexForTarget + 3) % 4; // modular arithmetics, bitches
-            //can only draw the gate into a line of at least 3 connected N cells
+            //can only draw the gate into a line of at least 3 connected silicon cells of other type
             if (hasSiliconOrGate  && (to.HasGateOf(inverted) || to.HasSilicon(inverted)) && 
                 to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
                 to.NeighborInfos[rotatedIndex2]?.SiliconLink == SiliconLink.BiDirectional) return true;
@@ -186,16 +184,16 @@ namespace Kohctpyktop
         {
             if (args.IsOnSingleCell)
             {
-                var cell = Level.Cells[args.FromRow, args.FromCol];
+                var cell = Level.Cells[args.From.Row, args.From.Col];
                 if (cell.SiliconLayerContent != SiliconTypes.None) return;
-                Level.Cells[args.FromRow, args.FromCol].SiliconLayerContent = 
+                Level.Cells[args.From.Row, args.From.Col].SiliconLayerContent = 
                     isPType ? SiliconTypes.PType : SiliconTypes.NType;
                 RebuildModel();
                 return;
             }
             if (!args.IsBetweenNeighbors) return; //don't ruin the level!
-            var fromCell = Level.Cells[args.FromRow, args.FromCol];
-            var toCell = Level.Cells[args.ToRow, args.ToCol];
+            var fromCell = Level.Cells[args.From.Row, args.From.Col];
+            var toCell = Level.Cells[args.To.Row, args.To.Col];
             var neighborInfo = fromCell.GetNeighborInfo(toCell);
             
             DrawSilicon(fromCell, toCell, neighborInfo, isPType ? SiliconType.PType : SiliconType.NType);
@@ -203,9 +201,9 @@ namespace Kohctpyktop
             RebuildModel();
         }
         
-        public void PutVia(int row, int col)
+        public void PutVia(Position pos)
         {
-            var cell = Level.Cells[row, col];
+            var cell = Level.Cells[pos.Row, pos.Col];
             if (cell.HasP)
             {
                 cell.SiliconLayerContent = SiliconTypes.PTypeVia;
@@ -217,9 +215,9 @@ namespace Kohctpyktop
                 RebuildModel();
             }
         }
-        public void DeleteMetal(int row, int col)
+        public void DeleteMetal(Position pos)
         {
-            var cell = Level.Cells[row, col];
+            var cell = Level.Cells[pos.Row, pos.Col];
             if (cell.HasMetal)
             {
                 foreach (var ni in cell.NeighborInfos)
@@ -238,9 +236,9 @@ namespace Kohctpyktop
             { SiliconTypes.PTypeVGate, SiliconTypes.PType }
         };
         
-        public void DeleteSilicon(int row, int col)
+        public void DeleteSilicon(Position pos)
         {
-            var cell = Level.Cells[row, col];
+            var cell = Level.Cells[pos.Row, pos.Col];
             if (cell.HasNoSilicon) return;
             foreach (var ni in cell.NeighborInfos)
             {
@@ -258,9 +256,9 @@ namespace Kohctpyktop
             cell.SiliconLayerContent = SiliconTypes.None;
             RebuildModel();
         }
-        public void DeleteVia(int row, int col)
+        public void DeleteVia(Position pos)
         {
-            var cell = Level.Cells[row, col];
+            var cell = Level.Cells[pos.Row, pos.Col];
             if (cell.SiliconLayerContent == SiliconTypes.PTypeVia)
             {
                 cell.SiliconLayerContent = SiliconTypes.PType;

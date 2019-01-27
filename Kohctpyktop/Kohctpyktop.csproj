@@ -68,6 +68,7 @@
     <Compile Include="Level.cs" />
     <Compile Include="NeighborInfo.cs" />
     <Compile Include="Pin.cs" />
+    <Compile Include="Position.cs" />
     <Compile Include="Renderer.cs" />
     <Compile Include="SchemeGate.cs" />
     <Compile Include="SchemeNode.cs" />

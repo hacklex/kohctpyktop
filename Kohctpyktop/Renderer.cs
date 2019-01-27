@@ -118,8 +118,7 @@ namespace Kohctpyktop
                 new Point(farHorz, nearVert));
         }
 
-        private static (Pen NonGatePen, Brush NonGateBrush, Brush GateBrush) 
-            SelectSiliconBrush(Cell cell)
+        private static (Pen NonGatePen, Brush NonGateBrush, Brush GateBrush) SelectSiliconBrush(Cell cell)
         {
             return cell.HasP || cell.HasPGate
                 ? cell.HasN || cell.HasNGate
@@ -275,9 +274,10 @@ namespace Kohctpyktop
             GenericIntercellular(cellBounds, pen, isVertical);
         }
 
-        private void MetalIntercellular(bool isVertical, Rectangle cellBounds)
+        private void MetalIntercellular(Cell cell, bool isVertical, Rectangle cellBounds)
         {
-            GenericIntercellular(cellBounds, MetalPen, isVertical);
+            if (cell.NeighborInfos[isVertical ? 1 : 0]?.HasMetalLink ?? false)
+                GenericIntercellular(cellBounds, MetalPen, isVertical);
         }
 
         private void DrawSiliconAndMetal()
@@ -332,8 +332,8 @@ namespace Kohctpyktop
                     MetalCellCorner(cell, Corner.FarY, bounds);
                     MetalCellCorner(cell, Corner.Far, bounds);
                     
-                    if (cell.NeighborInfos[0]?.HasMetalLink ?? false) MetalIntercellular(false, bounds);
-                    if (cell.NeighborInfos[1]?.HasMetalLink ?? false) MetalIntercellular(true, bounds);
+                    MetalIntercellular(cell, false, bounds);
+                    MetalIntercellular(cell, true, bounds);
                 }
             }
         }

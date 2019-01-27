@@ -20,7 +20,7 @@ namespace Kohctpyktop
         {
             if(byteHex.Length>2) throw new ArgumentException("Only for bytes");
             if (byteHex.Length < 1) throw new ArgumentException("Empty string!");
-            var alp = "0123456789abcdef";
+            const string alp = "0123456789abcdef";
             var lower = byteHex.ToLower();
             if (lower.Length == 1) return (byte) alp.IndexOf(lower[0]);
             return (byte) ( 16 * alp.IndexOf(lower[0]) +alp.IndexOf(lower[1]));

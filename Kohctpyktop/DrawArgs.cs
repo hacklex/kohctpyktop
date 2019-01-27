@@ -1,19 +1,16 @@
 ﻿namespace Kohctpyktop
 {
+    // todo: readonly struct
     public struct DrawArgs
     {
-        public int FromRow { get; set; }
-        public int FromCol { get; set; }
-        public int ToRow { get; set; }
-        public int ToCol { get; set; }
-        public bool IsOnSingleCell => (FromRow, FromCol).ManhattanDistance((ToRow, ToCol)) == 0;
-        public bool IsBetweenNeighbors => (FromRow, FromCol).ManhattanDistance((ToRow, ToCol)) == 1;
-        public DrawArgs(int fromRow, int fromCol, int toRow, int toCol)
+        public Position From { get; }
+        public Position To { get; }
+        public bool IsOnSingleCell => From.ManhattanDistance(To) == 0;
+        public bool IsBetweenNeighbors => From.ManhattanDistance(To) == 1;
+        public DrawArgs(Position from, Position to)
         {
-            FromRow = fromRow;
-            FromCol = fromCol;
-            ToRow = toRow;
-            ToCol = toCol;
+            From = from;
+            To = to;
         }
     }
 }
