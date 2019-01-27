@@ -123,36 +123,65 @@ namespace Kohctpyktop
             fromCell.GetNeighborInfo(toCell).HasMetalLink = true; 
             RebuildModel();
         }
-        static bool CanDrawP(Cell from, Cell to)
+
+        private static SiliconType InvertSilicon(SiliconType type) =>
+            type == SiliconType.NType ? SiliconType.PType : SiliconType.NType;
+
+        private static bool CanDrawSilicon(Cell from, Cell to, SiliconType siliconType)
         {
-            if (from.HasNGate) return false;
-            if (from.HasN) return false;
+            var inverted = InvertSilicon(siliconType);
+            
+            if (from.HasGateOf(inverted)) return false;
+            if (from.HasSilicon(inverted)) return false;
             var linkInfo = from.GetNeighborInfo(to);
-            if ((from.HasP || from.HasPGate) && to.HasP && linkInfo.SiliconLink != SiliconLink.BiDirectional) return true;
-            if ((from.HasP || from.HasPGate) && to.HasNoSilicon) return true;
+
+            var hasSiliconOrGate = from.HasGateOf(siliconType) || from.HasSilicon(siliconType);
+            
+            if (hasSiliconOrGate && to.HasSilicon(siliconType) && linkInfo.SiliconLink != SiliconLink.BiDirectional) return true;
+            if (hasSiliconOrGate && to.HasNoSilicon) return true;
             var indexForTarget = to.GetNeighborIndex(from);
             var rotatedIndex1 = (indexForTarget + 1) % 4;
             var rotatedIndex2 = (indexForTarget + 3) % 4; // modular arithmetics, bitches
             //can only draw the gate into a line of at least 3 connected N cells
-            if ((from.HasP || from.HasPGate)  && (to.HasN || to.HasNGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
+            if (hasSiliconOrGate  && (to.HasGateOf(inverted) || to.HasSilicon(inverted)) && 
+                to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
                 to.NeighborInfos[rotatedIndex2]?.SiliconLink == SiliconLink.BiDirectional) return true;
             return false;
         }
-        static bool CanDrawN(Cell from, Cell to)
+
+        private static SiliconTypes ConvertSiliconType(SiliconType type) =>
+            type == SiliconType.NType ? SiliconTypes.NType : SiliconTypes.PType;
+        
+        private static SiliconTypes ConvertSiliconGateType(SiliconType type, bool isVerticalGate) =>
+            type == SiliconType.NType 
+                ? isVerticalGate ? SiliconTypes.NTypeVGate : SiliconTypes.NTypeHGate 
+                : isVerticalGate ? SiliconTypes.PTypeVGate : SiliconTypes.PTypeHGate;
+
+        private static void DrawSilicon(Cell from, Cell to, NeighborInfo neighborInfo, SiliconType siliconType)
         {
-            if (from.HasPGate) return false;
-            if (from.HasP) return false;
-            var linkInfo = from.GetNeighborInfo(to);
-            if ((from.HasN || from.HasNGate) && to.HasN && linkInfo.SiliconLink != SiliconLink.BiDirectional) return true;
-            if ((from.HasN || from.HasNGate) && to.HasNoSilicon) return true;
-            var indexForTarget = to.GetNeighborIndex(from);
-            var rotatedIndex1 = (indexForTarget + 1) % 4;
-            var rotatedIndex2 = (indexForTarget + 3) % 4; // modular arithmetics, bitches
-            //can only draw the gate into a line of at least 3 connected N cells
-            if ((from.HasN || from.HasNGate) && (to.HasP || to.HasPGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
-                to.NeighborInfos[rotatedIndex2]?.SiliconLink == SiliconLink.BiDirectional) return true;
-            return false;
+            var inverted = InvertSilicon(siliconType);
+            
+            if (CanDrawSilicon(from, to, siliconType))
+            {
+                if (to.HasNoSilicon)
+                {
+                    to.SiliconLayerContent = ConvertSiliconType(siliconType);
+                    neighborInfo.SiliconLink = SiliconLink.BiDirectional;
+                }
+                else if (to.HasSilicon(siliconType))
+                {
+                    neighborInfo.SiliconLink = SiliconLink.BiDirectional;
+                }
+                else if (to.HasSilicon(inverted) || to.HasGateOf(inverted))
+                {
+                    //the gate direction is perpendicular to the link direction
+                    to.SiliconLayerContent = ConvertSiliconGateType(inverted, to.IsHorizontalNeighborOf(from));
+                    neighborInfo.SiliconLink = SiliconLink.Master; //from cell is the master cell
+                }
+                else throw new InvalidOperationException("You missed a case here!");
+            }
         }
+        
         public void DrawSilicon(DrawArgs args, bool isPType)
         {
             if (args.IsOnSingleCell)
@@ -168,55 +197,12 @@ namespace Kohctpyktop
             var fromCell = Level.Cells[args.FromRow, args.FromCol];
             var toCell = Level.Cells[args.ToRow, args.ToCol];
             var neighborInfo = fromCell.GetNeighborInfo(toCell);
-            if (isPType && CanDrawP(fromCell, toCell))
-            {
-                if (toCell.HasNoSilicon)
-                {
-                    toCell.SiliconLayerContent = SiliconTypes.PType;
-                    neighborInfo.SiliconLink = SiliconLink.BiDirectional;
-                }
-                else if (toCell.HasP)
-                {
-                    neighborInfo.SiliconLink = SiliconLink.BiDirectional;
-                }
-                else if (toCell.HasN || toCell.HasNGate)
-                {
-                    //the gate direction is perpendicular to the link direction
-                    toCell.SiliconLayerContent = toCell.IsHorizontalNeighborOf(fromCell)
-                        ? SiliconTypes.NTypeVGate : SiliconTypes.NTypeHGate;
-                    neighborInfo.SiliconLink = SiliconLink.Master; //from cell is the master cell
-                }
-                else throw new InvalidOperationException("You missed a case here!");
-                RebuildModel();
-                return;
-            }
-            if (!isPType && CanDrawN(fromCell, toCell))
-            {
-                if (toCell.HasNoSilicon)
-                {
-                    toCell.SiliconLayerContent = SiliconTypes.NType;
-                    neighborInfo.SiliconLink = SiliconLink.BiDirectional;
-                }
-                else if (toCell.HasN)
-                {
-                    neighborInfo.SiliconLink = SiliconLink.BiDirectional;
-                }
-                else if (toCell.HasP || toCell.HasPGate)
-                {
-                    //the gate direction is perpendicular to the link direction
-                    toCell.SiliconLayerContent = toCell.IsHorizontalNeighborOf(fromCell)
-                        ? SiliconTypes.PTypeVGate : SiliconTypes.PTypeHGate;
-                    neighborInfo.SiliconLink = SiliconLink.Master; //from cell is the master cell
-                }
-                else throw new InvalidOperationException("You missed a case here!");
-                RebuildModel();
-                return;
-            }
-
+            
+            DrawSilicon(fromCell, toCell, neighborInfo, isPType ? SiliconType.PType : SiliconType.NType);
 
             RebuildModel();
-            
         }
+        
         public void PutVia(int row, int col)
         {
             var cell = Level.Cells[row, col];

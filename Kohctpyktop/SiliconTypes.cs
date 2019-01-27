@@ -1,5 +1,6 @@
 ﻿namespace Kohctpyktop
 {
+    // todo: rename?
     /// <summary>
     /// All types of content for the silicon layer
     /// </summary>
@@ -14,5 +15,11 @@
         NTypeVGate,
         PTypeHGate,
         PTypeVGate,
+    }
+    
+    public enum SiliconType
+    {
+        PType,
+        NType
     }
 }

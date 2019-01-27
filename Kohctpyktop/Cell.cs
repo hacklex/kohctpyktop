@@ -18,6 +18,10 @@ namespace Kohctpyktop
                                 SiliconLayerContent == SiliconTypes.PTypeVGate;
         public bool HasNGate => SiliconLayerContent == SiliconTypes.NTypeVGate ||
                                 SiliconLayerContent == SiliconTypes.NTypeHGate;
+
+        public bool HasSilicon(SiliconType type) => type == SiliconType.NType ? HasN : HasP;
+        public bool HasGateOf(SiliconType type) => type == SiliconType.NType ? HasNGate : HasPGate;
+        
         /// <summary>
         /// true, if the silicon layer of the cell is the gate slave cell
         /// </summary>
