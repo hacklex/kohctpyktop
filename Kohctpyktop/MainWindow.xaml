@@ -85,6 +85,8 @@
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
                          Tag="{StaticResource DeleteToolHolder}"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
+            
+            <Button Click="LoadFile">Load from file</Button>
         </StackPanel>
     </DockPanel>
 </Window>

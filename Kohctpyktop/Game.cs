@@ -150,7 +150,7 @@ namespace Kohctpyktop
         private static SiliconTypes ConvertSiliconType(SiliconType type) =>
             type == SiliconType.NType ? SiliconTypes.NType : SiliconTypes.PType;
         
-        private static SiliconTypes ConvertSiliconGateType(SiliconType type, bool isVerticalGate) =>
+        public static SiliconTypes ConvertSiliconGateType(SiliconType type, bool isVerticalGate) =>
             type == SiliconType.NType 
                 ? isVerticalGate ? SiliconTypes.NTypeVGate : SiliconTypes.NTypeHGate 
                 : isVerticalGate ? SiliconTypes.PTypeVGate : SiliconTypes.PTypeHGate;
@@ -361,6 +361,12 @@ namespace Kohctpyktop
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
+
+        public void LoadJson(string json)
+        {
+            Level.LoadJson(json);
+            RebuildModel();
+        }
     }
      
 }

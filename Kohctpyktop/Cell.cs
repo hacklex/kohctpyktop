@@ -14,6 +14,7 @@ namespace Kohctpyktop
         public bool HasVia => SiliconLayerContent == SiliconTypes.PTypeVia || SiliconLayerContent == SiliconTypes.NTypeVia;
         public bool IsBaseP => HasP || HasPGate;
         public bool IsBaseN => HasN || HasNGate;
+        public SiliconType? Base => IsBaseP ? SiliconType.PType : IsBaseN ? (SiliconType?) SiliconType.NType : null;
         public bool HasPGate => SiliconLayerContent == SiliconTypes.PTypeHGate ||
                                 SiliconLayerContent == SiliconTypes.PTypeVGate;
         public bool HasNGate => SiliconLayerContent == SiliconTypes.NTypeVGate ||
