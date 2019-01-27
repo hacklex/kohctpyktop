@@ -280,10 +280,10 @@ namespace Kohctpyktop
             GenericIntercellular(cellBounds, MetalPen, isVertical);
         }
 
-        void DrawSiliconAndMetal()
+        private void DrawSiliconAndMetal()
         {
-            for (int i = 0; i < _level.Height; i++)
-            for (int j = 0; j < _level.Width; j++)
+            for (var i = 0; i < _level.Height; i++)
+            for (var j = 0; j < _level.Width; j++)
             {
                 var cell = _level.Cells[i, j];
                 var bounds = GetCellBounds(j, i);

@@ -125,31 +125,31 @@ namespace Kohctpyktop
         }
         static bool CanDrawP(Cell from, Cell to)
         {
-            if (from.HasGate) return false;
+            if (from.HasNGate) return false;
             if (from.HasN) return false;
             var linkInfo = from.GetNeighborInfo(to);
-            if (from.HasP && to.HasP && linkInfo.SiliconLink != SiliconLink.BiDirectional) return true;
-            if (from.HasP && to.HasNoSilicon) return true;
+            if ((from.HasP || from.HasPGate) && to.HasP && linkInfo.SiliconLink != SiliconLink.BiDirectional) return true;
+            if ((from.HasP || from.HasPGate) && to.HasNoSilicon) return true;
             var indexForTarget = to.GetNeighborIndex(from);
             var rotatedIndex1 = (indexForTarget + 1) % 4;
             var rotatedIndex2 = (indexForTarget + 3) % 4; // modular arithmetics, bitches
             //can only draw the gate into a line of at least 3 connected N cells
-            if (from.HasP && (to.HasN || to.HasNGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
+            if ((from.HasP || from.HasPGate)  && (to.HasN || to.HasNGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
                 to.NeighborInfos[rotatedIndex2]?.SiliconLink == SiliconLink.BiDirectional) return true;
             return false;
         }
         static bool CanDrawN(Cell from, Cell to)
         {
-            if (from.HasGate) return false;
+            if (from.HasPGate) return false;
             if (from.HasP) return false;
             var linkInfo = from.GetNeighborInfo(to);
-            if (from.HasN && to.HasN && linkInfo.SiliconLink != SiliconLink.BiDirectional) return true;
-            if (from.HasN && to.HasNoSilicon) return true;
+            if ((from.HasN || from.HasNGate) && to.HasN && linkInfo.SiliconLink != SiliconLink.BiDirectional) return true;
+            if ((from.HasN || from.HasNGate) && to.HasNoSilicon) return true;
             var indexForTarget = to.GetNeighborIndex(from);
             var rotatedIndex1 = (indexForTarget + 1) % 4;
             var rotatedIndex2 = (indexForTarget + 3) % 4; // modular arithmetics, bitches
             //can only draw the gate into a line of at least 3 connected N cells
-            if (from.HasN && (to.HasP || to.HasPGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
+            if ((from.HasN || from.HasNGate) && (to.HasP || to.HasPGate) && to.NeighborInfos[rotatedIndex1]?.SiliconLink == SiliconLink.BiDirectional &&
                 to.NeighborInfos[rotatedIndex2]?.SiliconLink == SiliconLink.BiDirectional) return true;
             return false;
         }

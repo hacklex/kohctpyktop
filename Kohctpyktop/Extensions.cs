@@ -28,10 +28,11 @@ namespace Kohctpyktop
 
         public static void DrawLineEx(this Graphics g, Pen p, float x1, float y1, float x2, float y2)
         {
+            var old = g.CompositingQuality;
             g.CompositingQuality = CompositingQuality.AssumeLinear;
             g.DrawLine(p, x1, y1, x2, y2);
             g.DrawLine(p, x2, y2, x1, y1);
-            g.CompositingQuality = CompositingQuality.HighQuality;
+            g.CompositingQuality = old;
         }
         public static Color AsDColor(this string hex)
         {
