@@ -71,10 +71,10 @@ namespace Kohctpyktop
                     case Key.D2:
                         model.SelectedTool = SelectedTool.Metal;
                         break;
-                    // todo: selection
-                    case Key.D4:
+                    case Key.D3:
                         model.SelectedTool = SelectedTool.AddOrDeleteVia;
                         break;
+                    // todo: selection
                     case Key.D5:
                         model.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
                         break;

@@ -32,13 +32,13 @@
                 <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#80FFFFFF"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
-        <local:ToolInfoHolder x:Key="SelectionToolHolder" Index="3">
+        <local:ToolInfoHolder x:Key="SelectionToolHolder" Index="4">
             <local:ToolInfoHolder.Icon>
                 <Path Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#cccccc"
                       RenderOptions.EdgeMode="Aliased"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
-        <local:ToolInfoHolder x:Key="ViaToolHolder" Index="4">
+        <local:ToolInfoHolder x:Key="ViaToolHolder" Index="3">
             <local:ToolInfoHolder.Icon>
                 <Grid>
                     <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
@@ -76,12 +76,12 @@
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" 
                          Tag="{StaticResource MetalToolHolder}"
                          Content="METAL"/>
-            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Selection}" 
-                         Tag="{StaticResource SelectionToolHolder}"
-                         Content="SELECT" IsEnabled="False"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=AddOrDeleteVia}"
                          Tag="{StaticResource ViaToolHolder}"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}"/>
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Selection}" 
+                         Tag="{StaticResource SelectionToolHolder}"
+                         Content="SELECT" IsEnabled="False"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
                          Tag="{StaticResource DeleteToolHolder}"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
