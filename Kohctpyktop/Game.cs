@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Media.Imaging;
-using DColor = System.Drawing.Color;
-using DPen = System.Drawing.Pen;
-using DBrush = System.Drawing.Brush;
-using Point = System.Windows.Point;
-using DPoint = System.Drawing.Point;
-
+using Point = System.Windows.Point; 
 namespace Kohctpyktop
 {
     public class Game : INotifyPropertyChanged, IDisposable
@@ -67,7 +63,55 @@ namespace Kohctpyktop
                 OldMouseSpot = pos;
             }
         }
-        
+
+        public (List<SchemeNode> nodes, List<SchemeGate> gates) BuildTopology()
+        {
+            var nodes = new List<SchemeNode>();
+            var gates = new List<SchemeGate>();
+
+            void FloodFill(ElementaryPlaceLink initialPlace, SchemeNode baseNode)
+            {
+                if (!initialPlace.Cell.HasMetal && initialPlace.IsMetalLayer) return; //via dead end cases
+                if (!initialPlace.Cell.HasN && !initialPlace.Cell.HasP && !initialPlace.IsMetalLayer) return;
+                var isCurrentlyOnMetal = initialPlace.IsMetalLayer;
+                var currentCell = initialPlace.Cell;
+                var currentNode = baseNode;
+                if (baseNode.AssociatedPlaces.Any(p => p.IsMetalLayer == isCurrentlyOnMetal && p.Cell == currentCell))
+                    return; //we've been there already, it seems
+                baseNode.AssociatedPlaces.Add(initialPlace);
+                initialPlace.Cell.NeighborInfos.Where(q => (q.HasMetalLink && isCurrentlyOnMetal) 
+                    || (q.SiliconLink == SiliconLink.BiDirectional && !isCurrentlyOnMetal))
+                    .ToList().ForEach(ni => FloodFill(new ElementaryPlaceLink(ni.ToCell, isCurrentlyOnMetal), currentNode));
+                if (initialPlace.Cell.HasVia)
+                    FloodFill(new ElementaryPlaceLink(initialPlace.Cell, !initialPlace.IsMetalLayer), baseNode);
+            }
+            
+            for (int i = 0; i < Level.Height; i++)
+                for (int j = 0; j < Level.Width; j++)
+                    if (Level.Cells[i, j].HasGate)
+                    {
+                        var signalNodes = Level.Cells[i, j].NeighborInfos //TODO: check if it really should be Slave, not Master, below:
+                            .Where(q => q.SiliconLink == SiliconLink.Slave).Select(q =>
+                                new SchemeNode { AssociatedPlaces = { new ElementaryPlaceLink(q.ToCell, false) } }).ToList();
+                        var gatePowerNodes = Level.Cells[i, j].NeighborInfos
+                            .Where(q => q.SiliconLink == SiliconLink.BiDirectional).Select(q =>
+                                new SchemeNode { AssociatedPlaces = { new ElementaryPlaceLink(q.ToCell, false) } }).ToList();
+                        foreach (var node in signalNodes.Concat(gatePowerNodes))
+                        {
+                            FloodFill(node.AssociatedPlaces[0], node);
+                            nodes.Add(node);
+                        }
+                        gates.Add(new SchemeGate
+                        {
+                            GateInputs = signalNodes,
+                            GatePowerNodes = gatePowerNodes,
+                            IsInversionGate = Level.Cells[i,j].IsBaseP, //TODO: check if it really should be IsBaseP, not IsBaseN
+                        });
+                        
+                    }
+            return (nodes, gates);
+        }
+
         public void ReleaseMouse(Point pt)
         {
             OldMouseSpot = Position.Invalid;

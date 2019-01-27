@@ -64,6 +64,7 @@
     <Compile Include="Controls\BeveledSquare.cs" />
     <Compile Include="DrawArgs.cs" />
     <Compile Include="DrawMode.cs" />
+    <Compile Include="ElementaryPlaceLink.cs" />
     <Compile Include="EnumBooleanConverter.cs" />
     <Compile Include="Level.cs" />
     <Compile Include="NeighborInfo.cs" />

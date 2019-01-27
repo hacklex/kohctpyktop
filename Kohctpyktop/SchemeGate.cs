@@ -7,19 +7,11 @@ namespace Kohctpyktop
         /// <summary>
         /// One or two inputs OR'ed 
         /// </summary>
-        public List<SchemeNode> GateInputs { get; set; }
+        public List<SchemeNode> GateInputs { get; set; } 
         /// <summary>
-        /// The special node referring to the gate slave cell
+        /// The exactly 2 nodes connected or disconnected by the gate
         /// </summary>
-        public SchemeNode GateCenterNode { get; set; }
-        /// <summary>
-        /// The node that powers the gate from top or left
-        /// </summary>
-        public SchemeNode NodeA { get; set; }
-        /// <summary>
-        /// The node that powers the gate from bottom or right
-        /// </summary>
-        public SchemeNode NodeB { get; set; }
+        public List<SchemeNode> GatePowerNodes { get; set; } 
         /// <summary>
         /// true if the gate is open if and only if the input is low (PNP)
         /// otherwise the gate is open if and only if the input is high (NPN)
