@@ -20,7 +20,9 @@ namespace Kohctpyktop
             X = x;
             Y = y;
         }
-        
+
+        public Position Shift(bool vertical, int steps) => vertical ? new Position(X, Y + steps) : new Position(X + steps, Y);
+
         public static Position Invalid { get; } = new Position(-1, -1); 
 
         public static Position FromScreenPoint(int x, int y) =>
