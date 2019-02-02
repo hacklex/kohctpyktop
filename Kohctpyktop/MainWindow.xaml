@@ -50,7 +50,7 @@
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="DeleteToolHolder" Index="5">
             <local:ToolInfoHolder.Icon>
-                <Path Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#d70000"
+                <Path Margin="0 -1 0 0" Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#d70000"
                       RenderOptions.EdgeMode="Aliased"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
