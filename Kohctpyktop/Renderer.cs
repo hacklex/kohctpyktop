@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -280,8 +281,11 @@ namespace Kohctpyktop
                 GenericIntercellular(cellBounds, MetalPen, isVertical);
         }
 
+        static readonly Font PinNameFont = new Font("Courier New", 8);
+
         private void DrawSiliconAndMetal()
         {
+            var namedCells = new List<Cell>();
             for (var i = 0; i < _level.Height; i++)
             for (var j = 0; j < _level.Width; j++)
             {
@@ -292,7 +296,6 @@ namespace Kohctpyktop
                 {
                     var (_, brush, gateBrush) = SelectSiliconBrush(cell);
                     FillMid(cell.HasGate ? gateBrush : brush, bounds);
-
                     SiliconCellSide(cell, Side.Top, bounds);
                     SiliconCellSide(cell, Side.Bottom, bounds);
                     SiliconCellSide(cell, Side.Left, bounds);
@@ -302,19 +305,21 @@ namespace Kohctpyktop
                     SiliconCellCorner(cell, Corner.FarX, bounds);
                     SiliconCellCorner(cell, Corner.FarY, bounds);
                     SiliconCellCorner(cell, Corner.Far, bounds);
-                    
+
                     SiliconIntercellular(cell, false, cell.NeighborInfos[0]?.SiliconLink ?? SiliconLink.None, bounds);
                     SiliconIntercellular(cell, true, cell.NeighborInfos[1]?.SiliconLink ?? SiliconLink.None, bounds);
-                    
+
                     if (cell.HasVia) // in original game vias displaying under metal layer
                     {
                         var viaX = bounds.X + (bounds.Width - ViaSize) / 2;
                         var viaY = bounds.Y + (bounds.Height - ViaSize) / 2;
 
                         _graphics.DrawLine(BorderPen, viaX + 1, viaY, viaX + ViaSize - 2, viaY);
-                        _graphics.DrawLine(BorderPen, viaX + 1, viaY + ViaSize - 1, viaX + ViaSize - 2, viaY + ViaSize - 1);
-                        _graphics.DrawLine(BorderPen,viaX, viaY + 1, viaX, viaY + ViaSize - 2);
-                        _graphics.DrawLine(BorderPen, viaX + ViaSize - 1, viaY + 1, viaX + ViaSize - 1, viaY + ViaSize - 2);
+                        _graphics.DrawLine(BorderPen, viaX + 1, viaY + ViaSize - 1, viaX + ViaSize - 2,
+                            viaY + ViaSize - 1);
+                        _graphics.DrawLine(BorderPen, viaX, viaY + 1, viaX, viaY + ViaSize - 2);
+                        _graphics.DrawLine(BorderPen, viaX + ViaSize - 1, viaY + 1, viaX + ViaSize - 1,
+                            viaY + ViaSize - 2);
                     }
                 }
 
@@ -326,7 +331,7 @@ namespace Kohctpyktop
                     MetalCellSide(cell, Side.Bottom, bounds);
                     MetalCellSide(cell, Side.Left, bounds);
                     MetalCellSide(cell, Side.Right, bounds);
-
+                    
                     MetalCellCorner(cell, Corner.Near, bounds);
                     MetalCellCorner(cell, Corner.FarX, bounds);
                     MetalCellCorner(cell, Corner.FarY, bounds);
@@ -335,9 +340,24 @@ namespace Kohctpyktop
                     MetalIntercellular(cell, false, bounds);
                     MetalIntercellular(cell, true, bounds);
                 }
+                if (!string.IsNullOrWhiteSpace(cell.LockedName))
+                {
+                    namedCells.Add(cell);
+                }
+            }
+            foreach (var cell in namedCells)
+            { 
+                var bounds = GetCellBounds(cell.Col, cell.Row);
+                bounds.Inflate(CellSize, CellSize);
+                var centerX = bounds.Left + bounds.Width / 2;
+                var centerY = bounds.Top + bounds.Height / 2;
+                _graphics.FillRectangle(Brushes.WhiteSmoke, bounds);
+                var measure = _graphics.MeasureString(cell.LockedName, PinNameFont);
+                _graphics.DrawString(cell.LockedName, PinNameFont, Brushes.Black, centerX - measure.Width / 2,
+                    centerY - measure.Height / 2);
             }
         }
-        
+
         public void Render()
         {
             _graphics.Clear(BgColor);
