@@ -16,11 +16,23 @@ namespace Kohctpyktop
         private SelectedTool _selectedTool;
         private DrawMode _drawMode;
         private bool _isShiftPressed;
-        
+        private Cell _hoveredCell;
+
         public Level Level { get; }
 
         public Cell this[Position pos] => Level.Cells[pos.Y, pos.X];
         public Cell this[int row, int col] => Level.Cells[row, col];
+
+        public Cell HoveredCell
+        {
+            get => _hoveredCell;
+            set
+            {
+                if (_hoveredCell == value) return;
+                _hoveredCell = value;
+                OnPropertyChanged();
+            }
+        }
 
         public Game(Level level)
         {
@@ -49,6 +61,16 @@ namespace Kohctpyktop
         }
 
         public Position OldMouseSpot { get; set; } = Position.Invalid;
+
+        public void ProcessMouseMove(Point pt)
+        {
+            if (pt.X < 1 || pt.Y < 1) return;
+            var pos = Position.FromScreenPoint(pt);
+            if (pos.Row >= Level.Height || pos.Col >= Level.Width) return;
+            var newCell = this[pos];
+            newCell.UpdateNeighborInfoString();
+            HoveredCell = newCell;
+        }
 
         public void ProcessMouse(Point pt)
         {
@@ -417,24 +439,6 @@ namespace Kohctpyktop
             bmpImage.EndInit();
             bmpImage.Freeze();
             BitmapSource = bmpImage;
-            //if (LevelModel != null)
-            //{
-            //    var old = LevelModel;
-            //    LevelModel = null; //force rebind
-            //    LevelModel = old;
-            //    return;
-            //}
-            //var result = new List<List<Cell>>();
-            //for (var i = 0; i < Level.Cells.GetLength(0); i++)
-            //{
-            //    var row = new List<Cell>();
-            //    for (var j = 0; j < Level.Cells.GetLength(1); j++)
-            //    {
-            //        row.Add(Level.Cells[i,j]);
-            //    }
-            //    result.Add(row);
-            //}
-            //LevelModel = result;
         }
 
         private static DrawMode GetDrawMode(SelectedTool tool, bool isShiftHeld)

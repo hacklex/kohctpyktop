@@ -8,11 +8,8 @@ namespace Kohctpyktop
     {
         public int X { get; }
         public int Y { get; }
-
-        [Obsolete("Use Y")]
+        
         public int Row => Y;
-
-        [Obsolete("Use X")]
         public int Col => X;
 
         public Position(int x, int y)

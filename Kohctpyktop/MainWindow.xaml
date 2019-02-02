@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Kohctpyktop"
         mc:Ignorable="d" SizeToContent="WidthAndHeight"
-        Title="MainWindow"
+        Title="KOHCTPYKTOP II: Return of the fucking PhD"
         KeyDown="WindowKeyDown"
         KeyUp="WindowKeyUp">
     <Window.DataContext>
@@ -60,31 +60,45 @@
                                       OnTrue="{StaticResource PSiliconToolHolder}"/>
     </Window.Resources>
     <DockPanel>
-        <Image 
+        <Image DockPanel.Dock="Left" VerticalAlignment="Top"
             MouseDown="ImageMouseDown" 
             MouseMove="ImageMouseMove" 
             MouseUp="ImageMouseUp" 
-            Stretch="None" 
+            Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor"
             Source="{Binding BitmapSource}"/>
         <StackPanel Margin="5" DockPanel.Dock="Right" Grid.IsSharedSizeScope="True">
             <StackPanel.Resources>
                 <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
             </StackPanel.Resources>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
-                         Tag="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}"
+                         Tag="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}" HorizontalAlignment="Center"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" 
-                         Tag="{StaticResource MetalToolHolder}"
+                         Tag="{StaticResource MetalToolHolder}" HorizontalAlignment="Center"
                          Content="METAL"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=AddOrDeleteVia}"
-                         Tag="{StaticResource ViaToolHolder}"
+                         Tag="{StaticResource ViaToolHolder}" HorizontalAlignment="Center"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Selection}" 
-                         Tag="{StaticResource SelectionToolHolder}"
+                         Tag="{StaticResource SelectionToolHolder}" HorizontalAlignment="Center"
                          Content="SELECT" IsEnabled="False"/>
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
-                         Tag="{StaticResource DeleteToolHolder}"
+                         Tag="{StaticResource DeleteToolHolder}" HorizontalAlignment="Center"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
+            <Separator></Separator>
+            <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
+                <UniformGrid Width="100" DataContext="{Binding HoveredCell}" Columns="2" Rows="4">
+                    <TextBlock Margin="0" Padding="0">HOVERED:</TextBlock>
+                    <TextBlock>
+                        [<Run Text="{Binding Row}"/>,
+                        <Run Text="{Binding Col}"/>]
+                    </TextBlock>
+                    <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding SiliconLayerContent}"/>
+                    <TextBlock>HasMetal:</TextBlock><TextBlock Text="{Binding HasMetal}"/>
+                    <TextBlock>Links:</TextBlock><TextBlock Text="{Binding NeighborInfoString}"/>
+                </UniformGrid>
+            </StackPanel>
         </StackPanel>
     </DockPanel>
 </Window>
+
