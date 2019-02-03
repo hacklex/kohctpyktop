@@ -65,6 +65,8 @@ namespace Kohctpyktop
                 if (j < level.Width - 1) NeighborInfo.ConnectCells(level.Cells[i, j], 2, level.Cells[i, j + 1], false, SiliconLink.None);
                 if (i > 0) NeighborInfo.ConnectCells(level.Cells[i, j], 1, level.Cells[i - 1, j], false, SiliconLink.None);
                 if (i < level.Height - 1) NeighborInfo.ConnectCells(level.Cells[i, j], 3, level.Cells[i + 1, j], false, SiliconLink.None);
+                if (j < 4 || j >= level.Width - 4)
+                    level.Cells[i, j].IsLocked = true;
             }
             
             void BuildPin(Cell center)

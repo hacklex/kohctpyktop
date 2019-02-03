@@ -249,6 +249,9 @@ namespace Kohctpyktop
 
         public void DrawMetal(DrawArgs args)
         {
+            if (!this[args.From].HasMetal && this[args.From].IsLocked ||
+                !this[args.To].HasMetal && this[args.To].IsLocked)
+                return;
             if (args.IsOnSingleCell)
             {
                 var cell = Level.Cells[args.From.Row, args.From.Col];
@@ -327,6 +330,7 @@ namespace Kohctpyktop
         
         public void DrawSilicon(DrawArgs args, bool isPType)
         {
+            if (this[args.To].IsLocked || this[args.From].IsLocked) return;
             if (args.IsOnSingleCell)
             {
                 var cell = Level.Cells[args.From.Row, args.From.Col];
@@ -363,7 +367,7 @@ namespace Kohctpyktop
         public void DeleteMetal(Position pos)
         {
             var cell = Level.Cells[pos.Row, pos.Col];
-            if (cell.HasMetal)
+            if (cell.HasMetal && !cell.IsLocked)
             {
                 foreach (var ni in cell.NeighborInfos)
                 {
@@ -387,6 +391,7 @@ namespace Kohctpyktop
             if (cell.HasNoSilicon) return;
             foreach (var ni in cell.NeighborInfos)
             {
+                if (ni == null) continue;
                 if (ni.SiliconLink != SiliconLink.None) ni.SiliconLink = SiliconLink.None;
                 if (ni.ToCell.HasGate)
                 {

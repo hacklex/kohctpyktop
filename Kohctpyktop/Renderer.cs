@@ -20,8 +20,9 @@ namespace Kohctpyktop
         private static readonly Brush PGateBrush = new SolidBrush("FF860000".AsDColor());
         private static readonly Brush NGateBrush = new SolidBrush("FFEDC900".AsDColor());
         private static readonly Brush MetalBrush = new SolidBrush("80FFFFFF".AsDColor());
+        private static readonly Brush LockedRegionBrush = new SolidBrush("10000000".AsDColor());
         private static readonly Brush BorderBrush = new SolidBrush(BorderColor);
-        private static readonly Pen GridPen = new Pen(Color.FromArgb(60, Color.Black));
+        private static readonly Pen GridPen = new Pen(Color.FromArgb(40, Color.Black));
         private static readonly Pen BorderPen = new Pen(BorderBrush);
         private static readonly Pen PPen = new Pen(PBrush);
         private static readonly Pen NPen = new Pen(NBrush);
@@ -331,14 +332,20 @@ namespace Kohctpyktop
                     MetalCellSide(cell, Side.Bottom, bounds);
                     MetalCellSide(cell, Side.Left, bounds);
                     MetalCellSide(cell, Side.Right, bounds);
-                    
+
                     MetalCellCorner(cell, Corner.Near, bounds);
                     MetalCellCorner(cell, Corner.FarX, bounds);
                     MetalCellCorner(cell, Corner.FarY, bounds);
                     MetalCellCorner(cell, Corner.Far, bounds);
-                    
+
                     MetalIntercellular(cell, false, bounds);
                     MetalIntercellular(cell, true, bounds);
+                }
+                else if (cell.IsLocked)
+                {
+                    var fillBounds = bounds;
+                    fillBounds.Inflate(2, 2);
+                    FillMid(LockedRegionBrush, fillBounds);
                 }
                 if (!string.IsNullOrWhiteSpace(cell.LockedName))
                 {
