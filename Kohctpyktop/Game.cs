@@ -14,31 +14,14 @@ namespace Kohctpyktop
     {
         private readonly Renderer _renderer;
         private BitmapSource _bitmapSource;
-        private SelectedTool _selectedTool;
-        private DrawMode _drawMode;
-        private bool _isShiftPressed;
-        private Cell _hoveredCell;
 
         public Level Level { get; }
 
         public Cell this[Position pos] => Level.Cells[pos.Y, pos.X];
         public Cell this[int row, int col] => Level.Cells[row, col];
 
-        public Cell HoveredCell
-        {
-            get => _hoveredCell;
-            set
-            {
-                if (_hoveredCell == value) return;
-                _hoveredCell = value;
-                OnPropertyChanged();
-            }
-        }
-
         public Game(Level level)
         {
-            SelectedTool = SelectedTool.Silicon;
-            
             Level = level;
             _renderer = new Renderer(level);
             
@@ -48,59 +31,6 @@ namespace Kohctpyktop
         public Game() : this(Level.CreateDummy()) {}
 
         public void Dispose() => _renderer.Dispose();
-        
-        public bool IsShiftPressed
-        {
-            get => _isShiftPressed;
-            set
-            {
-                if (_isShiftPressed == value) return;
-                _isShiftPressed = value;
-                DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
-                if (DrawMode == DrawMode.NoDraw)
-                {
-                    Level.HoveredNode = IsShiftPressed
-                        ? HoveredCell.LastAssignedSiliconNode
-                        : HoveredCell.LastAssignedMetalNode;
-                    RebuildModel();
-                }
-                OnPropertyChanged();
-            }
-        }
-
-        public Position OldMouseSpot { get; set; } = Position.Invalid;
-
-        public void ProcessMouseMove(Point pt)
-        {
-            if (pt.X < 1 || pt.Y < 1) return;
-            var pos = Position.FromScreenPoint(pt);
-            if (pos.Row >= Level.Height || pos.Col >= Level.Width) return;
-            var hoveredCell = this[pos];
-            hoveredCell.UpdateNeighborInfoString();
-            HoveredCell = hoveredCell;
-            Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
-                ? hoveredCell.LastAssignedSiliconNode
-                : hoveredCell.LastAssignedMetalNode;
-            if (DrawMode == DrawMode.NoDraw)
-                RebuildModel();
-        }
-
-        public void ProcessMouse(Point pt)
-        {
-            if (pt.X < 1 || pt.Y < 1) return;
-            var pos = Position.FromScreenPoint(pt);
-            
-            if (OldMouseSpot.Row < 0)
-            {
-                DrawSinglePoint(pos);
-                OldMouseSpot = pos;
-            }
-            else
-            {
-                DrawLine(OldMouseSpot, pos);
-                OldMouseSpot = pos;
-            }
-        }
 
         public (List<SchemeNode> nodes, List<SchemeGate> gates) BuildTopology()
         {
@@ -246,41 +176,6 @@ namespace Kohctpyktop
                 });
             }
             return (nodes, gates); //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
-        }
-
-        public void ReleaseMouse(Point pt)
-        {
-            OldMouseSpot = Position.Invalid;
-        }
-        
-        void DrawLine(Position from, Position to)
-        {
-            var args = new DrawArgs(from, to);
-            
-            switch (DrawMode)
-            {
-                case DrawMode.Metal: DrawMetal(args);
-                    break;
-                case DrawMode.PType: DrawSilicon(args, true);
-                    break;
-                case DrawMode.NType: DrawSilicon(args, false);
-                    break;
-                case DrawMode.Via: PutVia(to);
-                    break;
-                case DrawMode.DeleteMetal: DeleteMetal(to);
-                    break;
-                case DrawMode.DeleteSilicon: DeleteSilicon(to);
-                    break;
-                case DrawMode.DeleteVia: DeleteVia(to);
-                    break;
-                case DrawMode.NoDraw: break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-        void DrawSinglePoint(Position pt)
-        {
-            DrawLine(pt, pt);
         }
 
         public void DrawMetal(DrawArgs args)
@@ -482,30 +377,6 @@ namespace Kohctpyktop
             BitmapSource = bmpImage;
         }
 
-        private static DrawMode GetDrawMode(SelectedTool tool, bool isShiftHeld)
-        {
-            switch (tool)
-            {
-                case SelectedTool.AddOrDeleteVia: return isShiftHeld ? DrawMode.DeleteVia : DrawMode.Via;
-                case SelectedTool.Metal: return DrawMode.Metal;
-                case SelectedTool.Silicon: return isShiftHeld ? DrawMode.PType : DrawMode.NType;
-                case SelectedTool.DeleteMetalOrSilicon: return isShiftHeld ? DrawMode.DeleteMetal : DrawMode.DeleteSilicon;
-                case SelectedTool.TopologyDebug: return DrawMode.NoDraw;
-                default: throw new ArgumentException("Invalid tool type");
-            }
-        }
-
-        public DrawMode DrawMode
-        {
-            get => _drawMode;
-            set
-            {
-                if (value == _drawMode) return;
-                _drawMode = value;
-                OnPropertyChanged();
-            }
-        }
-
         public void ClearTopologyMarkers()
         {
             if (Level == null) return;
@@ -514,21 +385,6 @@ namespace Kohctpyktop
             {
                 Level.Cells[i, j].LastAssignedMetalNode = null;
                 Level.Cells[i, j].LastAssignedSiliconNode = null;
-            }
-        }
-        public SelectedTool SelectedTool
-        {
-            get => _selectedTool;
-            set
-            {
-                if (value == _selectedTool) return;
-                _selectedTool = value;
-                DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
-                if (_selectedTool == SelectedTool.TopologyDebug)
-                    BuildTopology();
-                else
-                    ClearTopologyMarkers();
-                OnPropertyChanged();
             }
         }
 

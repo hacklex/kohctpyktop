@@ -66,6 +66,7 @@
     <Compile Include="DrawMode.cs" />
     <Compile Include="ElementaryPlaceLink.cs" />
     <Compile Include="EnumBooleanConverter.cs" />
+    <Compile Include="InputHandler.cs" />
     <Compile Include="Level.cs" />
     <Compile Include="NeighborInfo.cs" />
     <Compile Include="Pin.cs" />

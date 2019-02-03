@@ -23,9 +23,13 @@ namespace Kohctpyktop
         public MainWindow()
         {
             InitializeComponent();
+            
+            var gameInputHandler = new Game();
+            InputHandler = new InputHandler(gameInputHandler);
+            DataContext = InputHandler;
         }
-
-        private Game Model => DataContext as Game;
+        
+        public InputHandler InputHandler { get; }
 
         private void TestClick(object sender, RoutedEventArgs e)
         {
@@ -35,55 +39,52 @@ namespace Kohctpyktop
         private void ImageMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Pressed)
-                Model?.ProcessMouse(e.GetPosition((Image) sender));
+                InputHandler.ProcessMouse(e.GetPosition((Image) sender));
         }
 
         private void ImageMouseMove(object sender, MouseEventArgs e)
         {
             var pt = e.GetPosition((Image) sender);
             if (e.LeftButton == MouseButtonState.Pressed)
-                Model?.ProcessMouse(pt);
-            Model?.ProcessMouseMove(pt);
+                InputHandler.ProcessMouse(pt);
+            InputHandler.ProcessMouseMove(pt);
         }
 
         private void ImageMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Released)
-                Model?.ReleaseMouse(e.GetPosition((Image)sender));
+                InputHandler.ReleaseMouse(e.GetPosition((Image)sender));
         }
 
         private void WindowKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftShift && Model != null)
-                Model.IsShiftPressed = false;
+            if (e.Key == Key.LeftShift && InputHandler != null)
+                InputHandler.IsShiftPressed = false;
         }
 
         private void WindowKeyDown(object sender, KeyEventArgs e)
         {
-            if (Model is Game model)
+            switch (e.Key)
             {
-                switch (e.Key)
-                {
-                    case Key.LeftShift:
-                        model.IsShiftPressed = true;
-                        break;
-                    case Key.D1:
-                        model.SelectedTool = SelectedTool.Silicon;
-                        break;
-                    case Key.D2:
-                        model.SelectedTool = SelectedTool.Metal;
-                        break;
-                    case Key.D3:
-                        model.SelectedTool = SelectedTool.AddOrDeleteVia;
-                        break;
-                    // todo: selection
-                    case Key.D5:
-                        model.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
-                        break;
-                    case Key.D6:
-                        model.SelectedTool = SelectedTool.TopologyDebug;
-                        break;
-                }
+                case Key.LeftShift:
+                    InputHandler.IsShiftPressed = true;
+                    break;
+                case Key.D1:
+                    InputHandler.SelectedTool = SelectedTool.Silicon;
+                    break;
+                case Key.D2:
+                    InputHandler.SelectedTool = SelectedTool.Metal;
+                    break;
+                case Key.D3:
+                    InputHandler.SelectedTool = SelectedTool.AddOrDeleteVia;
+                    break;
+                // todo: selection
+                case Key.D5:
+                    InputHandler.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
+                    break;
+                case Key.D6:
+                    InputHandler.SelectedTool = SelectedTool.TopologyDebug;
+                    break;
             }
         }
     }
