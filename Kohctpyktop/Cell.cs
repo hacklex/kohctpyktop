@@ -53,6 +53,8 @@ namespace Kohctpyktop
         public SiliconTypes SiliconLayerContent { get; set; } 
         public bool HasMetal { get; set; }
         public string NeighborInfoString { get; private set; }
+        public SchemeNode LastAssignedMetalNode { get; set; }
+        public SchemeNode LastAssignedSiliconNode { get; set; }
 
         public void UpdateNeighborInfoString()
         {

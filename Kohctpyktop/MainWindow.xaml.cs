@@ -80,6 +80,9 @@ namespace Kohctpyktop
                     case Key.D5:
                         model.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
                         break;
+                    case Key.D6:
+                        model.SelectedTool = SelectedTool.TopologyDebug;
+                        break;
                 }
             }
         }

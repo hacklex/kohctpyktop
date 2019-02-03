@@ -17,7 +17,7 @@ namespace Kohctpyktop
         public HashSet<Pin> PowerPins { get; set; }
         public Dictionary<Pin, bool[]> PinInputs { get; set; }
         public Dictionary<Pin, bool[]> DesiredPinOutputs { get; set; }
-
+        public SchemeNode HoveredNode { get; set; }
         public static Level CreateDummy()
         {
             var powerPins = new[]

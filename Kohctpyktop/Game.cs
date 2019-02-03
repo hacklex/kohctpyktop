@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Point = System.Windows.Point; 
 namespace Kohctpyktop
@@ -47,7 +48,7 @@ namespace Kohctpyktop
         public Game() : this(Level.CreateDummy()) {}
 
         public void Dispose() => _renderer.Dispose();
-
+        
         public bool IsShiftPressed
         {
             get => _isShiftPressed;
@@ -56,6 +57,13 @@ namespace Kohctpyktop
                 if (_isShiftPressed == value) return;
                 _isShiftPressed = value;
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
+                if (DrawMode == DrawMode.NoDraw)
+                {
+                    Level.HoveredNode = IsShiftPressed
+                        ? HoveredCell.LastAssignedSiliconNode
+                        : HoveredCell.LastAssignedMetalNode;
+                    RebuildModel();
+                }
                 OnPropertyChanged();
             }
         }
@@ -67,9 +75,14 @@ namespace Kohctpyktop
             if (pt.X < 1 || pt.Y < 1) return;
             var pos = Position.FromScreenPoint(pt);
             if (pos.Row >= Level.Height || pos.Col >= Level.Width) return;
-            var newCell = this[pos];
-            newCell.UpdateNeighborInfoString();
-            HoveredCell = newCell;
+            var hoveredCell = this[pos];
+            hoveredCell.UpdateNeighborInfoString();
+            HoveredCell = hoveredCell;
+            Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+                ? hoveredCell.LastAssignedSiliconNode
+                : hoveredCell.LastAssignedMetalNode;
+            if (DrawMode == DrawMode.NoDraw)
+                RebuildModel();
         }
 
         public void ProcessMouse(Point pt)
@@ -94,6 +107,13 @@ namespace Kohctpyktop
             var nodes = new List<SchemeNode>();
             var gates = new List<SchemeGate>();
 
+            for (int i = 0; i < Level.Height; i++)
+            for (int j = 0; j < Level.Width; j++)
+            {
+                Level.Cells[i, j].LastAssignedMetalNode = null;
+                Level.Cells[i, j].LastAssignedSiliconNode = null;
+            }
+
             // Flood fill propagates the node to all cells accessible from its origin without passing thru gates
             void FloodFill(ElementaryPlaceLink origin, SchemeNode logicalNode)
             {
@@ -103,8 +123,11 @@ namespace Kohctpyktop
                 var currentNode = logicalNode;
                 if (logicalNode.AssociatedPlaces.Any(origin.IsSameAs)) return; //we've been there already, it seems
                 logicalNode.AssociatedPlaces.Add(origin);
-                origin.Cell.NeighborInfos.Where(q => q.HasMetalLink && isCurrentlyOnMetal //implicit recursive call
-                    || q.SiliconLink == SiliconLink.BiDirectional && !isCurrentlyOnMetal)
+                origin.Cell.NeighborInfos.Where(q => 
+                
+                    (q.HasMetalLink && isCurrentlyOnMetal)
+
+                    || ((q.SiliconLink == SiliconLink.BiDirectional) && !isCurrentlyOnMetal))
                     .ToList().ForEach(ni => FloodFill(new ElementaryPlaceLink(ni.ToCell, isCurrentlyOnMetal), currentNode));
                 if (origin.Cell.HasVia)
                     FloodFill(new ElementaryPlaceLink(origin.Cell, !origin.IsMetalLayer), logicalNode);
@@ -142,17 +165,20 @@ namespace Kohctpyktop
                             var signalNodes = this[pos].NeighborInfos
                                 //TODO: check if it really should be Slave, not Master, below:
                                 .Where(q => q.SiliconLink == SiliconLink.Slave) //expect one or two connections perpendicular to travel direction
-                                .Select(q => new SchemeNode { AssociatedPlaces = { new ElementaryPlaceLink(q.ToCell, false) } })
+                                .Select(q => new { Node = new SchemeNode(), initCell = q.ToCell })
                                 .ToArray(); //we generate nodes for each signal input 
-                            Array.ForEach(signalNodes, node => FloodFill(node.AssociatedPlaces[0], node)); //and floodfill them
-                            aggregateGate.GateInputs.Add(signalNodes); //and add the array to the aggregate gate's list 
+                            Array.ForEach(signalNodes, node => FloodFill(new ElementaryPlaceLink(node.initCell, false), node.Node)); //and floodfill them
+                            aggregateGate.GateInputs.Add(signalNodes.Select(q=>q.Node).ToArray()); //and add the array to the aggregate gate's list 
                         }
                         var lastGatePowerCell = this[pos]; //the cell next to the last gate cell will inevitably be the second power cell
-                        aggregateGate.GatePowerNodes = new[] { firstGatePowerCell, lastGatePowerCell }
-                            .Select(q => new SchemeNode { AssociatedPlaces = { new ElementaryPlaceLink(q, false) } }).ToList();
-                        aggregateGate.GatePowerNodes.ForEach(p => FloodFill(p.AssociatedPlaces[0], p)); //we floodfill these two nodes as well
+                        var powerNode1 = new SchemeNode();
+                        FloodFill(new ElementaryPlaceLink(firstGatePowerCell, false), powerNode1);
+                        var powerNode2 = new SchemeNode();
+                        FloodFill(new ElementaryPlaceLink(lastGatePowerCell, false), powerNode2);
                         gates.Add(aggregateGate);
-                        nodes.AddRange(aggregateGate.GatePowerNodes);
+                        nodes.Add(powerNode1);
+                        nodes.Add(powerNode2);
+                        aggregateGate.GatePowerNodes = new List<SchemeNode>{powerNode1, powerNode2};
                         aggregateGate.GateInputs.ForEach(nodes.AddRange);
                     }
 
@@ -171,11 +197,13 @@ namespace Kohctpyktop
                 foreach (var gate in gates)
                 {
                     if (gate.GatePowerNodes[0] == a || gate.GatePowerNodes[0] == b) gate.GatePowerNodes[0] = mergedNode;
-                    if (gate.GatePowerNodes[1] == a || gate.GatePowerNodes[1] == b) gate.GatePowerNodes[1] = mergedNode;
+                    if (gate.GatePowerNodes.Count > 1)
+                        if (gate.GatePowerNodes[1] == a || gate.GatePowerNodes[1] == b) gate.GatePowerNodes[1] = mergedNode;
                     foreach (var singularGateSignalArray in gate.GateInputs)
                     {
                         if (singularGateSignalArray[0] == a || singularGateSignalArray[0] == b) singularGateSignalArray[0] = mergedNode;
-                        if (singularGateSignalArray[1] == a || singularGateSignalArray[1] == b) singularGateSignalArray[1] = mergedNode;
+                        if (singularGateSignalArray.Length > 1)
+                            if(singularGateSignalArray[1] == a || singularGateSignalArray[1] == b) singularGateSignalArray[1] = mergedNode;
                     }
                 }
                 var minIndex = Math.Min(nodes.IndexOf(a), nodes.IndexOf(b));
@@ -209,7 +237,14 @@ namespace Kohctpyktop
                     MergeNodes(a, b);
                 // otherwise we are done.
             } while (!stopMerging);
-            
+            foreach (var schemeNode in nodes)
+            {
+                schemeNode.AssociatedPlaces.ForEach(p =>
+                {
+                    if (p.IsMetalLayer) p.Cell.LastAssignedMetalNode = schemeNode;
+                    else p.Cell.LastAssignedSiliconNode = schemeNode;
+                });
+            }
             return (nodes, gates); //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
         }
 
@@ -238,6 +273,7 @@ namespace Kohctpyktop
                     break;
                 case DrawMode.DeleteVia: DeleteVia(to);
                     break;
+                case DrawMode.NoDraw: break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -453,8 +489,8 @@ namespace Kohctpyktop
                 case SelectedTool.AddOrDeleteVia: return isShiftHeld ? DrawMode.DeleteVia : DrawMode.Via;
                 case SelectedTool.Metal: return DrawMode.Metal;
                 case SelectedTool.Silicon: return isShiftHeld ? DrawMode.PType : DrawMode.NType;
-                case SelectedTool.DeleteMetalOrSilicon:
-                    return isShiftHeld ? DrawMode.DeleteMetal : DrawMode.DeleteSilicon;
+                case SelectedTool.DeleteMetalOrSilicon: return isShiftHeld ? DrawMode.DeleteMetal : DrawMode.DeleteSilicon;
+                case SelectedTool.TopologyDebug: return DrawMode.NoDraw;
                 default: throw new ArgumentException("Invalid tool type");
             }
         }
@@ -470,6 +506,16 @@ namespace Kohctpyktop
             }
         }
 
+        public void ClearTopologyMarkers()
+        {
+            if (Level == null) return;
+            for (int i = 0; i < Level.Height; i++)
+            for (int j = 0; j < Level.Width; j++)
+            {
+                Level.Cells[i, j].LastAssignedMetalNode = null;
+                Level.Cells[i, j].LastAssignedSiliconNode = null;
+            }
+        }
         public SelectedTool SelectedTool
         {
             get => _selectedTool;
@@ -478,6 +524,10 @@ namespace Kohctpyktop
                 if (value == _selectedTool) return;
                 _selectedTool = value;
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
+                if (_selectedTool == SelectedTool.TopologyDebug)
+                    BuildTopology();
+                else
+                    ClearTopologyMarkers();
                 OnPropertyChanged();
             }
         }

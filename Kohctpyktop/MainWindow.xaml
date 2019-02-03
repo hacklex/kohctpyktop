@@ -48,6 +48,54 @@
                 </Grid>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
+        <local:ToolInfoHolder x:Key="TopologyDebugHolder" Index="6">
+            <local:ToolInfoHolder.Icon>
+                <Grid>
+                    <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+                    <Border Margin="0,6,-1,6" BorderBrush="Black" BorderThickness="1">
+                        <Border.Background>
+                            <DrawingBrush TileMode="Tile" Stretch="None" Viewbox="0 0 1 1" ViewboxUnits="Absolute" Viewport="0 0 4 4" ViewportUnits="Absolute">
+                                <DrawingBrush.Drawing>
+                                    <GeometryDrawing Brush="Transparent">
+                                        <GeometryDrawing.Geometry>
+                                            <GeometryGroup>
+                                                <LineGeometry StartPoint="-2 3" EndPoint="3 -2"></LineGeometry>
+                                                <LineGeometry StartPoint="-3 0" EndPoint="0 -3"></LineGeometry>
+                                                <LineGeometry StartPoint="0 5" EndPoint="5 0"></LineGeometry>
+                                            </GeometryGroup>
+                                        </GeometryDrawing.Geometry>
+                                        <GeometryDrawing.Pen>
+                                            <Pen Brush="Yellow" Thickness="1"></Pen>
+                                        </GeometryDrawing.Pen>
+                                    </GeometryDrawing>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Border.Background>
+                    </Border>
+                    <Border Margin="6,0,6,-1" BorderThickness="1,0,1,1" BorderBrush="Black" Background="#80FFFFFF"/>
+                    <Border Margin="6,0,6,-1">
+                        <Border.Background>
+                            <DrawingBrush TileMode="Tile" Stretch="None" Viewbox="0 0 1 1" ViewboxUnits="Absolute" Viewport="0 0 4 4" ViewportUnits="Absolute">
+                                <DrawingBrush.Drawing>
+                                    <GeometryDrawing Brush="Transparent">
+                                        <GeometryDrawing.Geometry>
+                                            <GeometryGroup>
+                                                <LineGeometry StartPoint="-2 -2" EndPoint="4 4"></LineGeometry>
+                                                <LineGeometry StartPoint="-2 2" EndPoint="-1 3"></LineGeometry>
+                                                <LineGeometry StartPoint="2 -2" EndPoint="3 -1"></LineGeometry>
+                                            </GeometryGroup>
+                                        </GeometryDrawing.Geometry>
+                                        <GeometryDrawing.Pen>
+                                            <Pen Brush="Blue" Thickness="1"></Pen>
+                                        </GeometryDrawing.Pen>
+                                    </GeometryDrawing>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Border.Background>
+                    </Border>
+                </Grid>
+            </local:ToolInfoHolder.Icon>
+        </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="DeleteToolHolder" Index="5">
             <local:ToolInfoHolder.Icon>
                 <Path Margin="0 -1 0 0" Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#d70000"
@@ -85,6 +133,9 @@
             <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
                          Tag="{StaticResource DeleteToolHolder}" HorizontalAlignment="Center"
                          Content="{Binding IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
+            <RadioButton IsChecked="{Binding SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=TopologyDebug}"
+                         Tag="{StaticResource TopologyDebugHolder}" HorizontalAlignment="Center"
+                         Content="TOPOLOGY"/>
             <Separator></Separator>
             <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
                 <UniformGrid Width="100" DataContext="{Binding HoveredCell}" Columns="2" Rows="4">

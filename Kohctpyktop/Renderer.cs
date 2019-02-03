@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.Serialization.Formatters;
 
 namespace Kohctpyktop
 {
@@ -21,12 +22,17 @@ namespace Kohctpyktop
         private static readonly Brush NGateBrush = new SolidBrush("FFEDC900".AsDColor());
         private static readonly Brush MetalBrush = new SolidBrush("80FFFFFF".AsDColor());
         private static readonly Brush LockedRegionBrush = new SolidBrush("10000000".AsDColor());
+        private static readonly Brush TopologyBrush = new SolidBrush("30FF0000".AsDColor());
+        private static readonly Brush TopologyMetalBrush = new SolidBrush("60FF0000".AsDColor());
+        private static readonly Brush TopologySiliconBrush = new SolidBrush("600000FF".AsDColor());
         private static readonly Brush BorderBrush = new SolidBrush(BorderColor);
         private static readonly Pen GridPen = new Pen(Color.FromArgb(40, Color.Black));
         private static readonly Pen BorderPen = new Pen(BorderBrush);
         private static readonly Pen PPen = new Pen(PBrush);
         private static readonly Pen NPen = new Pen(NBrush);
         private static readonly Pen MetalPen = new Pen(MetalBrush);
+        private static readonly Pen TopologyMetalPen = new Pen(TopologyMetalBrush);
+        private static readonly Pen TopologySiliconPen = new Pen(TopologySiliconBrush);
         
         public Bitmap Bitmap { get; }
         
@@ -347,6 +353,13 @@ namespace Kohctpyktop
                     fillBounds.Inflate(2, 2);
                     FillMid(LockedRegionBrush, fillBounds);
                 }
+                if ((cell.LastAssignedSiliconNode == _level.HoveredNode ||
+                    cell.LastAssignedMetalNode == _level.HoveredNode) && _level.HoveredNode != null)
+                {
+                    var fillBounds = bounds;
+                    fillBounds.Inflate(-1, -1);
+                    FillTopologyPlace(fillBounds, cell.LastAssignedMetalNode == _level.HoveredNode);
+                }
                 if (!string.IsNullOrWhiteSpace(cell.LockedName))
                 {
                     namedCells.Add(cell);
@@ -360,10 +373,41 @@ namespace Kohctpyktop
                 var centerY = bounds.Top + bounds.Height / 2;
                 _graphics.FillRectangle(Brushes.WhiteSmoke, bounds);
                 var measure = _graphics.MeasureString(cell.LockedName, PinNameFont);
+                if ((cell.LastAssignedSiliconNode == _level.HoveredNode ||
+                     cell.LastAssignedMetalNode == _level.HoveredNode) && _level.HoveredNode != null)
+                {
+                    var fillBounds = bounds;
+                    fillBounds.Inflate(-1, -1);
+                    FillTopologyPlace(fillBounds, cell.LastAssignedMetalNode == _level.HoveredNode);
+                }
                 _graphics.DrawString(cell.LockedName, PinNameFont, Brushes.Black, centerX - measure.Width / 2,
                     centerY - measure.Height / 2);
             }
         }
+
+        public void FillTopologyPlace(Rectangle bounds, bool metal)
+        {
+            for (int i = 0; i < Math.Max(bounds.Width, bounds.Height); i += 3)
+            {
+                if (metal)
+                {
+                    _graphics.DrawLine(TopologyMetalPen, bounds.Left + i, bounds.Top,
+                        bounds.Right, bounds.Bottom - i);
+                    if(i!=0)
+                    _graphics.DrawLine(TopologyMetalPen, bounds.Left, bounds.Top + i,
+                        bounds.Right - i, bounds.Bottom);
+                }
+                else
+                {
+                    _graphics.DrawLine(TopologySiliconPen, bounds.Right - i, bounds.Top,
+                        bounds.Left, bounds.Bottom - i);
+                    if (i != 0)
+                        _graphics.DrawLine(TopologySiliconPen, bounds.Right, bounds.Top + i,
+                            bounds.Left + i, bounds.Bottom);
+                }
+            }
+        }
+
 
         public void Render()
         {

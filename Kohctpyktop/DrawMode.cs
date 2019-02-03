@@ -2,6 +2,7 @@
 {
     public enum DrawMode
     {
+        NoDraw,
         Metal,
         PType,
         NType,
