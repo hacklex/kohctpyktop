@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Kohctpyktop.Models.Field;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Models.Topology
 {
     /// <summary>
     /// Handles groups of gates directly following each other.

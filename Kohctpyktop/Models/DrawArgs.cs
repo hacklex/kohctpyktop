@@ -1,4 +1,4 @@
-﻿namespace Kohctpyktop
+﻿namespace Kohctpyktop.Models
 {
     // todo: readonly struct
     public struct DrawArgs

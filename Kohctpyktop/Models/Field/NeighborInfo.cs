@@ -1,4 +1,4 @@
-﻿namespace Kohctpyktop
+﻿namespace Kohctpyktop.Models.Field
 {
     /// <summary>
     /// Describes the link state between two cells on all layers

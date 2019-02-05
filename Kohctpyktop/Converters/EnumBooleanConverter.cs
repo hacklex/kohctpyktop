@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Data;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Converters
 {
     public class EnumBooleanConverter : IValueConverter
     {

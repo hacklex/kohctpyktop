@@ -1,4 +1,4 @@
-﻿namespace Kohctpyktop
+﻿namespace Kohctpyktop.Models.Field
 {
     /// <summary>
     /// All types of links for the silicon layer

@@ -1,4 +1,4 @@
-﻿namespace Kohctpyktop
+﻿namespace Kohctpyktop.Models.Field
 {
     // todo: rename?
     /// <summary>

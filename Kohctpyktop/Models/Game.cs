@@ -1,20 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using Point = System.Windows.Point; 
-namespace Kohctpyktop
-{
-    public class Game : INotifyPropertyChanged, IDisposable
-    {
-        private readonly Renderer _renderer;
-        private BitmapSource _bitmapSource;
+using Kohctpyktop.Models.Field;
+using Kohctpyktop.Models.Topology;
 
+namespace Kohctpyktop.Models
+{
+    public class Game
+    {
         public Level Level { get; }
 
         public Cell this[Position pos] => Level.Cells[pos.Y, pos.X];
@@ -23,14 +16,11 @@ namespace Kohctpyktop
         public Game(Level level)
         {
             Level = level;
-            _renderer = new Renderer(level);
             
-            RebuildModel();
+            MarkModelAsChanged();
         }
         
         public Game() : this(Level.CreateDummy()) {}
-
-        public void Dispose() => _renderer.Dispose();
 
         public (List<SchemeNode> nodes, List<SchemeGate> gates) BuildTopology()
         {
@@ -188,7 +178,7 @@ namespace Kohctpyktop
                 var cell = Level.Cells[args.From.Row, args.From.Col];
                 if (cell.HasMetal) return;
                 Level.Cells[args.From.Row, args.From.Col].HasMetal = true;
-                RebuildModel(); 
+                MarkModelAsChanged(); 
             }
             if (!args.IsBetweenNeighbors) return; //don't ruin the level!
             var fromCell = Level.Cells[args.From.Row, args.From.Col];
@@ -198,7 +188,7 @@ namespace Kohctpyktop
             fromCell.HasMetal = true;
             toCell.HasMetal = true;
             fromCell.GetNeighborInfo(toCell).HasMetalLink = true; 
-            RebuildModel();
+            MarkModelAsChanged();
         }
 
         private static SiliconType InvertSilicon(SiliconType type) =>
@@ -268,7 +258,7 @@ namespace Kohctpyktop
                 if (cell.SiliconLayerContent != SiliconTypes.None) return;
                 Level.Cells[args.From.Row, args.From.Col].SiliconLayerContent = 
                     isPType ? SiliconTypes.PType : SiliconTypes.NType;
-                RebuildModel();
+                MarkModelAsChanged();
                 return;
             }
             if (!args.IsBetweenNeighbors) return; //don't ruin the level!
@@ -278,7 +268,7 @@ namespace Kohctpyktop
             
             DrawSilicon(fromCell, toCell, neighborInfo, isPType ? SiliconType.PType : SiliconType.NType);
 
-            RebuildModel();
+            MarkModelAsChanged();
         }
         
         public void PutVia(Position pos)
@@ -287,12 +277,12 @@ namespace Kohctpyktop
             if (cell.HasP)
             {
                 cell.SiliconLayerContent = SiliconTypes.PTypeVia;
-                RebuildModel();
+                MarkModelAsChanged();
             }
             else if (cell.HasN)
             {
                 cell.SiliconLayerContent = SiliconTypes.NTypeVia;
-                RebuildModel();
+                MarkModelAsChanged();
             }
         }
         public void DeleteMetal(Position pos)
@@ -305,7 +295,7 @@ namespace Kohctpyktop
                     if (ni != null) ni.HasMetalLink = false;
                 }
                 cell.HasMetal = false;
-                RebuildModel();
+                MarkModelAsChanged();
             }
         }
         private static Dictionary<SiliconTypes, SiliconTypes> DeleteSiliconDic { get; } = new Dictionary<SiliconTypes, SiliconTypes>
@@ -335,48 +325,30 @@ namespace Kohctpyktop
                 }
             }
             cell.SiliconLayerContent = SiliconTypes.None;
-            RebuildModel();
+            MarkModelAsChanged();
         }
+        
         public void DeleteVia(Position pos)
         {
             var cell = Level.Cells[pos.Row, pos.Col];
             if (cell.SiliconLayerContent == SiliconTypes.PTypeVia)
             {
                 cell.SiliconLayerContent = SiliconTypes.PType;
-                RebuildModel();
+                MarkModelAsChanged();
             }
             if (cell.SiliconLayerContent == SiliconTypes.NTypeVia)
             {
                 cell.SiliconLayerContent = SiliconTypes.NType;
-                RebuildModel();
-            }
-        }
-
-        public BitmapSource BitmapSource
-        {
-            get => _bitmapSource;
-            set
-            {
-                if (Equals(value, _bitmapSource)) return;
-                _bitmapSource = value;
-                OnPropertyChanged();
+                MarkModelAsChanged();
             }
         }
         
-        public void RebuildModel()
-        {
-            _renderer.Render();
-            
-            var bmpImage = new BitmapImage();
-            var stream = new MemoryStream();
-            _renderer.Bitmap.Save(stream, ImageFormat.Bmp);
-            bmpImage.BeginInit();
-            bmpImage.StreamSource = stream;
-            bmpImage.EndInit();
-            bmpImage.Freeze();
-            BitmapSource = bmpImage;
-        }
+        public void MarkModelAsChanged() => IsModelChanged = true;
+        public void ResetChangeMark() => IsModelChanged = false;
 
+        public bool IsModelChanged { get; private set; }
+        
+        
         public void ClearTopologyMarkers()
         {
             if (Level == null) return;
@@ -387,18 +359,6 @@ namespace Kohctpyktop
                 Level.Cells[i, j].LastAssignedSiliconNode = null;
             }
         }
-
-        #region PropertyChanged
-
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        #endregion
     }
      
 }

@@ -2,10 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-
+using Kohctpyktop.Models;
+using Kohctpyktop.Models.Field;
 using Point = System.Windows.Point;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Input
 {
     public class InputHandler : INotifyPropertyChanged
     {
@@ -49,7 +50,7 @@ namespace Kohctpyktop
                     GameModel.Level.HoveredNode = IsShiftPressed
                         ? HoveredCell.LastAssignedSiliconNode
                         : HoveredCell.LastAssignedMetalNode;
-                    GameModel.RebuildModel();
+                    GameModel.MarkModelAsChanged();
                 }
                 OnPropertyChanged();
             }
@@ -106,8 +107,6 @@ namespace Kohctpyktop
             GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
                 ? hoveredCell.LastAssignedSiliconNode
                 : hoveredCell.LastAssignedMetalNode;
-            if (DrawMode == DrawMode.NoDraw)
-                GameModel.RebuildModel();
         }
 
         public void ProcessMouse(Point pt)

@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Models
 {
     // todo: readonly struct (c#7.2)
     public struct Position

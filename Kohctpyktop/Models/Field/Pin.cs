@@ -1,4 +1,4 @@
-﻿namespace Kohctpyktop
+﻿namespace Kohctpyktop.Models.Field
 {
     /// <summary>
     /// Describes a pin, that is, input or output

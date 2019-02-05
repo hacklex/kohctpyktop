@@ -1,4 +1,4 @@
-namespace Kohctpyktop
+namespace Kohctpyktop.Input
 {
     public enum SelectedTool
     {

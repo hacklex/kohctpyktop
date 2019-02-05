@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using Kohctpyktop.Models.Topology;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Models.Field
 {
     /// <summary>
     /// Contains static level data

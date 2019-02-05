@@ -2,8 +2,9 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Windows.Data;
+using Kohctpyktop.Models.Field;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Converters
 {
     public class NeighborInfoConverter : IValueConverter
     {

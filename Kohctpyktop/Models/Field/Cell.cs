@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
+using Kohctpyktop.Models.Topology;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Models.Field
 {
     /// <summary>
     /// Describes the cell with all layers' contents

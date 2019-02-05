@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Models.Topology
 {
     public class SchemeNode
     { 
@@ -14,4 +14,4 @@ namespace Kohctpyktop
         public bool IsHigh { get; set; }
         public List<ElementaryPlaceLink> AssociatedPlaces { get; set; } = new List<ElementaryPlaceLink>();
     }
-}
+}    

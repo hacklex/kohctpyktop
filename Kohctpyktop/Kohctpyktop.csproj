@@ -59,27 +59,28 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Cell.cs" />
     <Compile Include="Controls\BeveledSquare.cs" />
     <Compile Include="Converters\BooleanChoiceConverter.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\NeighborInfoConverter.cs" />
-    <Compile Include="DrawArgs.cs" />
-    <Compile Include="DrawMode.cs" />
-    <Compile Include="ElementaryPlaceLink.cs" />
-    <Compile Include="InputHandler.cs" />
-    <Compile Include="Level.cs" />
-    <Compile Include="NeighborInfo.cs" />
-    <Compile Include="Pin.cs" />
-    <Compile Include="Position.cs" />
+    <Compile Include="Input\DrawMode.cs" />
+    <Compile Include="Input\InputHandler.cs" />
+    <Compile Include="Input\SelectedTool.cs" />
+    <Compile Include="Models\DrawArgs.cs" />
+    <Compile Include="Models\Field\Cell.cs" />
+    <Compile Include="Models\Field\Level.cs" />
+    <Compile Include="Models\Field\NeighborInfo.cs" />
+    <Compile Include="Models\Field\Pin.cs" />
+    <Compile Include="Models\Field\SiliconLink.cs" />
+    <Compile Include="Models\Field\SiliconTypes.cs" />
+    <Compile Include="Models\Game.cs" />
+    <Compile Include="Models\Position.cs" />
+    <Compile Include="Models\Topology\ElementaryPlaceLink.cs" />
+    <Compile Include="Models\Topology\SchemeGate.cs" />
+    <Compile Include="Models\Topology\SchemeNode.cs" />
     <Compile Include="Renderer.cs" />
-    <Compile Include="SchemeGate.cs" />
-    <Compile Include="SchemeNode.cs" />
-    <Compile Include="SelectedTool.cs" />
-    <Compile Include="SiliconLink.cs" />
-    <Compile Include="SiliconTypes.cs" />
-    <Compile Include="SimpleCommand.cs" />
     <Compile Include="ToolInfoHolder.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -89,7 +90,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Extensions.cs" />
-    <Compile Include="Game.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

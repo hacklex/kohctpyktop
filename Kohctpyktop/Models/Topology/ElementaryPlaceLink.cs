@@ -1,4 +1,6 @@
-﻿namespace Kohctpyktop
+﻿using Kohctpyktop.Models.Field;
+
+namespace Kohctpyktop.Models.Topology
 {
     public struct ElementaryPlaceLink
     {

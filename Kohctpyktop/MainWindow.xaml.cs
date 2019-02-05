@@ -12,6 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Kohctpyktop.Input;
+using Kohctpyktop.Models.Field;
+using Kohctpyktop.ViewModels;
 
 namespace Kohctpyktop
 {
@@ -23,43 +26,37 @@ namespace Kohctpyktop
         public MainWindow()
         {
             InitializeComponent();
-            
-            var gameInputHandler = new Game();
-            InputHandler = new InputHandler(gameInputHandler);
-            DataContext = InputHandler;
-        }
-        
-        public InputHandler InputHandler { get; }
 
-        private void TestClick(object sender, RoutedEventArgs e)
-        {
-            var lvl = new Game(Level.CreateDummy());
+            ViewModel = new MainViewModel();
+            DataContext = ViewModel;
         }
+
+        public MainViewModel ViewModel { get; }
 
         private void ImageMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Pressed)
-                InputHandler.ProcessMouse(e.GetPosition((Image) sender));
+                ViewModel.ProcessMouse(e.GetPosition((Image) sender));
         }
 
         private void ImageMouseMove(object sender, MouseEventArgs e)
         {
             var pt = e.GetPosition((Image) sender);
             if (e.LeftButton == MouseButtonState.Pressed)
-                InputHandler.ProcessMouse(pt);
-            InputHandler.ProcessMouseMove(pt);
+                ViewModel.ProcessMouse(pt);
+            ViewModel.ProcessMouseMove(pt);
         }
 
         private void ImageMouseUp(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Released)
-                InputHandler.ReleaseMouse(e.GetPosition((Image)sender));
+                ViewModel.ReleaseMouse(e.GetPosition((Image)sender));
         }
 
         private void WindowKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftShift && InputHandler != null)
-                InputHandler.IsShiftPressed = false;
+            if (e.Key == Key.LeftShift)
+                ViewModel.InputHandler.IsShiftPressed = false;
         }
 
         private void WindowKeyDown(object sender, KeyEventArgs e)
@@ -67,23 +64,23 @@ namespace Kohctpyktop
             switch (e.Key)
             {
                 case Key.LeftShift:
-                    InputHandler.IsShiftPressed = true;
+                    ViewModel.InputHandler.IsShiftPressed = true;
                     break;
                 case Key.D1:
-                    InputHandler.SelectedTool = SelectedTool.Silicon;
+                    ViewModel.InputHandler.SelectedTool = SelectedTool.Silicon;
                     break;
                 case Key.D2:
-                    InputHandler.SelectedTool = SelectedTool.Metal;
+                    ViewModel.InputHandler.SelectedTool = SelectedTool.Metal;
                     break;
                 case Key.D3:
-                    InputHandler.SelectedTool = SelectedTool.AddOrDeleteVia;
+                    ViewModel.InputHandler.SelectedTool = SelectedTool.AddOrDeleteVia;
                     break;
                 // todo: selection
                 case Key.D5:
-                    InputHandler.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
+                    ViewModel.InputHandler.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
                     break;
                 case Key.D6:
-                    InputHandler.SelectedTool = SelectedTool.TopologyDebug;
+                    ViewModel.InputHandler.SelectedTool = SelectedTool.TopologyDebug;
                     break;
             }
         }
