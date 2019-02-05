@@ -52,33 +52,9 @@ namespace Kohctpyktop
         public string LockedName { get; set; }
         public SiliconTypes SiliconLayerContent { get; set; } 
         public bool HasMetal { get; set; }
-        public string NeighborInfoString { get; private set; }
         public SchemeNode LastAssignedMetalNode { get; set; }
         public SchemeNode LastAssignedSiliconNode { get; set; }
 
-        public void UpdateNeighborInfoString()
-        {
-            var sBuilder = new StringBuilder();
-            var mBuilder = new StringBuilder();
-            foreach (var neighborInfo in NeighborInfos)
-            {
-                if (neighborInfo == null)
-                {
-                    mBuilder.Append("*");
-                    sBuilder.Append("*");
-                    continue;
-                }
-                switch (neighborInfo.SiliconLink)
-                {
-                    case SiliconLink.BiDirectional: sBuilder.Append("B"); break;
-                    case SiliconLink.Master: sBuilder.Append("M"); break;
-                    case SiliconLink.Slave: sBuilder.Append("S"); break;
-                    case SiliconLink.None: sBuilder.Append("x"); break;
-                }
-                mBuilder.Append(neighborInfo.HasMetalLink ? "1" : "0");
-            }
-            NeighborInfoString = sBuilder + "|" + mBuilder;
-        }
         /// <summary>
         /// Contains the four neighbor links for this cell, ordered LTRB.
         /// A cell with no link to the current is still its neighbor

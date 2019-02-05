@@ -10,7 +10,8 @@
         KeyUp="WindowKeyUp"
         d:DataContext="{d:DesignInstance local:InputHandler, IsDesignTimeCreatable=False}">
     <Window.Resources>
-        <local:EnumBooleanConverter x:Key="EnumBooleanConverter"></local:EnumBooleanConverter>
+        <local:EnumBooleanConverter x:Key="EnumBooleanConverter"/>
+        <local:NeighborInfoConverter x:Key="NeighborInfoConverter"/>
         <local:BooleanChoiceConverter x:Key="SiliconTypeConverter" OnFalse="SILICON (N)" OnTrue="SILICON (P)"/>
         <local:BooleanChoiceConverter x:Key="DeleteTypeConverter" OnFalse="DELETE SILICON" OnTrue="DELETE METAL"/>
         <local:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
@@ -144,7 +145,7 @@
                     </TextBlock>
                     <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding SiliconLayerContent}"/>
                     <TextBlock>HasMetal:</TextBlock><TextBlock Text="{Binding HasMetal}"/>
-                    <TextBlock>Links:</TextBlock><TextBlock Text="{Binding NeighborInfoString}"/>
+                    <TextBlock>Links:</TextBlock><TextBlock Text="{Binding Converter={StaticResource NeighborInfoConverter}}"/>
                 </UniformGrid>
             </StackPanel>
         </StackPanel>

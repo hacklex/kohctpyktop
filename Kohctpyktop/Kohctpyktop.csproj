@@ -59,13 +59,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="BooleanChoiceConverter.cs" />
     <Compile Include="Cell.cs" />
     <Compile Include="Controls\BeveledSquare.cs" />
+    <Compile Include="Converters\BooleanChoiceConverter.cs" />
+    <Compile Include="Converters\EnumBooleanConverter.cs" />
+    <Compile Include="Converters\NeighborInfoConverter.cs" />
     <Compile Include="DrawArgs.cs" />
     <Compile Include="DrawMode.cs" />
     <Compile Include="ElementaryPlaceLink.cs" />
-    <Compile Include="EnumBooleanConverter.cs" />
     <Compile Include="InputHandler.cs" />
     <Compile Include="Level.cs" />
     <Compile Include="NeighborInfo.cs" />

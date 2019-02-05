@@ -102,7 +102,6 @@ namespace Kohctpyktop
             var pos = Position.FromScreenPoint(pt);
             if (pos.Row >= GameModel.Level.Height || pos.Col >= GameModel.Level.Width) return;
             var hoveredCell = GameModel[pos];
-            hoveredCell.UpdateNeighborInfoString();
             HoveredCell = hoveredCell;
             GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
                 ? hoveredCell.LastAssignedSiliconNode
