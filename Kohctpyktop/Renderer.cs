@@ -22,7 +22,7 @@ namespace Kohctpyktop
         private static readonly Brush PGateBrush = new SolidBrush("FF860000".AsDColor());
         private static readonly Brush NGateBrush = new SolidBrush("FFEDC900".AsDColor());
         private static readonly Brush MetalBrush = new SolidBrush("80FFFFFF".AsDColor());
-        private static readonly Brush LockedRegionBrush = new SolidBrush("10000000".AsDColor());
+        private static readonly Brush LockedRegionBrush = new SolidBrush("20000000".AsDColor());
         private static readonly Brush TopologyBrush = new SolidBrush("30FF0000".AsDColor());
         private static readonly Brush TopologyMetalBrush = new SolidBrush("60FF0000".AsDColor());
         private static readonly Brush TopologySiliconBrush = new SolidBrush("600000FF".AsDColor());
@@ -351,8 +351,11 @@ namespace Kohctpyktop
                 else if (cell.IsLocked)
                 {
                     var fillBounds = bounds;
-                    fillBounds.Inflate(2, 2);
-                    FillMid(LockedRegionBrush, fillBounds);
+                    fillBounds.X--;
+                    fillBounds.Y--;
+                    fillBounds.Width++;
+                    fillBounds.Height++;
+                    _graphics.FillRectangle(LockedRegionBrush, fillBounds);
                 }
                 if ((cell.LastAssignedSiliconNode == _level.HoveredNode ||
                     cell.LastAssignedMetalNode == _level.HoveredNode) && _level.HoveredNode != null)
