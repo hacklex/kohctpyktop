@@ -131,10 +131,14 @@ namespace Kohctpyktop.Input
             var pos = Position.FromScreenPoint(pt);
             if (pos.Row >= GameModel.Level.Height || pos.Col >= GameModel.Level.Width) return;
             var hoveredCell = GameModel[pos];
-            HoveredCell = hoveredCell;
-            GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
-                ? hoveredCell.LastAssignedSiliconNode
-                : hoveredCell.LastAssignedMetalNode;
+            if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Col != HoveredCell?.Col)
+            {
+                HoveredCell = hoveredCell;
+                GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+                    ? hoveredCell.LastAssignedSiliconNode
+                    : hoveredCell.LastAssignedMetalNode;
+                GameModel.MarkModelAsChanged();
+            }
         }
 
         private void ResetSelection()

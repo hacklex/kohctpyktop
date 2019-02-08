@@ -17,6 +17,7 @@
         <converters:BooleanChoiceConverter x:Key="SiliconTypeConverter" OnFalse="SILICON (N)" OnTrue="SILICON (P)"/>
         <converters:BooleanChoiceConverter x:Key="DeleteTypeConverter" OnFalse="DELETE SILICON" OnTrue="DELETE METAL"/>
         <converters:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
+        <converters:BooleanChoiceConverter x:Key="TopologyTypeConverter" OnFalse="TOPOLOGY (METAL)" OnTrue="TOPOLOGY (SILICON)"/>
         <converters:SelectionConverter x:Key="SelectionConverter"/>
         
         <local:ToolInfoHolder x:Key="NSiliconToolHolder" Index="1">
@@ -110,12 +111,13 @@
                                       OnTrue="{StaticResource PSiliconToolHolder}"/>
     </Window.Resources>
     <DockPanel>
-        <Image DockPanel.Dock="Left" VerticalAlignment="Top"
-            MouseDown="ImageMouseDown" 
-            MouseMove="ImageMouseMove" 
-            MouseUp="ImageMouseUp" 
-            Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor"
-            Source="{Binding Field}"/>
+        <Image DockPanel.Dock="Left" VerticalAlignment="Center"
+               SnapsToDevicePixels="True"
+               MouseDown="ImageMouseDown" 
+               MouseMove="ImageMouseMove" 
+               MouseUp="ImageMouseUp" 
+               Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor"
+               Source="{Binding Field}"/>
         <StackPanel Margin="5" DockPanel.Dock="Right" Grid.IsSharedSizeScope="True">
             <StackPanel.Resources>
                 <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
@@ -137,7 +139,7 @@
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
             <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=TopologyDebug}"
                          Tag="{StaticResource TopologyDebugHolder}" HorizontalAlignment="Center"
-                         Content="TOPOLOGY"/>
+                         Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource TopologyTypeConverter}}"/>
             <Separator></Separator>
             <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
                 <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
