@@ -17,6 +17,7 @@
         <converters:BooleanChoiceConverter x:Key="SiliconTypeConverter" OnFalse="SILICON (N)" OnTrue="SILICON (P)"/>
         <converters:BooleanChoiceConverter x:Key="DeleteTypeConverter" OnFalse="DELETE SILICON" OnTrue="DELETE METAL"/>
         <converters:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
+        <converters:SelectionConverter x:Key="SelectionConverter"/>
         
         <local:ToolInfoHolder x:Key="NSiliconToolHolder" Index="1">
             <local:ToolInfoHolder.Icon>
@@ -139,15 +140,24 @@
                          Content="TOPOLOGY"/>
             <Separator></Separator>
             <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
-                <UniformGrid Width="100" DataContext="{Binding InputHandler.HoveredCell}" Columns="2" Rows="4">
-                    <TextBlock Margin="0" Padding="0">HOVERED:</TextBlock>
+                <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
+                    <TextBlock>HOVERED:</TextBlock>
                     <TextBlock>
-                        [<Run Text="{Binding Row}"/>,
-                        <Run Text="{Binding Col}"/>]
+                        [<Run Text="{Binding HoveredCell.Row}"/>,
+                        <Run Text="{Binding HoveredCell.Col}"/>]
                     </TextBlock>
-                    <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding SiliconLayerContent}"/>
-                    <TextBlock>HasMetal:</TextBlock><TextBlock Text="{Binding HasMetal}"/>
-                    <TextBlock>Links:</TextBlock><TextBlock Text="{Binding Converter={StaticResource NeighborInfoConverter}}"/>
+                    <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding HoveredCell.SiliconLayerContent}"/>
+                    <TextBlock>HasMetal:</TextBlock><TextBlock Text="{Binding HoveredCell.HasMetal}"/>
+                    <TextBlock>Links:</TextBlock><TextBlock Text="{Binding HoveredCell, Converter={StaticResource NeighborInfoConverter}}"/>
+                    <TextBlock>Selection:</TextBlock>
+                    <TextBlock>
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{StaticResource SelectionConverter}">
+                                <Binding Path="SelectionState"/>
+                                <Binding Path="Selection"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
                 </UniformGrid>
             </StackPanel>
         </StackPanel>

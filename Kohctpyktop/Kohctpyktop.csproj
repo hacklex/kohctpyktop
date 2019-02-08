@@ -63,6 +63,7 @@
     <Compile Include="Converters\BooleanChoiceConverter.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\NeighborInfoConverter.cs" />
+    <Compile Include="Converters\SelectionConverter.cs" />
     <Compile Include="Input\DrawMode.cs" />
     <Compile Include="Input\InputHandler.cs" />
     <Compile Include="Input\SelectedTool.cs" />

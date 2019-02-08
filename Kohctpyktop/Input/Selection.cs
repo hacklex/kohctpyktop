@@ -5,14 +5,14 @@ namespace Kohctpyktop.Input
 {
     public enum SelectionState { None, Selecting, HasSelection, Dragging }
     
-    public struct Selection
+    public class Selection
     {
         public Position StartCell { get; }
         public Position EndCell { get; set; }
         public int DragOffsetX { get; set; }
         public int DragOffsetY { get; set; }
         
-        public Selection(Position startCell) : this()
+        public Selection(Position startCell)
         {
             StartCell = startCell;
             EndCell = startCell;

@@ -28,5 +28,7 @@ namespace Kohctpyktop.Models
         public static Position FromScreenPoint(Point pt) => FromScreenPoint((int) pt.X, (int) pt.Y);
         
         public int ManhattanDistance(Position target) => Math.Abs(X - target.X) + Math.Abs(Y - target.Y);
+
+        public override string ToString() => $"{X},{Y}";
     }
 }

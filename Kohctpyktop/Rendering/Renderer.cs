@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using Kohctpyktop.Input;
+using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
 
 namespace Kohctpyktop.Rendering
@@ -292,102 +293,125 @@ namespace Kohctpyktop.Rendering
 
         static readonly Font PinNameFont = new Font("Courier New", 8);
 
+        private void DrawCell(RenderOpts opts, int i, int j, Position from, Position to, List<Cell> namedCells)
+        {
+            var cell = _level.Cells[i, j];
+            var bounds = GetCellBounds(j, i);
+
+            var isInXRange = j >= from.X && j < to.X;
+            var isInYRange = i >= from.Y && i < to.Y;
+
+            if (isInXRange && isInYRange)
+            {
+                bounds.Offset(opts.Selection.DragOffsetX, opts.Selection.DragOffsetY);
+            }
+
+            var isLeftSideDetached = (j == to.X || j == from.X) && isInYRange;
+            var isTopSideDetached = (i == to.Y || i == from.Y) && isInXRange;
+            var isRightSideDetached = (j == to.X - 1 || j == from.X - 1) && isInYRange;
+            var isBottomSideDetached = (i == to.Y - 1 || i == from.Y - 1) && isInXRange;
+
+            if (cell.HasN || cell.HasP || cell.HasNGate || cell.HasPGate)
+            {
+                var (_, brush, gateBrush) = SelectSiliconBrush(cell);
+                FillMid(cell.HasGate ? gateBrush : brush, bounds);
+                SiliconCellSide(cell, Side.Top, bounds, isTopSideDetached);
+                SiliconCellSide(cell, Side.Bottom, bounds, isBottomSideDetached);
+                SiliconCellSide(cell, Side.Left, bounds, isLeftSideDetached);
+                SiliconCellSide(cell, Side.Right, bounds, isRightSideDetached);
+
+                SiliconCellCorner(cell, Corner.Near, bounds, isTopSideDetached, isLeftSideDetached);
+                SiliconCellCorner(cell, Corner.FarX, bounds, isTopSideDetached, isRightSideDetached);
+                SiliconCellCorner(cell, Corner.FarY, bounds, isBottomSideDetached, isLeftSideDetached);
+                SiliconCellCorner(cell, Corner.Far, bounds, isBottomSideDetached, isRightSideDetached);
+
+                if (!isLeftSideDetached)
+                    SiliconIntercellular(cell, false, cell.NeighborInfos[0]?.SiliconLink ?? SiliconLink.None, bounds);
+                if (!isTopSideDetached)
+                    SiliconIntercellular(cell, true, cell.NeighborInfos[1]?.SiliconLink ?? SiliconLink.None, bounds);
+
+                if (cell.HasVia) // in original game vias displaying under metal layer
+                {
+                    var viaX = bounds.X + (bounds.Width - ViaSize) / 2;
+                    var viaY = bounds.Y + (bounds.Height - ViaSize) / 2;
+
+                    _graphics.DrawLine(BorderPen, viaX + 1, viaY, viaX + ViaSize - 2, viaY);
+                    _graphics.DrawLine(BorderPen, viaX + 1, viaY + ViaSize - 1, viaX + ViaSize - 2,
+                        viaY + ViaSize - 1);
+                    _graphics.DrawLine(BorderPen, viaX, viaY + 1, viaX, viaY + ViaSize - 2);
+                    _graphics.DrawLine(BorderPen, viaX + ViaSize - 1, viaY + 1, viaX + ViaSize - 1,
+                        viaY + ViaSize - 2);
+                }
+            }
+
+            if (cell.HasMetal)
+            {
+                FillMid(MetalBrush, bounds);
+
+                MetalCellSide(cell, Side.Top, bounds);
+                MetalCellSide(cell, Side.Bottom, bounds);
+                MetalCellSide(cell, Side.Left, bounds);
+                MetalCellSide(cell, Side.Right, bounds);
+
+                MetalCellCorner(cell, Corner.Near, bounds);
+                MetalCellCorner(cell, Corner.FarX, bounds);
+                MetalCellCorner(cell, Corner.FarY, bounds);
+                MetalCellCorner(cell, Corner.Far, bounds);
+
+                MetalIntercellular(cell, false, bounds);
+                MetalIntercellular(cell, true, bounds);
+            }
+            else if (cell.IsLocked)
+            {
+                var fillBounds = bounds;
+                fillBounds.X--;
+                fillBounds.Y--;
+                fillBounds.Width++;
+                fillBounds.Height++;
+                _graphics.FillRectangle(LockedRegionBrush, fillBounds);
+            }
+            if ((cell.LastAssignedSiliconNode == _level.HoveredNode ||
+                cell.LastAssignedMetalNode == _level.HoveredNode) && _level.HoveredNode != null)
+            {
+                var fillBounds = bounds;
+                fillBounds.Inflate(-1, -1);
+                FillTopologyPlace(fillBounds, cell.LastAssignedMetalNode == _level.HoveredNode);
+            }
+            if (!string.IsNullOrWhiteSpace(cell.LockedName))
+            {
+                namedCells.Add(cell);
+            }
+        }
+        
         private void DrawSiliconAndMetal(RenderOpts opts)
         {
             var namedCells = new List<Cell>();
             
-            var (from, to) = opts.Selection.ToFieldPositions();
+            var (from, to) = opts.Selection?.ToFieldPositions() ?? default((Position, Position));
             
             for (var i = 0; i < _level.Height; i++)
             for (var j = 0; j < _level.Width; j++)
             {
-                var cell = _level.Cells[i, j];
-                var bounds = GetCellBounds(j, i);
-
-                var isInXRange = j >= from.X && j < to.X;
-                var isInYRange = i >= from.Y && i < to.Y;
-
-                if (isInXRange && isInYRange)
+                if (opts.SelectionState != SelectionState.None)
                 {
-                    bounds.Offset(opts.Selection.DragOffsetX, opts.Selection.DragOffsetY);
+                    var isInXRange = j >= from.X && j < to.X;
+                    var isInYRange = i >= from.Y && i < to.Y;
+
+                    if (!isInXRange || !isInYRange) DrawCell(opts, i, j, from, to, namedCells);
                 }
-
-                var isLeftSideDetached = (j == to.X || j == from.X) && isInYRange;
-                var isTopSideDetached = (i == to.Y || i == from.Y) && isInXRange;
-                var isRightSideDetached = (j == to.X - 1 || j == from.X - 1) && isInYRange;
-                var isBottomSideDetached = (i == to.Y - 1 || i == from.Y - 1) && isInXRange;
-
-                if (cell.HasN || cell.HasP || cell.HasNGate || cell.HasPGate)
+                else DrawCell(opts, i, j, from, to, namedCells);
+            }
+            
+            // dragging cells should be rendered over
+            if (opts.SelectionState != SelectionState.None)
+            {
+                for (var i = from.Y; i < to.Y; i++)
+                for (var j = from.X; j < to.X; j++)
                 {
-                    var (_, brush, gateBrush) = SelectSiliconBrush(cell);
-                    FillMid(cell.HasGate ? gateBrush : brush, bounds);
-                    SiliconCellSide(cell, Side.Top, bounds, isTopSideDetached);
-                    SiliconCellSide(cell, Side.Bottom, bounds, isBottomSideDetached);
-                    SiliconCellSide(cell, Side.Left, bounds, isLeftSideDetached);
-                    SiliconCellSide(cell, Side.Right, bounds, isRightSideDetached);
-
-                    SiliconCellCorner(cell, Corner.Near, bounds, isTopSideDetached, isLeftSideDetached);
-                    SiliconCellCorner(cell, Corner.FarX, bounds, isTopSideDetached, isRightSideDetached);
-                    SiliconCellCorner(cell, Corner.FarY, bounds, isBottomSideDetached, isLeftSideDetached);
-                    SiliconCellCorner(cell, Corner.Far, bounds, isBottomSideDetached, isRightSideDetached);
-
-                    if (!isLeftSideDetached)
-                        SiliconIntercellular(cell, false, cell.NeighborInfos[0]?.SiliconLink ?? SiliconLink.None, bounds);
-                    if (!isTopSideDetached)
-                        SiliconIntercellular(cell, true, cell.NeighborInfos[1]?.SiliconLink ?? SiliconLink.None, bounds);
-
-                    if (cell.HasVia) // in original game vias displaying under metal layer
-                    {
-                        var viaX = bounds.X + (bounds.Width - ViaSize) / 2;
-                        var viaY = bounds.Y + (bounds.Height - ViaSize) / 2;
-
-                        _graphics.DrawLine(BorderPen, viaX + 1, viaY, viaX + ViaSize - 2, viaY);
-                        _graphics.DrawLine(BorderPen, viaX + 1, viaY + ViaSize - 1, viaX + ViaSize - 2,
-                            viaY + ViaSize - 1);
-                        _graphics.DrawLine(BorderPen, viaX, viaY + 1, viaX, viaY + ViaSize - 2);
-                        _graphics.DrawLine(BorderPen, viaX + ViaSize - 1, viaY + 1, viaX + ViaSize - 1,
-                            viaY + ViaSize - 2);
-                    }
-                }
-
-                if (cell.HasMetal)
-                {
-                    FillMid(MetalBrush, bounds);
-
-                    MetalCellSide(cell, Side.Top, bounds);
-                    MetalCellSide(cell, Side.Bottom, bounds);
-                    MetalCellSide(cell, Side.Left, bounds);
-                    MetalCellSide(cell, Side.Right, bounds);
-
-                    MetalCellCorner(cell, Corner.Near, bounds);
-                    MetalCellCorner(cell, Corner.FarX, bounds);
-                    MetalCellCorner(cell, Corner.FarY, bounds);
-                    MetalCellCorner(cell, Corner.Far, bounds);
-
-                    MetalIntercellular(cell, false, bounds);
-                    MetalIntercellular(cell, true, bounds);
-                }
-                else if (cell.IsLocked)
-                {
-                    var fillBounds = bounds;
-                    fillBounds.X--;
-                    fillBounds.Y--;
-                    fillBounds.Width++;
-                    fillBounds.Height++;
-                    _graphics.FillRectangle(LockedRegionBrush, fillBounds);
-                }
-                if ((cell.LastAssignedSiliconNode == _level.HoveredNode ||
-                    cell.LastAssignedMetalNode == _level.HoveredNode) && _level.HoveredNode != null)
-                {
-                    var fillBounds = bounds;
-                    fillBounds.Inflate(-1, -1);
-                    FillTopologyPlace(fillBounds, cell.LastAssignedMetalNode == _level.HoveredNode);
-                }
-                if (!string.IsNullOrWhiteSpace(cell.LockedName))
-                {
-                    namedCells.Add(cell);
+                    DrawCell(opts, i, j, from, to, namedCells);
                 }
             }
+
             foreach (var cell in namedCells)
             { 
                 var bounds = GetCellBounds(cell.Col, cell.Row);

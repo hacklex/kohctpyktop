@@ -96,9 +96,30 @@ namespace Kohctpyktop.Input
         }
 
         private Point _dragStartPos;
-        public SelectionState SelectionState { get; private set; }
-        public Selection Selection { get; private set; }
-        
+        private SelectionState _selectionState;
+        private Selection _selection;
+        public SelectionState SelectionState
+        {
+            get => _selectionState;
+            private set
+            {
+                if (_selectionState == value) return;
+                _selectionState = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Selection Selection
+        {
+            get => _selection;
+            private set
+            {
+                if (_selection == value) return;
+                _selection = value;
+                OnPropertyChanged();
+            }
+        }
+
         private Position _oldMouseSpot = Position.Invalid;
 
         public void ProcessMouseMove(Point pt)
@@ -116,7 +137,7 @@ namespace Kohctpyktop.Input
         private void ResetSelection()
         {
             SelectionState = SelectionState.None;
-            Selection = default(Selection);
+            Selection = null;
         }
 
         public void ProcessMouse(Point pt)
