@@ -10,6 +10,6 @@
         DeleteMetal,
         DeleteSilicon,
         DeleteVia,
-        //Soon selection!
+        Selection
     }
 }

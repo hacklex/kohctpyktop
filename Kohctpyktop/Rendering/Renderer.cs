@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Runtime.Serialization.Formatters;
+using Kohctpyktop.Input;
 using Kohctpyktop.Models.Field;
 
-namespace Kohctpyktop
+namespace Kohctpyktop.Rendering
 {
     public class Renderer : IDisposable
     {
@@ -86,10 +86,8 @@ namespace Kohctpyktop
             _graphics.FillRectangle(brush, cellBounds);
         }
 
-        private static bool IsHorizontalSide(Side side) => side == Side.Left || side == Side.Right;
         private static bool IsVerticalSide(Side side) => side == Side.Bottom || side == Side.Top;
 
-        private static bool IsSideNearToBoundsOrigin(Side side) => side == Side.Top || side == Side.Left;
         private static bool IsSideFarFromBoundsOrigin(Side side) => side == Side.Right || side == Side.Bottom;
 
         private static (Rectangle Rect, Rectangle NearToBounds, Rectangle NearToCenter) GetCellSideBounds(int originX, int originY, Side side)
@@ -150,7 +148,7 @@ namespace Kohctpyktop
             }
         }
         
-        private void SiliconCellSide(Cell cell, Side side, Rectangle cellBounds)
+        private void SiliconCellSide(Cell cell, Side side, Rectangle cellBounds, bool isSideDetached)
         {
             var (_, brush, gateBrush) = SelectSiliconBrush(cell);
 
@@ -163,8 +161,10 @@ namespace Kohctpyktop
             var (rect, nearToBounds, nearToCenter) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
             _graphics.FillRectangle(actualBrush, rect);
             
-            if (link == SiliconLink.None || hasSlaveLinkInDimension) _graphics.FillRectangle(BorderBrush, nearToBounds);
-            if (cell.HasGate && !hasSlaveLinkInDimension) _graphics.FillRectangle(BorderBrush, nearToCenter);
+            if (isSideDetached || link == SiliconLink.None || hasSlaveLinkInDimension) 
+                _graphics.FillRectangle(BorderBrush, nearToBounds);
+            if (!isSideDetached && cell.HasGate && !hasSlaveLinkInDimension)
+                _graphics.FillRectangle(BorderBrush, nearToCenter);
         }
         
         private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds)
@@ -202,7 +202,8 @@ namespace Kohctpyktop
             }
         }
 
-        private void SiliconCellCorner(Cell cell, Corner corner, Rectangle cellBounds)
+        private void SiliconCellCorner(Cell cell, Corner corner, Rectangle cellBounds, bool isVertCornerDetached, 
+            bool isHorzCornerDetached)
         {
             var (pen, _, _) = SelectSiliconBrush(cell);
 
@@ -211,8 +212,8 @@ namespace Kohctpyktop
             var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
             var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
 
-            var hasHorzLink = (horzNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
-            var hasVertLink = (vertNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
+            var hasHorzLink = !isHorzCornerDetached && (horzNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
+            var hasVertLink = !isVertCornerDetached && (vertNeigh?.SiliconLink ?? SiliconLink.None) != SiliconLink.None;
 
             GenericCellCorner(hasHorzLink, hasVertLink, pen,
                 nearToCenter, nearToBounds, nearHorzLink, nearVertLink);
@@ -282,7 +283,7 @@ namespace Kohctpyktop
 
             GenericIntercellular(cellBounds, pen, isVertical);
         }
-
+        
         private void MetalIntercellular(Cell cell, bool isVertical, Rectangle cellBounds)
         {
             if (cell.NeighborInfos[isVertical ? 1 : 0]?.HasMetalLink ?? false)
@@ -291,31 +292,49 @@ namespace Kohctpyktop
 
         static readonly Font PinNameFont = new Font("Courier New", 8);
 
-        private void DrawSiliconAndMetal()
+        private void DrawSiliconAndMetal(RenderOpts opts)
         {
             var namedCells = new List<Cell>();
+            
+            var (from, to) = opts.Selection.ToFieldPositions();
+            
             for (var i = 0; i < _level.Height; i++)
             for (var j = 0; j < _level.Width; j++)
             {
                 var cell = _level.Cells[i, j];
                 var bounds = GetCellBounds(j, i);
 
+                var isInXRange = j >= from.X && j < to.X;
+                var isInYRange = i >= from.Y && i < to.Y;
+
+                if (isInXRange && isInYRange)
+                {
+                    bounds.Offset(opts.Selection.DragOffsetX, opts.Selection.DragOffsetY);
+                }
+
+                var isLeftSideDetached = (j == to.X || j == from.X) && isInYRange;
+                var isTopSideDetached = (i == to.Y || i == from.Y) && isInXRange;
+                var isRightSideDetached = (j == to.X - 1 || j == from.X - 1) && isInYRange;
+                var isBottomSideDetached = (i == to.Y - 1 || i == from.Y - 1) && isInXRange;
+
                 if (cell.HasN || cell.HasP || cell.HasNGate || cell.HasPGate)
                 {
                     var (_, brush, gateBrush) = SelectSiliconBrush(cell);
                     FillMid(cell.HasGate ? gateBrush : brush, bounds);
-                    SiliconCellSide(cell, Side.Top, bounds);
-                    SiliconCellSide(cell, Side.Bottom, bounds);
-                    SiliconCellSide(cell, Side.Left, bounds);
-                    SiliconCellSide(cell, Side.Right, bounds);
+                    SiliconCellSide(cell, Side.Top, bounds, isTopSideDetached);
+                    SiliconCellSide(cell, Side.Bottom, bounds, isBottomSideDetached);
+                    SiliconCellSide(cell, Side.Left, bounds, isLeftSideDetached);
+                    SiliconCellSide(cell, Side.Right, bounds, isRightSideDetached);
 
-                    SiliconCellCorner(cell, Corner.Near, bounds);
-                    SiliconCellCorner(cell, Corner.FarX, bounds);
-                    SiliconCellCorner(cell, Corner.FarY, bounds);
-                    SiliconCellCorner(cell, Corner.Far, bounds);
+                    SiliconCellCorner(cell, Corner.Near, bounds, isTopSideDetached, isLeftSideDetached);
+                    SiliconCellCorner(cell, Corner.FarX, bounds, isTopSideDetached, isRightSideDetached);
+                    SiliconCellCorner(cell, Corner.FarY, bounds, isBottomSideDetached, isLeftSideDetached);
+                    SiliconCellCorner(cell, Corner.Far, bounds, isBottomSideDetached, isRightSideDetached);
 
-                    SiliconIntercellular(cell, false, cell.NeighborInfos[0]?.SiliconLink ?? SiliconLink.None, bounds);
-                    SiliconIntercellular(cell, true, cell.NeighborInfos[1]?.SiliconLink ?? SiliconLink.None, bounds);
+                    if (!isLeftSideDetached)
+                        SiliconIntercellular(cell, false, cell.NeighborInfos[0]?.SiliconLink ?? SiliconLink.None, bounds);
+                    if (!isTopSideDetached)
+                        SiliconIntercellular(cell, true, cell.NeighborInfos[1]?.SiliconLink ?? SiliconLink.None, bounds);
 
                     if (cell.HasVia) // in original game vias displaying under metal layer
                     {
@@ -413,11 +432,30 @@ namespace Kohctpyktop
         }
 
 
-        public void Render()
+        public void Render(RenderOpts opts)
         {
             _graphics.Clear(BgColor);
             DrawGrid();
-            DrawSiliconAndMetal();
+            DrawSiliconAndMetal(opts);
+            
+            if (opts.SelectionState != SelectionState.None)
+                DrawSelectionBorder(opts.Selection);
+        }
+
+        private void DrawSelectionBorder(Selection selection)
+        {
+            var (from, to) = selection.ToFieldPositions();
+
+            var width = to.X - from.X;
+            var height = to.Y - from.Y;
+
+            var realCellSize = CellSize + 1;
+
+            _graphics.DrawRectangle(Pens.White, 
+                selection.DragOffsetX + from.X * realCellSize, 
+                selection.DragOffsetY + from.Y * realCellSize, 
+                width * realCellSize,
+                height * realCellSize);
         }
 
         public void Dispose()

@@ -75,7 +75,9 @@ namespace Kohctpyktop
                 case Key.D3:
                     ViewModel.InputHandler.SelectedTool = SelectedTool.AddOrDeleteVia;
                     break;
-                // todo: selection
+                case Key.D4:
+                    ViewModel.InputHandler.SelectedTool = SelectedTool.Selection;
+                    break;
                 case Key.D5:
                     ViewModel.InputHandler.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
                     break;

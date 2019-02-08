@@ -66,6 +66,7 @@
     <Compile Include="Input\DrawMode.cs" />
     <Compile Include="Input\InputHandler.cs" />
     <Compile Include="Input\SelectedTool.cs" />
+    <Compile Include="Input\Selection.cs" />
     <Compile Include="Models\DrawArgs.cs" />
     <Compile Include="Models\Field\Cell.cs" />
     <Compile Include="Models\Field\Level.cs" />
@@ -78,7 +79,8 @@
     <Compile Include="Models\Topology\ElementaryPlaceLink.cs" />
     <Compile Include="Models\Topology\SchemeGate.cs" />
     <Compile Include="Models\Topology\SchemeNode.cs" />
-    <Compile Include="Renderer.cs" />
+    <Compile Include="Rendering\Renderer.cs" />
+    <Compile Include="Rendering\RenderOpts.cs" />
     <Compile Include="ToolInfoHolder.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">

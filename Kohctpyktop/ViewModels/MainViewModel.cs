@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models;
+using Kohctpyktop.Rendering;
 
 namespace Kohctpyktop.ViewModels
 {
@@ -59,14 +60,14 @@ namespace Kohctpyktop.ViewModels
 
         private void RedrawIfChanged()
         {
-            if (GameModel.IsModelChanged)
+            if (GameModel.IsModelChanged || InputHandler.SelectionState != SelectionState.None) // todo
                 Redraw();
             GameModel.ResetChangeMark();
         }
 
         private void Redraw()
         {
-            _renderer.Render();
+            _renderer.Render(new RenderOpts(InputHandler.SelectionState, InputHandler.Selection));
             
             var bmpImage = new BitmapImage();
             var stream = new MemoryStream();

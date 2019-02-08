@@ -33,6 +33,7 @@ namespace Kohctpyktop.Input
                 case SelectedTool.Silicon: return isShiftHeld ? DrawMode.PType : DrawMode.NType;
                 case SelectedTool.DeleteMetalOrSilicon: return isShiftHeld ? DrawMode.DeleteMetal : DrawMode.DeleteSilicon;
                 case SelectedTool.TopologyDebug: return DrawMode.NoDraw;
+                case SelectedTool.Selection: return DrawMode.Selection;
                 default: throw new ArgumentException("Invalid tool type");
             }
         }
@@ -93,9 +94,12 @@ namespace Kohctpyktop.Input
                 OnPropertyChanged();
             }
         }
-        
 
-        public Position OldMouseSpot { get; set; } = Position.Invalid;
+        private Point _dragStartPos;
+        public SelectionState SelectionState { get; private set; }
+        public Selection Selection { get; private set; }
+        
+        private Position _oldMouseSpot = Position.Invalid;
 
         public void ProcessMouseMove(Point pt)
         {
@@ -109,23 +113,67 @@ namespace Kohctpyktop.Input
                 : hoveredCell.LastAssignedMetalNode;
         }
 
+        private void ResetSelection()
+        {
+            SelectionState = SelectionState.None;
+            Selection = default(Selection);
+        }
+
         public void ProcessMouse(Point pt)
         {
+            if (DrawMode == DrawMode.Selection)
+                ProcessSelection(pt);
+            else
+                ProcessDrawing(pt);
+        }
+
+        private void ProcessSelection(Point pt)
+        {
+            var position = Position.FromScreenPoint(pt);
+            
+            switch (SelectionState)
+            {
+                case SelectionState.None:
+                    Selection = new Selection(position);
+                    SelectionState = SelectionState.Selecting;
+                    break;
+                case SelectionState.Selecting:
+                    Selection = Selection.Resize(position);
+                    break;
+                case SelectionState.HasSelection:
+                    if (Selection.Contains(position))
+                    {
+                        _dragStartPos = pt;
+                        SelectionState = SelectionState.Dragging;
+                        break;
+                    }
+                    else goto case SelectionState.None;
+                case SelectionState.Dragging:
+                    var diff = pt - _dragStartPos;
+                    Selection = Selection.Drag((int) diff.X, (int) diff.Y);
+                    break;
+            }
+        }
+
+        private void ProcessDrawing(Point pt)
+        {
+            ResetSelection();
+            
             if (pt.X < 1 || pt.Y < 1) return;
             var pos = Position.FromScreenPoint(pt);
-            
-            if (OldMouseSpot.Row < 0)
+
+            if (_oldMouseSpot.Row < 0)
             {
                 DrawSinglePoint(pos);
-                OldMouseSpot = pos;
+                _oldMouseSpot = pos;
             }
             else
             {
-                DrawLine(OldMouseSpot, pos);
-                OldMouseSpot = pos;
+                DrawLine(_oldMouseSpot, pos);
+                _oldMouseSpot = pos;
             }
         }
-        
+
         public void DrawLine(Position from, Position to)
         {
             var args = new DrawArgs(from, to);
@@ -159,7 +207,19 @@ namespace Kohctpyktop.Input
 
         public void ReleaseMouse(Point pt)
         {
-            OldMouseSpot = Position.Invalid;
+            _oldMouseSpot = Position.Invalid;
+
+            switch (SelectionState)
+            {
+                case SelectionState.Selecting:
+                    SelectionState = SelectionState.HasSelection;
+                    break;
+                case SelectionState.Dragging:
+                    // todo
+                    SelectionState = SelectionState.HasSelection;
+                    Selection = Selection.Drag(0, 0);
+                    break;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

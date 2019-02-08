@@ -130,7 +130,7 @@
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}"/>
             <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Selection}" 
                          Tag="{StaticResource SelectionToolHolder}" HorizontalAlignment="Center"
-                         Content="SELECT" IsEnabled="False"/>
+                         Content="SELECT"/>
             <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
                          Tag="{StaticResource DeleteToolHolder}" HorizontalAlignment="Center"
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
