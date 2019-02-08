@@ -1,11 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
+using Avalonia;
 using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
 using Kohctpyktop.Rendering;
-using Point = System.Windows.Point;
 
 namespace Kohctpyktop.Input
 {
@@ -134,7 +133,7 @@ namespace Kohctpyktop.Input
             if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Col != HoveredCell?.Col)
             {
                 HoveredCell = hoveredCell;
-                GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+                GameModel.Level.HoveredNode = IsShiftPressed
                     ? hoveredCell.LastAssignedSiliconNode
                     : hoveredCell.LastAssignedMetalNode;
                 GameModel.MarkModelAsChanged();

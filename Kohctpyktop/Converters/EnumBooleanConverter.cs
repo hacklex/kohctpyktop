@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Data;
+using Avalonia;
+using Avalonia.Data.Converters;
 
 namespace Kohctpyktop.Converters
 {
@@ -11,10 +11,10 @@ namespace Kohctpyktop.Converters
         {
             string parameterString = parameter as string;
             if (parameterString == null)
-                return DependencyProperty.UnsetValue;
+                return AvaloniaProperty.UnsetValue;
 
             if (Enum.IsDefined(value.GetType(), value) == false)
-                return DependencyProperty.UnsetValue;
+                return AvaloniaProperty.UnsetValue;
 
             object parameterValue = Enum.Parse(value.GetType(), parameterString);
 
@@ -25,12 +25,12 @@ namespace Kohctpyktop.Converters
         {
             string parameterString = parameter as string;
             if (parameterString == null)
-                return DependencyProperty.UnsetValue;
+                return AvaloniaProperty.UnsetValue;
 
             object parameterValue = Enum.Parse(targetType, parameterString);
 
             bool? val = value as bool?;
-            if (val != true) return DependencyProperty.UnsetValue;
+            if (val != true) return AvaloniaProperty.UnsetValue;
 
             return parameterValue;
         }

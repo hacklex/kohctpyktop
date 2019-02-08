@@ -1,16 +1,13 @@
-﻿<Window x:Class="Kohctpyktop.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Kohctpyktop"
         xmlns:converters="clr-namespace:Kohctpyktop.Converters"
         xmlns:viewModels="clr-namespace:Kohctpyktop.ViewModels"
-        mc:Ignorable="d" SizeToContent="WidthAndHeight"
+        SizeToContent="WidthAndHeight"
         Title="KOHCTPYKTOP II: Return of the fucking PhD"
         KeyDown="WindowKeyDown"
-        KeyUp="WindowKeyUp"
-        d:DataContext="{d:DesignInstance viewModels:MainViewModel, IsDesignTimeCreatable=False}">
+        KeyUp="WindowKeyUp">
     <Window.Resources>
         <converters:EnumBooleanConverter x:Key="EnumBooleanConverter"/>
         <converters:NeighborInfoConverter x:Key="NeighborInfoConverter"/>
@@ -19,6 +16,7 @@
         <converters:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
         <converters:BooleanChoiceConverter x:Key="TopologyTypeConverter" OnFalse="TOPOLOGY (METAL)" OnTrue="TOPOLOGY (SILICON)"/>
         <converters:SelectionConverter x:Key="SelectionConverter"/>
+        <converters:CellPositionConverter x:Key="CellPositionConverter"/>
         
         <local:ToolInfoHolder x:Key="NSiliconToolHolder" Index="1">
             <local:ToolInfoHolder.Icon>
@@ -38,23 +36,23 @@
         <local:ToolInfoHolder x:Key="SelectionToolHolder" Index="4">
             <local:ToolInfoHolder.Icon>
                 <Path Data="m 4,4 h 15 v 15 h -15 v -15 z" Stroke="Black" StrokeThickness="2"
-                      StrokeDashArray="2.5,1,3,1" StrokeDashOffset="5"/>
+                      StrokeDashArray="2.5,1,3,1"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="ViaToolHolder" Index="3">
             <local:ToolInfoHolder.Icon>
                 <Grid>
-                    <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+                    <!--<Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
                     <Border Margin="9,10" BorderThickness="1,0" BorderBrush="Black"/>
                     <Border Margin="10,9" BorderThickness="0,1" BorderBrush="Black"/>
-                    <Border Margin="6,0,6,6" BorderThickness="1,0,1,1" BorderBrush="Black" Background="#80FFFFFF"/>
+                    <Border Margin="6,0,6,6" BorderThickness="1,0,1,1" BorderBrush="Black" Background="#80FFFFFF"/>-->
                 </Grid>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="TopologyDebugHolder" Index="6">
             <local:ToolInfoHolder.Icon>
                 <Grid>
-                    <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+                    <!--<Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
                     <Border Margin="0,6,-1,6" BorderBrush="Black" BorderThickness="1">
                         <Border.Background>
                             <DrawingBrush TileMode="Tile" Stretch="None" Viewbox="0 0 1 1" ViewboxUnits="Absolute" Viewport="0 0 4 4" ViewportUnits="Absolute">
@@ -95,14 +93,13 @@
                                 </DrawingBrush.Drawing>
                             </DrawingBrush>
                         </Border.Background>
-                    </Border>
+                    </Border>-->
                 </Grid>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="DeleteToolHolder" Index="5">
             <local:ToolInfoHolder.Icon>
-                <Path Margin="0 -1 0 0" Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#d70000"
-                      RenderOptions.EdgeMode="Aliased"/>
+                <Path Margin="0 -1 0 0" Data="m 3,5 h 2.01 L 11.5,11.5 18,5 h 2.01 L 12.51,12.5 20,20 h -2.01 L 11.51,13.51 5,20 h -2.01 L 10.5,12.5 Z" Fill="#d70000"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
         
@@ -112,16 +109,15 @@
     </Window.Resources>
     <DockPanel>
         <Image DockPanel.Dock="Left" VerticalAlignment="Center"
-               SnapsToDevicePixels="True"
-               MouseDown="ImageMouseDown" 
-               MouseMove="ImageMouseMove" 
-               MouseUp="ImageMouseUp" 
-               Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor"
+               PointerPressed="ImageMouseDown" 
+               PointerMoved="ImageMouseMove" 
+               PointerReleased="ImageMouseUp" 
+               Stretch="None"
                Source="{Binding Field}"/>
-        <StackPanel Margin="5" DockPanel.Dock="Right" Grid.IsSharedSizeScope="True">
-            <StackPanel.Resources>
+        <StackPanel Margin="5" DockPanel.Dock="Right">
+            <!--<StackPanel.Resources>
                 <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
-            </StackPanel.Resources>
+            </StackPanel.Resources>-->
             <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
                          Tag="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}" HorizontalAlignment="Center"
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
@@ -141,13 +137,9 @@
                          Tag="{StaticResource TopologyDebugHolder}" HorizontalAlignment="Center"
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource TopologyTypeConverter}}"/>
             <Separator></Separator>
-            <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
-                <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
-                    <TextBlock>HOVERED:</TextBlock>
-                    <TextBlock>
-                        [<Run Text="{Binding HoveredCell.Row}"/>,
-                        <Run Text="{Binding HoveredCell.Col}"/>]
-                    </TextBlock>
+            <StackPanel TextPresenter.FontFamily="resm:Kohctpyktop.Fonts.Poco/#Poco"  TextPresenter.FontSize="10">
+                <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2">
+                    <TextBlock>HOVERED:</TextBlock><TextBlock Text="{Binding HoveredCell, Converter={StaticResource CellPositionConverter}}"/>
                     <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding HoveredCell.SiliconLayerContent}"/>
                     <TextBlock>HasMetal:</TextBlock><TextBlock Text="{Binding HoveredCell.HasMetal}"/>
                     <TextBlock>Links:</TextBlock><TextBlock Text="{Binding HoveredCell, Converter={StaticResource NeighborInfoConverter}}"/>

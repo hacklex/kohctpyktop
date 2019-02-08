@@ -1,19 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Markup.Xaml;
 using Kohctpyktop.Input;
-using Kohctpyktop.Models.Field;
 using Kohctpyktop.ViewModels;
 
 namespace Kohctpyktop
@@ -21,35 +10,43 @@ namespace Kohctpyktop
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+#if DEBUG
+            this.AttachDevTools();
+#endif
 
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
         }
 
+        private void InitializeComponent()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
         public MainViewModel ViewModel { get; }
 
-        private void ImageMouseDown(object sender, MouseButtonEventArgs e)
+        private void ImageMouseDown(object sender, PointerPressedEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Pressed)
+            if (e.MouseButton == MouseButton.Left)
                 ViewModel.ProcessMouse(e.GetPosition((Image) sender));
         }
 
-        private void ImageMouseMove(object sender, MouseEventArgs e)
+        private void ImageMouseMove(object sender, PointerEventArgs e)
         {
             var pt = e.GetPosition((Image) sender);
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (e.InputModifiers.HasFlag(InputModifiers.LeftMouseButton))
                 ViewModel.ProcessMouse(pt);
             ViewModel.ProcessMouseMove(pt);
         }
 
-        private void ImageMouseUp(object sender, MouseButtonEventArgs e)
+        private void ImageMouseUp(object sender, PointerReleasedEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Released)
+            if (e.MouseButton == MouseButton.Left)
                 ViewModel.ReleaseMouse(e.GetPosition((Image)sender));
         }
 

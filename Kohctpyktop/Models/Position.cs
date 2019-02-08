@@ -1,5 +1,5 @@
 using System;
-using System.Windows;
+using Avalonia;
 using Kohctpyktop.Rendering;
 
 namespace Kohctpyktop.Models

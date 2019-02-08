@@ -1,15 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Windows.Data;
+using Avalonia.Data.Converters;
 using Kohctpyktop.Input;
 
 namespace Kohctpyktop.Converters
 {
     public class SelectionConverter : IMultiValueConverter
     {
-        public object Convert(object[] arr, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(IList<object> arr, Type targetType, object parameter, CultureInfo culture)
         {
-            if (arr.Length == 2 && arr[0] is SelectionState state && arr[1] is Selection sel)
+            if (arr.Count == 2 && arr[0] is SelectionState state && arr[1] is Selection sel)
             {
                 switch (state)
                 {

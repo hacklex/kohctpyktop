@@ -2,9 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Avalonia;
+using Avalonia.Media.Imaging;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models;
 using Kohctpyktop.Rendering;
@@ -14,7 +13,7 @@ namespace Kohctpyktop.ViewModels
     public class MainViewModel : IDisposable, INotifyPropertyChanged
     {
         private readonly Renderer _renderer;
-        private ImageSource _field;
+        private IBitmap _field;
 
         public MainViewModel()
         {
@@ -28,7 +27,7 @@ namespace Kohctpyktop.ViewModels
         public Game GameModel { get; }
         public InputHandler InputHandler { get; }
 
-        public ImageSource Field
+        public IBitmap Field
         {
             get => _field;
             set
@@ -78,16 +77,11 @@ namespace Kohctpyktop.ViewModels
         private void Redraw()
         {
             _renderer.Render(new RenderOpts(InputHandler.SelectionState, InputHandler.Selection));
-            
-            var bmpImage = new BitmapImage();
+
             var stream = new MemoryStream();
             _renderer.Bitmap.Save(stream, ImageFormat.Bmp);
-            bmpImage.BeginInit();
-            bmpImage.StreamSource = stream;
-            bmpImage.EndInit();
-            bmpImage.Freeze();
-            
-            Field = bmpImage;
+            stream.Position = 0;
+            Field = new Bitmap(stream);
         }
         
         public void Dispose() => _renderer.Dispose();

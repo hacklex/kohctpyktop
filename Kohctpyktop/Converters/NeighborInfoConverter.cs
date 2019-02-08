@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Windows.Data;
+using Avalonia.Data.Converters;
 using Kohctpyktop.Models.Field;
 
 namespace Kohctpyktop.Converters
