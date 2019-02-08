@@ -81,15 +81,29 @@
             switch (SiliconLink)
             {
                 case SiliconLink.Master:
-                    ToCell.SiliconLayerContent = ToCell.SiliconLayerContent.RemoveGate();
+                    RemoveGateIfNeeded(FromCell, ToCell);
                     break;
                 case SiliconLink.Slave:
-                    FromCell.SiliconLayerContent = FromCell.SiliconLayerContent.RemoveGate();
+                    RemoveGateIfNeeded(ToCell, FromCell);
                     break;
             }
             
             SiliconLink = SiliconLink.None;
             HasMetalLink = false;
+        }
+
+        private static void RemoveGateIfNeeded(Cell slaveCell, Cell masterCell)
+        {
+            if (!HasOppositeGateSlave(slaveCell, masterCell))
+                masterCell.SiliconLayerContent = masterCell.SiliconLayerContent.RemoveGate();
+        }
+
+        private static bool HasOppositeGateSlave(Cell slaveCell, Cell masterCell)
+        {
+            var slaveIx = masterCell.GetNeighborIndex(slaveCell);
+            var oppositeSlaveIx = (slaveIx + 2) % 4;
+            
+            return masterCell.NeighborInfos[oppositeSlaveIx]?.SiliconLink == SiliconLink.Slave;
         }
     }
 }

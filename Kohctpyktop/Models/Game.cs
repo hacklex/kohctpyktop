@@ -558,6 +558,7 @@ namespace Kohctpyktop.Models
                 for (var l = 0; l < 4; l++) levelCell.NeighborInfos[l].CopyFrom(tmpCell.NeighborInfos[l]);
             }
             
+            DestroyBrokenGates();
             MarkModelAsChanged();
             return true;
         }
