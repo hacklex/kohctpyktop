@@ -375,8 +375,8 @@ namespace Kohctpyktop.Models
 
             return cell.NeighborInfos[ix1].SiliconLink == SiliconLink.BiDirectional &&
                    cell.NeighborInfos[ix2].SiliconLink == SiliconLink.BiDirectional &&
-                   (cell.NeighborInfos[masterIx1].SiliconLink == SiliconLink.Master ||
-                    cell.NeighborInfos[masterIx2].SiliconLink == SiliconLink.Master);
+                   (cell.NeighborInfos[masterIx1].SiliconLink == SiliconLink.Slave ||
+                    cell.NeighborInfos[masterIx2].SiliconLink == SiliconLink.Slave);
         }
 
         private void RemoveGate(Cell cell)
@@ -411,7 +411,9 @@ namespace Kohctpyktop.Models
         {
             if (offsetX == 0 && offsetY == 0) return true;
 
-            var cellsToRemove = new List<Position>();
+            var width = to.X - from.X + 1;
+            var height = to.Y - from.Y + 1;
+            var cellsToRemove = new bool[height, width];
             
             // checking target area
             for (var i = from.Y; i < to.Y; i++)
@@ -427,7 +429,7 @@ namespace Kohctpyktop.Models
                     return false;
                 
                 if (isSourceOccupied)
-                    cellsToRemove.Add(new Position(j, i));
+                    cellsToRemove[i - from.Y, j - from.X] = true;
             }
             
             // copying cell content
@@ -435,8 +437,12 @@ namespace Kohctpyktop.Models
             for (var j = from.X; j < to.X; j++)
             {
                 var sourceCell = Level.Cells[i, j];
-                var targetCell = Level.Cells[i + offsetY, j + offsetX];
 
+                if (!sourceCell.HasMetal && sourceCell.SiliconLayerContent == SiliconTypes.None)
+                    continue;
+                
+                var targetCell = Level.Cells[i + offsetY, j + offsetX];
+                
                 targetCell.HasMetal = sourceCell.HasMetal;
                 targetCell.SiliconLayerContent = sourceCell.SiliconLayerContent;
 
@@ -447,16 +453,16 @@ namespace Kohctpyktop.Models
             }
 
             // removing content from original place
-            foreach (var pos in cellsToRemove)
+            for (var i = 0; i < height; i++)
+            for (var j = 0; j < width; j++)
             {
-                var i = pos.Row;
-                var j = pos.Col;
+                if (!cellsToRemove[i, j]) continue;
                 
-                var sourceCell = Level.Cells[i, j];
+                var sourceCell = Level.Cells[i + from.Y, j + from.X];
 
                 sourceCell.HasMetal = false;
                 sourceCell.SiliconLayerContent = SiliconTypes.None;
-                
+
                 sourceCell.NeighborInfos[0].Clear();
                 sourceCell.NeighborInfos[1].Clear();
                 sourceCell.NeighborInfos[2].Clear();
