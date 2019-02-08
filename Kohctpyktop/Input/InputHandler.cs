@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
+using Kohctpyktop.Rendering;
 using Point = System.Windows.Point;
 
 namespace Kohctpyktop.Input
@@ -236,10 +237,22 @@ namespace Kohctpyktop.Input
                     SelectionState = SelectionState.HasSelection;
                     break;
                 case SelectionState.Dragging:
-                    // todo
+                    TryDragSelection();
                     SelectionState = SelectionState.HasSelection;
                     Selection = Selection.Drag(0, 0);
                     break;
+            }
+        }
+
+        private void TryDragSelection()
+        {
+            var (from, to) = Selection.ToFieldPositions();
+            var offsetX = (int) Math.Round(Selection.DragOffsetX / (Renderer.CellSize + 1.0));
+            var offsetY = (int) Math.Round(Selection.DragOffsetY / (Renderer.CellSize + 1.0));
+
+            if (GameModel.TryMove(from, to, offsetX, offsetY))
+            {
+                Selection = Selection.Offset(offsetX, offsetY);
             }
         }
 

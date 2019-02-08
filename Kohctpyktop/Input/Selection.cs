@@ -44,9 +44,14 @@ namespace Kohctpyktop.Input
             return position.X >= from.X && position.Y >= from.Y && position.X < to.X && position.Y < to.Y;
         }
 
-        public Selection Drag(int offX, int offY)
+        public Selection Drag(int offsetX, int offsetY)
         {
-            return new Selection(StartCell) { EndCell = EndCell, DragOffsetX = offX, DragOffsetY = offY };
+            return new Selection(StartCell) { EndCell = EndCell, DragOffsetX = offsetX, DragOffsetY = offsetY };
+        }
+
+        public Selection Offset(int offsetX, int offsetY)
+        {
+            return new Selection(StartCell.Offset(offsetX, offsetY)) { EndCell = EndCell.Offset(offsetX, offsetY) };
         }
     }
 }

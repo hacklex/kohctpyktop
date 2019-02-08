@@ -66,6 +66,16 @@
             };
         }
 
+        public void CopyFrom(NeighborInfo source)
+        {
+            SiliconLink = source.SiliconLink;
+            HasMetalLink = source.HasMetalLink;
+        }
 
+        public void Clear()
+        {
+            SiliconLink = SiliconLink.None;
+            HasMetalLink = false;
+        }
     }
 }

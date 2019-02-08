@@ -21,6 +21,8 @@ namespace Kohctpyktop.Models
 
         public Position Shift(bool vertical, int steps) => vertical ? new Position(X, Y + steps) : new Position(X + steps, Y);
 
+        public Position Offset(int offsetX, int offsetY) => new Position(X + offsetX, Y + offsetY);
+
         public static Position Invalid { get; } = new Position(-1, -1); 
 
         public static Position FromScreenPoint(int x, int y) =>

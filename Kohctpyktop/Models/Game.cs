@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
+using System.Windows.Converters;
+using System.Windows.Diagnostics;
 using Kohctpyktop.Models.Field;
 using Kohctpyktop.Models.Topology;
 
@@ -358,6 +361,69 @@ namespace Kohctpyktop.Models
                 Level.Cells[i, j].LastAssignedMetalNode = null;
                 Level.Cells[i, j].LastAssignedSiliconNode = null;
             }
+        }
+
+        public bool TryMove(Position from, Position to, int offsetX, int offsetY)
+        {
+            if (offsetX == 0 && offsetY == 0) return true;
+
+            var cellsToRemove = new List<Position>();
+            
+            // checking target area
+            for (var i = from.Y; i < to.Y; i++)
+            for (var j = from.X; j < to.X; j++)
+            {
+                var sourceCell = Level.Cells[i, j];
+                var targetCell = Level.Cells[i + offsetY, j + offsetX];
+
+                var isSourceOccupied = sourceCell.HasMetal || sourceCell.SiliconLayerContent != SiliconTypes.None;
+                var isTargetOccupied = targetCell.HasMetal || targetCell.SiliconLayerContent != SiliconTypes.None;
+                
+                if (isSourceOccupied && isTargetOccupied)
+                    return false;
+                
+                if (isSourceOccupied)
+                    cellsToRemove.Add(new Position(j, i));
+            }
+            
+            // copying cell content
+            for (var i = from.Y; i < to.Y; i++)
+            for (var j = from.X; j < to.X; j++)
+            {
+                var sourceCell = Level.Cells[i, j];
+                var targetCell = Level.Cells[i + offsetY, j + offsetX];
+
+                targetCell.HasMetal = sourceCell.HasMetal;
+                targetCell.SiliconLayerContent = sourceCell.SiliconLayerContent;
+
+                if (j > from.X) targetCell.NeighborInfos[0].CopyFrom(sourceCell.NeighborInfos[0]);
+                if (i > from.Y) targetCell.NeighborInfos[1].CopyFrom(sourceCell.NeighborInfos[1]);
+                if (j < to.X - 1) targetCell.NeighborInfos[2].CopyFrom(sourceCell.NeighborInfos[2]);
+                if (i < to.Y - 1) targetCell.NeighborInfos[3].CopyFrom(sourceCell.NeighborInfos[3]);
+            }
+
+            // removing content from original place
+            foreach (var pos in cellsToRemove)
+            {
+                var i = pos.Row;
+                var j = pos.Col;
+                
+                var sourceCell = Level.Cells[i, j];
+
+                sourceCell.HasMetal = false;
+                sourceCell.SiliconLayerContent = SiliconTypes.None;
+                
+                if (j > from.X) sourceCell.NeighborInfos[0].Clear();
+                if (i > from.Y) sourceCell.NeighborInfos[1].Clear();
+                if (j < to.X - 1) sourceCell.NeighborInfos[2].Clear();
+                if (i < to.Y - 1) sourceCell.NeighborInfos[3].Clear();
+            }
+            
+            // destroying invalid links (either from source and target) - todo
+
+            MarkModelAsChanged();
+            
+            return true;
         }
     }
      
