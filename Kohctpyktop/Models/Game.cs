@@ -363,6 +363,50 @@ namespace Kohctpyktop.Models
             }
         }
 
+        private bool CheckGate(Cell cell, SiliconType gateType, bool isVertical)
+        {
+            // todo check gate type
+
+            var ix1 = isVertical ? 1 : 0;
+            var ix2 = ix1 + 2;
+
+            var masterIx1 = ix1 + 1;
+            var masterIx2 = (ix1 + 3) % 4;
+
+            return cell.NeighborInfos[ix1].SiliconLink == SiliconLink.BiDirectional &&
+                   cell.NeighborInfos[ix2].SiliconLink == SiliconLink.BiDirectional &&
+                   (cell.NeighborInfos[masterIx1].SiliconLink == SiliconLink.Master ||
+                    cell.NeighborInfos[masterIx2].SiliconLink == SiliconLink.Master);
+        }
+
+        private void RemoveGate(Cell cell)
+        {
+            cell.SiliconLayerContent = cell.SiliconLayerContent.RemoveGate();
+            for (var i = 0; i < 4; i++)
+                if (cell.NeighborInfos[i].SiliconLink == SiliconLink.Slave)
+                    cell.NeighborInfos[i].SiliconLink = SiliconLink.None;
+        }
+        
+        private void DestroyBrokenGates()
+        {
+            // assuming links are valid 
+            
+            for (var i = 0; i < Level.Height; i++)
+            for (var j = 0; j < Level.Width; j++)
+            {
+                var cell = Level.Cells[i, j];
+
+                if (cell.HasGate)
+                {
+                    var gateType = cell.HasPGate ? SiliconType.PType : SiliconType.NType;
+                    var isVertical = cell.IsVerticalGate;
+
+                    if (!CheckGate(cell, gateType, isVertical))
+                        RemoveGate(cell);
+                }
+            }
+        }
+
         public bool TryMove(Position from, Position to, int offsetX, int offsetY)
         {
             if (offsetX == 0 && offsetY == 0) return true;
@@ -413,14 +457,13 @@ namespace Kohctpyktop.Models
                 sourceCell.HasMetal = false;
                 sourceCell.SiliconLayerContent = SiliconTypes.None;
                 
-                if (j > from.X) sourceCell.NeighborInfos[0].Clear();
-                if (i > from.Y) sourceCell.NeighborInfos[1].Clear();
-                if (j < to.X - 1) sourceCell.NeighborInfos[2].Clear();
-                if (i < to.Y - 1) sourceCell.NeighborInfos[3].Clear();
+                sourceCell.NeighborInfos[0].Clear();
+                sourceCell.NeighborInfos[1].Clear();
+                sourceCell.NeighborInfos[2].Clear();
+                sourceCell.NeighborInfos[3].Clear();
             }
-            
-            // destroying invalid links (either from source and target) - todo
 
+            DestroyBrokenGates();
             MarkModelAsChanged();
             
             return true;

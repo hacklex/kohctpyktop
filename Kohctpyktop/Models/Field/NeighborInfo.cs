@@ -74,6 +74,16 @@
 
         public void Clear()
         {
+            switch (SiliconLink)
+            {
+                case SiliconLink.Master:
+                    ToCell.SiliconLayerContent = ToCell.SiliconLayerContent.RemoveGate();
+                    break;
+                case SiliconLink.Slave:
+                    FromCell.SiliconLayerContent = FromCell.SiliconLayerContent.RemoveGate();
+                    break;
+            }
+            
             SiliconLink = SiliconLink.None;
             HasMetalLink = false;
         }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using Kohctpyktop.Models.Field;
 
 namespace Kohctpyktop
 {
@@ -67,6 +68,22 @@ namespace Kohctpyktop
                     hex.Substring(6, 2).AsByte());
             }
             throw new ArgumentException("Expected a hex string of length 3, 4, 6 or 8");
+        }
+        
+        
+        public static SiliconTypes RemoveGate(this SiliconTypes type)
+        {
+            switch (type)
+            {
+                case SiliconTypes.NTypeHGate:
+                case SiliconTypes.NTypeVGate:
+                    return SiliconTypes.NType;
+                case SiliconTypes.PTypeHGate:
+                case SiliconTypes.PTypeVGate:
+                    return SiliconTypes.PType;
+                default:
+                    return type;
+            }
         }
     }
 }
