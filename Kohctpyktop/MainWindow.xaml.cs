@@ -56,7 +56,7 @@ namespace Kohctpyktop
         private void WindowKeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftShift)
-                ViewModel.InputHandler.IsShiftPressed = false;
+                ViewModel.SetShiftState(false);
         }
 
         private void WindowKeyDown(object sender, KeyEventArgs e)
@@ -64,25 +64,25 @@ namespace Kohctpyktop
             switch (e.Key)
             {
                 case Key.LeftShift:
-                    ViewModel.InputHandler.IsShiftPressed = true;
+                    ViewModel.SetShiftState(true);
                     break;
                 case Key.D1:
-                    ViewModel.InputHandler.SelectedTool = SelectedTool.Silicon;
+                    ViewModel.SelectTool(SelectedTool.Silicon);
                     break;
                 case Key.D2:
-                    ViewModel.InputHandler.SelectedTool = SelectedTool.Metal;
+                    ViewModel.SelectTool(SelectedTool.Metal);
                     break;
                 case Key.D3:
-                    ViewModel.InputHandler.SelectedTool = SelectedTool.AddOrDeleteVia;
+                    ViewModel.SelectTool(SelectedTool.AddOrDeleteVia);
                     break;
                 case Key.D4:
-                    ViewModel.InputHandler.SelectedTool = SelectedTool.Selection;
+                    ViewModel.SelectTool(SelectedTool.Selection);
                     break;
                 case Key.D5:
-                    ViewModel.InputHandler.SelectedTool = SelectedTool.DeleteMetalOrSilicon;
+                    ViewModel.SelectTool(SelectedTool.DeleteMetalOrSilicon);
                     break;
                 case Key.D6:
-                    ViewModel.InputHandler.SelectedTool = SelectedTool.TopologyDebug;
+                    ViewModel.SelectTool(SelectedTool.TopologyDebug);
                     break;
             }
         }

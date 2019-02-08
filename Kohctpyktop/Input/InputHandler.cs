@@ -82,6 +82,8 @@ namespace Kohctpyktop.Input
                 else
                     GameModel.ClearTopologyMarkers();
                 OnPropertyChanged();
+                
+                ResetSelection();
             }
         }
         

@@ -58,6 +58,16 @@ namespace Kohctpyktop.ViewModels
             RedrawIfChanged();
         }
 
+        public void SelectTool(SelectedTool tool)
+        {
+            var prevTool = InputHandler.SelectedTool;
+            InputHandler.SelectedTool = tool;
+            
+            if (prevTool == SelectedTool.Selection) Redraw();
+        }
+
+        public void SetShiftState(bool shiftPressed) => InputHandler.IsShiftPressed = shiftPressed;
+
         private void RedrawIfChanged()
         {
             if (GameModel.IsModelChanged || InputHandler.SelectionState != SelectionState.None) // todo
