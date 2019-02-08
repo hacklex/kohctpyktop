@@ -68,8 +68,12 @@
 
         public void CopyFrom(NeighborInfo source)
         {
-            SiliconLink = source.SiliconLink;
-            HasMetalLink = source.HasMetalLink;
+            if (source != null)
+            {
+                SiliconLink = source.SiliconLink;
+                HasMetalLink = source.HasMetalLink;
+            }
+            else Clear();
         }
 
         public void Clear()

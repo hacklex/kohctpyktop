@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows;
 using System.Windows.Converters;
@@ -411,69 +412,154 @@ namespace Kohctpyktop.Models
         {
             if (offsetX == 0 && offsetY == 0) return true;
 
-            var width = to.X - from.X + 1;
-            var height = to.Y - from.Y + 1;
-            var cellsToRemove = new bool[height, width];
-            
-            // checking target area
-            for (var i = from.Y; i < to.Y; i++)
-            for (var j = from.X; j < to.X; j++)
-            {
-                var sourceCell = Level.Cells[i, j];
-                var targetCell = Level.Cells[i + offsetY, j + offsetX];
+            var width = to.X - from.X;
+            var height = to.Y - from.Y;
 
-                var isSourceOccupied = sourceCell.HasMetal || sourceCell.SiliconLayerContent != SiliconTypes.None;
-                var isTargetOccupied = targetCell.HasMetal || targetCell.SiliconLayerContent != SiliconTypes.None;
-                
-                if (isSourceOccupied && isTargetOccupied)
-                    return false;
-                
-                if (isSourceOccupied)
-                    cellsToRemove[i - from.Y, j - from.X] = true;
+            var targetMapPart = new Cell[height, width];
+            
+            // todo: replace with own classes
+            var sourceRect = Rectangle.FromLTRB(from.X, from.Y, to.X, to.Y);
+            var targetRect = sourceRect;
+            targetRect.Offset(offsetX, offsetY);
+
+            var intersection = sourceRect;
+            intersection.Intersect(targetRect);
+            
+            if (intersection.Width == 0 || intersection.Height == 0) intersection = Rectangle.Empty;
+            
+            // copying map part to temporary array
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                if (intersection.Contains(j + offsetX, i + offsetY))
+                {
+                    targetMapPart[irel, jrel] = new Cell { Row = i, Col = j };
+                }
+                else
+                {
+                    var levelCell = Level.Cells[i + offsetY, j + offsetX];
+                    targetMapPart[irel, jrel] = new Cell
+                    {
+                        Row = i,
+                        Col = j,
+                        HasMetal = levelCell.HasMetal,
+                        SiliconLayerContent = levelCell.SiliconLayerContent
+                    };
+                }
             }
             
-            // copying cell content
-            for (var i = from.Y; i < to.Y; i++)
-            for (var j = from.X; j < to.X; j++)
-            {
-                var sourceCell = Level.Cells[i, j];
-
-                if (!sourceCell.HasMetal && sourceCell.SiliconLayerContent == SiliconTypes.None)
-                    continue;
-                
-                var targetCell = Level.Cells[i + offsetY, j + offsetX];
-                
-                targetCell.HasMetal = sourceCell.HasMetal;
-                targetCell.SiliconLayerContent = sourceCell.SiliconLayerContent;
-
-                if (j > from.X) targetCell.NeighborInfos[0].CopyFrom(sourceCell.NeighborInfos[0]);
-                if (i > from.Y) targetCell.NeighborInfos[1].CopyFrom(sourceCell.NeighborInfos[1]);
-                if (j < to.X - 1) targetCell.NeighborInfos[2].CopyFrom(sourceCell.NeighborInfos[2]);
-                if (i < to.Y - 1) targetCell.NeighborInfos[3].CopyFrom(sourceCell.NeighborInfos[3]);
-            }
-
-            // removing content from original place
+            // creating temporary cells links
             for (var i = 0; i < height; i++)
             for (var j = 0; j < width; j++)
             {
-                if (!cellsToRemove[i, j]) continue;
+                if (j > 0) NeighborInfo.ConnectCells(targetMapPart[i, j], 0, targetMapPart[i, j - 1], false, SiliconLink.None);
+                if (j < width - 1) NeighborInfo.ConnectCells(targetMapPart[i, j], 2, targetMapPart[i, j + 1], false, SiliconLink.None);
+                if (i > 0) NeighborInfo.ConnectCells(targetMapPart[i, j], 1, targetMapPart[i - 1, j], false, SiliconLink.None);
+                if (i < height - 1) NeighborInfo.ConnectCells(targetMapPart[i, j], 3, targetMapPart[i + 1, j], false, SiliconLink.None);
+            }
+            
+            // restoring target links
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                if (intersection.Contains(j + offsetX, i + offsetY)) continue;
                 
-                var sourceCell = Level.Cells[i + from.Y, j + from.X];
+                var levelCell = Level.Cells[i + offsetY, j + offsetX];
+                var tmpCell = targetMapPart[irel, jrel];
 
-                sourceCell.HasMetal = false;
-                sourceCell.SiliconLayerContent = SiliconTypes.None;
-
-                sourceCell.NeighborInfos[0].Clear();
-                sourceCell.NeighborInfos[1].Clear();
-                sourceCell.NeighborInfos[2].Clear();
-                sourceCell.NeighborInfos[3].Clear();
+                if (!tmpCell.HasNoSilicon)
+                {
+                    for (var l = 0; l < 4; l++)
+                    {
+                        if (!(tmpCell.NeighborInfos[l]?.ToCell.HasNoSilicon ?? true))
+                            tmpCell.NeighborInfos[l].SiliconLink = levelCell.NeighborInfos[l].SiliconLink;
+                    }      
+                }
+                    
+                if (tmpCell.HasMetal)
+                {
+                    for (var l = 0; l < 4; l++)
+                    {
+                        if (tmpCell.NeighborInfos[l]?.ToCell.HasMetal ?? false)
+                            tmpCell.NeighborInfos[l].HasMetalLink = levelCell.NeighborInfos[l].HasMetalLink;
+                    }
+                }
             }
 
-            DestroyBrokenGates();
-            MarkModelAsChanged();
+            // checking moving possibility (and moving cells)
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                var levelCell = Level.Cells[i, j];
+                var tmpCell = targetMapPart[irel, jrel];
+                
+                var isSourceOccupied = !levelCell.HasNoSilicon || levelCell.HasMetal;
+                var isTargetOccupied = !tmpCell.HasNoSilicon || tmpCell.HasMetal;
+
+                if (isSourceOccupied)
+                {
+                    if (isTargetOccupied) return false;
+                    
+                    tmpCell.HasMetal = levelCell.HasMetal;
+                    tmpCell.SiliconLayerContent = levelCell.SiliconLayerContent;
+                }
+            }
             
+            // restoring source links
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                var levelCell = Level.Cells[i, j];
+                var tmpCell = targetMapPart[irel, jrel];
+
+                if (!tmpCell.HasNoSilicon)
+                {
+                    for (var l = 0; l < 4; l++)
+                    {
+                        if ((tmpCell.NeighborInfos[l]?.SiliconLink ?? SiliconLink.None) == SiliconLink.None &&
+                            !(tmpCell.NeighborInfos[l]?.ToCell.HasNoSilicon ?? true))
+                            tmpCell.NeighborInfos[l].SiliconLink = levelCell.NeighborInfos[l].SiliconLink;
+                    }      
+                }
+                    
+                if (tmpCell.HasMetal)
+                {
+                    for (var l = 0; l < 4; l++)
+                    {
+                        if (!(tmpCell.NeighborInfos[l]?.HasMetalLink ?? false) &&
+                            (tmpCell.NeighborInfos[l]?.ToCell.HasMetal ?? false))
+                            tmpCell.NeighborInfos[l].HasMetalLink = levelCell.NeighborInfos[l].HasMetalLink;
+                    }
+                }
+            }
+            
+            // removing cells from source
+            for (var i = from.Y; i < to.Y; i++)
+            for (var j = from.X; j < to.X; j++)
+            {
+                var levelCell = Level.Cells[i, j];
+                
+                levelCell.HasMetal = false;
+                levelCell.SiliconLayerContent = SiliconTypes.None;
+                
+                for (var l = 0; l < 4; l++) levelCell.NeighborInfos[l].Clear();
+            }
+            
+            // copying cells back
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                var levelCell = Level.Cells[i + offsetY, j + offsetX];
+                var tmpCell = targetMapPart[irel, jrel];
+                
+                levelCell.HasMetal = tmpCell.HasMetal;
+                levelCell.SiliconLayerContent = tmpCell.SiliconLayerContent;
+                
+                for (var l = 0; l < 4; l++) levelCell.NeighborInfos[l].CopyFrom(tmpCell.NeighborInfos[l]);
+            }
+            
+            MarkModelAsChanged();
             return true;
         }
     }
-     
 }
