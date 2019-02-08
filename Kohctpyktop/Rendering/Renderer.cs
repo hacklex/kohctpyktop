@@ -168,12 +168,12 @@ namespace Kohctpyktop.Rendering
                 _graphics.FillRectangle(BorderBrush, nearToCenter);
         }
         
-        private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds)
+        private void MetalCellSide(Cell cell, Side side, Rectangle cellBounds, bool isSideDetached)
         {
             var (rect, nearToBounds, _) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
             _graphics.FillRectangle(MetalBrush, rect);
             
-            if (!(cell.NeighborInfos[(int) side]?.HasMetalLink ?? false))
+            if (isSideDetached || !(cell.NeighborInfos[(int) side]?.HasMetalLink ?? false))
                 _graphics.FillRectangle(BorderBrush, nearToBounds);
         }
 
@@ -231,15 +231,16 @@ namespace Kohctpyktop.Rendering
             }
         }
 
-        private void MetalCellCorner(Cell cell, Corner corner, Rectangle cellBounds)
+        private void MetalCellCorner(Cell cell, Corner corner, Rectangle cellBounds, bool isVertCornerDetached, 
+            bool isHorzCornerDetached)
         {
             var (nearToCenter, nearToBounds, nearHorzLink, nearVertLink) = GetCellCornerBounds(cellBounds.X, cellBounds.Y, corner);
             
             var horzNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarX) ? 2 : 0];
             var vertNeigh = cell.NeighborInfos[corner.HasFlag(Corner.FarY) ? 3 : 1];
 
-            var hasHorzLink = horzNeigh?.HasMetalLink ?? false;
-            var hasVertLink = vertNeigh?.HasMetalLink ?? false;
+            var hasHorzLink = !isHorzCornerDetached && (horzNeigh?.HasMetalLink ?? false);
+            var hasVertLink = !isVertCornerDetached && (vertNeigh?.HasMetalLink ?? false);
 
             GenericCellCorner(hasHorzLink, hasVertLink, MetalPen, 
                 nearToCenter, nearToBounds, nearHorzLink, nearVertLink);
@@ -348,18 +349,20 @@ namespace Kohctpyktop.Rendering
             {
                 FillMid(MetalBrush, bounds);
 
-                MetalCellSide(cell, Side.Top, bounds);
-                MetalCellSide(cell, Side.Bottom, bounds);
-                MetalCellSide(cell, Side.Left, bounds);
-                MetalCellSide(cell, Side.Right, bounds);
+                MetalCellSide(cell, Side.Top, bounds, isTopSideDetached);
+                MetalCellSide(cell, Side.Bottom, bounds, isBottomSideDetached);
+                MetalCellSide(cell, Side.Left, bounds, isLeftSideDetached);
+                MetalCellSide(cell, Side.Right, bounds, isRightSideDetached);
 
-                MetalCellCorner(cell, Corner.Near, bounds);
-                MetalCellCorner(cell, Corner.FarX, bounds);
-                MetalCellCorner(cell, Corner.FarY, bounds);
-                MetalCellCorner(cell, Corner.Far, bounds);
+                MetalCellCorner(cell, Corner.Near, bounds, isTopSideDetached, isLeftSideDetached);
+                MetalCellCorner(cell, Corner.FarX, bounds, isTopSideDetached, isRightSideDetached);
+                MetalCellCorner(cell, Corner.FarY, bounds, isBottomSideDetached, isLeftSideDetached);
+                MetalCellCorner(cell, Corner.Far, bounds, isBottomSideDetached, isRightSideDetached);
 
-                MetalIntercellular(cell, false, bounds);
-                MetalIntercellular(cell, true, bounds);
+                if (!isLeftSideDetached)
+                    MetalIntercellular(cell, false, bounds);
+                if (!isTopSideDetached)
+                    MetalIntercellular(cell, true, bounds);
             }
             else if (cell.IsLocked)
             {
