@@ -1,5 +1,4 @@
-﻿using System.Drawing;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Logging.Serilog;
 using Serilog;
 
@@ -7,7 +6,7 @@ namespace Kohctpyktop
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
@@ -17,9 +16,10 @@ namespace Kohctpyktop
             BuildAvaloniaApp().Start<MainWindow>();
         }
 
-        public static AppBuilder BuildAvaloniaApp()
+        static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
-                .UsePlatformDetect()
+                .UseDirect2D1()
+                .UseWin32()
                 .LogToTrace();
     }
 }

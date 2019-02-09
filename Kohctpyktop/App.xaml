@@ -12,9 +12,9 @@
         <ControlTemplate>
           <Grid UseLayoutRounding="True" Margin="0,3,0,5">
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
+              <ColumnDefinition Width="20" />
               <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonsAndTitles"/>
-              <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
+              <ColumnDefinition Width="20" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
               <RowDefinition Height="Auto"/>
@@ -23,10 +23,10 @@
             <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
                        FontFamily="resm:Kohctpyktop.Fonts.Poco.ttf?assembly=Kohctpyktop#Poco"
                        Width="50"
-                       UseLayoutRounding="True"
                        FontSize="10"
                        TextWrapping="Wrap"
                        TextAlignment="Center"
+                       Margin="2.5,0,0,0"
                        Text="{TemplateBinding Content}"/>
             <Grid
                 Grid.Row="1"

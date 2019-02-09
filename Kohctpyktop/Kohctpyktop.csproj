@@ -25,8 +25,8 @@
     <EmbeddedResource Include="Fonts\Poco.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.7.1-cibuild0001356-beta" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.7.1-cibuild0001356-beta" />
+    <PackageReference Include="Avalonia" Version="0.7.1-cibuild0001368-beta" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.7.1-cibuild0001368-beta" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="System.Drawing.Common" Version="4.5.1" />
   </ItemGroup>

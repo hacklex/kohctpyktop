@@ -36,7 +36,7 @@
         <local:ToolInfoHolder x:Key="SelectionToolHolder" Index="4">
             <local:ToolInfoHolder.Icon>
                 <Path Data="m 4,4 h 15 v 15 h -15 v -15 z" Stroke="Black" StrokeThickness="2"
-                      StrokeDashArray="2.5,1,3,1"/>
+                      StrokeDashArray="2.5,1,3,1" StrokeDashOffset="10"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="ViaToolHolder" Index="3">
@@ -114,7 +114,7 @@
                PointerReleased="ImageMouseUp" 
                Stretch="None"
                Source="{Binding Field}"/>
-        <StackPanel Margin="5" DockPanel.Dock="Right" Classes="ToolPanel">
+        <StackPanel Margin="5" DockPanel.Dock="Right" Classes="ToolPanel" Grid.IsSharedSizeScope="True">
             <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
                          Tag="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}" HorizontalAlignment="Center"
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
@@ -133,7 +133,7 @@
             <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=TopologyDebug}"
                          Tag="{StaticResource TopologyDebugHolder}" HorizontalAlignment="Center"
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource TopologyTypeConverter}}"/>
-            <Separator></Separator>
+            <Separator Height="1" Background="#cccccc"/>
             <StackPanel TextPresenter.FontFamily="resm:Kohctpyktop.Fonts.Poco.ttf?assembly=Kohctpyktop#Poco" TextPresenter.FontSize="10">
                 <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2">
                     <TextBlock>HOVERED:</TextBlock><TextBlock Text="{Binding HoveredCell, Converter={StaticResource CellPositionConverter}}"/>
