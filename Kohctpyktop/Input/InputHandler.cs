@@ -73,6 +73,8 @@ namespace Kohctpyktop.Input
             get => _selectedTool;
             set
             {
+                if (value == SelectedTool.Unknown) return;
+                
                 if (value == _selectedTool) return;
                 _selectedTool = value;
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
@@ -83,6 +85,8 @@ namespace Kohctpyktop.Input
                 OnPropertyChanged();
                 
                 ResetSelection();
+                
+                Console.WriteLine("st - " + value);
             }
         }
         
