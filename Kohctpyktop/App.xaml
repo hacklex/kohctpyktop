@@ -6,57 +6,46 @@
   <Application.Styles>
     <StyleInclude Source="resm:Avalonia.Themes.Default.DefaultTheme.xaml?assembly=Avalonia.Themes.Default"/>
     <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
-  </Application.Styles>
-  <!--<Application.Resources>
-    <ResourceDictionary>
-      <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary>
-          <ControlTemplate TargetType="RadioButton" x:Key="ToolRadioButtonTemplate">
-            <Grid UseLayoutRounding="True" Margin="0,3,0,5">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
-                <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonsAndTitles"/>
-                <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
-              </Grid.ColumnDefinitions>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-              </Grid.RowDefinitions>
-              <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
-                         FontFamily="pack://application:,,,/Fonts/#Poco"
-                         Width="50"
-                         TextOptions.TextFormattingMode="Display"
-                         TextOptions.TextRenderingMode="Grayscale"
-                         UseLayoutRounding="True"
-                         SnapsToDevicePixels="True"
-                         FontSize="10"
-                         TextWrapping="Wrap"
-                         TextAlignment="Center"
-                         Text="{TemplateBinding Content}"/>
-              <Grid
-                  Grid.Row="1"
-                  Grid.Column="1"
-                  HorizontalAlignment="Center"
-                  UseLayoutRounding="True" SnapsToDevicePixels="True">
-                <controls:BeveledSquare Selected="{TemplateBinding IsChecked}"/>
-                <ContentControl Margin="3" Content="{Binding Tag.(local:ToolInfoHolder.Icon), RelativeSource={RelativeSource TemplatedParent}}"
-                                Width="23" Height="23"/>
-              </Grid>
-              <TextBlock Text="{Binding Tag.(local:ToolInfoHolder.Index), RelativeSource={RelativeSource TemplatedParent}}" Grid.Row="1" Grid.Column="2"
-                         FontFamily="pack://application:,,,/Fonts/#Poco"
-                         TextOptions.TextFormattingMode="Display"
-                         TextOptions.TextRenderingMode="Grayscale"
-                         FontSize="10"
-                         Margin="5,0"
-                         VerticalAlignment="Center"/>
+
+    <Style Selector=".ToolPanel > RadioButton">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid UseLayoutRounding="True" Margin="0,3,0,5">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonsAndTitles"/>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="Badge"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                       FontFamily="resm:Kohctpyktop.Fonts.Poco.ttf?assembly=Kohctpyktop#Poco"
+                       Width="50"
+                       UseLayoutRounding="True"
+                       FontSize="10"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       Text="{TemplateBinding Content}"/>
+            <Grid
+                Grid.Row="1"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                UseLayoutRounding="True">
+              <controls:BeveledSquare Selected="{TemplateBinding IsChecked}" />
+              <ContentControl Margin="3" Content="{Binding Tag.Icon, RelativeSource={RelativeSource TemplatedParent}}"
+                              Width="23" Height="23"/>
             </Grid>
-          </ControlTemplate>
-          <Style TargetType="RadioButton" x:Key="ToolRadioButtonStyle">
-            <Setter Property="Template" Value="{StaticResource ToolRadioButtonTemplate}"/>
-            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-          </Style>
-        </ResourceDictionary>
-      </ResourceDictionary.MergedDictionaries>
-    </ResourceDictionary>
-  </Application.Resources>-->
+            <TextBlock Text="{Binding Tag.Index, RelativeSource={RelativeSource TemplatedParent}}" Grid.Row="1" Grid.Column="2"
+                       UseLayoutRounding="True"
+                       FontFamily="resm:Kohctpyktop.Fonts.Poco.ttf?assembly=Kohctpyktop#Poco"
+                       FontSize="10"
+                       Margin="5,0"
+                       VerticalAlignment="Center"/>
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+  </Application.Styles>
 </Application>

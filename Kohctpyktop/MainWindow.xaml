@@ -42,18 +42,18 @@
         <local:ToolInfoHolder x:Key="ViaToolHolder" Index="3">
             <local:ToolInfoHolder.Icon>
                 <Grid>
-                    <!--<Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+                    <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
                     <Border Margin="9,10" BorderThickness="1,0" BorderBrush="Black"/>
                     <Border Margin="10,9" BorderThickness="0,1" BorderBrush="Black"/>
-                    <Border Margin="6,0,6,6" BorderThickness="1,0,1,1" BorderBrush="Black" Background="#80FFFFFF"/>-->
+                    <Border Margin="6,0,6,6" BorderThickness="1,0,1,1" BorderBrush="Black" Background="#80FFFFFF"/>
                 </Grid>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
         <local:ToolInfoHolder x:Key="TopologyDebugHolder" Index="6">
             <local:ToolInfoHolder.Icon>
                 <Grid>
-                    <!--<Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
-                    <Border Margin="0,6,-1,6" BorderBrush="Black" BorderThickness="1">
+                    <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
+                    <!--<Border Margin="0,6,-1,6" BorderBrush="Black" BorderThickness="1">
                         <Border.Background>
                             <DrawingBrush TileMode="Tile" Stretch="None" Viewbox="0 0 1 1" ViewboxUnits="Absolute" Viewport="0 0 4 4" ViewportUnits="Absolute">
                                 <DrawingBrush.Drawing>
@@ -72,22 +72,22 @@
                                 </DrawingBrush.Drawing>
                             </DrawingBrush>
                         </Border.Background>
-                    </Border>
+                    </Border>-->
                     <Border Margin="6,0,6,-1" BorderThickness="1,0,1,1" BorderBrush="Black" Background="#80FFFFFF"/>
-                    <Border Margin="6,0,6,-1">
+                    <!--<Border Margin="6,0,6,-1">
                         <Border.Background>
                             <DrawingBrush TileMode="Tile" Stretch="None" Viewbox="0 0 1 1" ViewboxUnits="Absolute" Viewport="0 0 4 4" ViewportUnits="Absolute">
                                 <DrawingBrush.Drawing>
                                     <GeometryDrawing Brush="Transparent">
                                         <GeometryDrawing.Geometry>
                                             <GeometryGroup>
-                                                <LineGeometry StartPoint="-2 -2" EndPoint="4 4"></LineGeometry>
-                                                <LineGeometry StartPoint="-2 2" EndPoint="-1 3"></LineGeometry>
-                                                <LineGeometry StartPoint="2 -2" EndPoint="3 -1"></LineGeometry>
+                                                <LineGeometry StartPoint="-2 -2" EndPoint="4 4"/>
+                                                <LineGeometry StartPoint="-2 2" EndPoint="-1 3"/>
+                                                <LineGeometry StartPoint="2 -2" EndPoint="3 -1"/>
                                             </GeometryGroup>
                                         </GeometryDrawing.Geometry>
                                         <GeometryDrawing.Pen>
-                                            <Pen Brush="Blue" Thickness="1"></Pen>
+                                            <Pen Brush="Blue" Thickness="1"/>
                                         </GeometryDrawing.Pen>
                                     </GeometryDrawing>
                                 </DrawingBrush.Drawing>
@@ -114,10 +114,7 @@
                PointerReleased="ImageMouseUp" 
                Stretch="None"
                Source="{Binding Field}"/>
-        <StackPanel Margin="5" DockPanel.Dock="Right">
-            <!--<StackPanel.Resources>
-                <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
-            </StackPanel.Resources>-->
+        <StackPanel Margin="5" DockPanel.Dock="Right" Classes="ToolPanel">
             <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
                          Tag="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}" HorizontalAlignment="Center"
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
@@ -137,7 +134,7 @@
                          Tag="{StaticResource TopologyDebugHolder}" HorizontalAlignment="Center"
                          Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource TopologyTypeConverter}}"/>
             <Separator></Separator>
-            <StackPanel TextPresenter.FontFamily="resm:Kohctpyktop.Fonts.Poco/#Poco"  TextPresenter.FontSize="10">
+            <StackPanel TextPresenter.FontFamily="resm:Kohctpyktop.Fonts.Poco.ttf?assembly=Kohctpyktop#Poco" TextPresenter.FontSize="10">
                 <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2">
                     <TextBlock>HOVERED:</TextBlock><TextBlock Text="{Binding HoveredCell, Converter={StaticResource CellPositionConverter}}"/>
                     <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding HoveredCell.SiliconLayerContent}"/>

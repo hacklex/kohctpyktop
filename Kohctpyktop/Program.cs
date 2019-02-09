@@ -1,5 +1,7 @@
-﻿using Avalonia;
+﻿using System.Drawing;
+using Avalonia;
 using Avalonia.Logging.Serilog;
+using Serilog;
 
 namespace Kohctpyktop
 {
@@ -7,12 +9,17 @@ namespace Kohctpyktop
     {
         static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.Console()
+                .CreateLogger();
+
             BuildAvaloniaApp().Start<MainWindow>();
         }
 
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .LogToDebug();
+                .LogToTrace();
     }
 }

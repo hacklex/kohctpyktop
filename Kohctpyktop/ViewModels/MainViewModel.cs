@@ -2,11 +2,12 @@ using System;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
-using Avalonia;
 using Avalonia.Media.Imaging;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models;
 using Kohctpyktop.Rendering;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using Point = Avalonia.Point;
 
 namespace Kohctpyktop.ViewModels
 {
@@ -20,7 +21,7 @@ namespace Kohctpyktop.ViewModels
             GameModel = new Game();
             InputHandler = new InputHandler(GameModel);
             _renderer = new Renderer(GameModel.Level);
-
+            
             Redraw();
         }
 
