@@ -666,8 +666,52 @@ namespace Kohctpyktop.Models.Field
                 }
             }
             
-            // DestroyBrokenGates();
+            DestroyBrokenGates();
             return true;
+        }
+        
+        private void DestroyBrokenGates()
+        {
+            // assuming links are valid 
+            
+            for (var i = 0; i < Height; i++)
+            for (var j = 0; j < Width; j++)
+            {
+                var cell = Cells[i, j];
+
+                if (cell.HasGate())
+                {
+                    var gateType = cell.HasPGate() ? SiliconType.PType : SiliconType.NType;
+                    var isVertical = cell.IsVerticalGate();
+
+                    if (!CheckGate(cell, gateType, isVertical))
+                        RemoveGate(cell);
+                }
+            }
+        }
+        private bool CheckGate(ILayerCell cell, SiliconType gateType, bool isVertical)
+        {
+            // todo check gate type
+
+            var ix1 = isVertical ? 1 : 0;
+            var ix2 = ix1 + 2;
+
+            var masterIx1 = ix1 + 1;
+            var masterIx2 = (ix1 + 3) % 4;
+
+            return cell.Links[ix1].SiliconLink == SiliconLink.BiDirectional &&
+                   cell.Links[ix2].SiliconLink == SiliconLink.BiDirectional &&
+                   (cell.Links[masterIx1].SiliconLink == SiliconLink.Slave ||
+                    cell.Links[masterIx2].SiliconLink == SiliconLink.Slave);
+        }
+
+        private void RemoveGate(ILayerCell cell)
+        {
+            var pos = new Position(cell.Column, cell.Row);
+            _cellMatrix.UpdateCellContent(pos, new CellContent(cell) {Silicon = cell.Silicon.RemoveGate()});
+            for (var i = 0; i < 4; i++)
+                if (cell.Links[i].SiliconLink == SiliconLink.Slave)
+                    _cellMatrix.UpdateLinkContent(pos, (Side) i, new LinkContent(SiliconLink.None, cell.Links[i].HasMetalLink));
         }
     }
 }
