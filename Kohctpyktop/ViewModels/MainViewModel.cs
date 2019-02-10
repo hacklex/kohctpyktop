@@ -84,7 +84,7 @@ namespace Kohctpyktop.ViewModels
 
         public MainViewModel()
         {
-            Layer = new Layer(30, 30);
+            Layer = new Layer(30, 27);
             InitLayer(Layer);
             
             InputHandler = new InputHandler(Layer);

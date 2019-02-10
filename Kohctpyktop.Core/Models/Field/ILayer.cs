@@ -91,5 +91,7 @@ namespace Kohctpyktop.Models.Field
         bool RemoveVia(Position position);
         bool SetLockState(Position position, bool isLocked);
         bool SetCellName(Position position, string name);
+        
+        bool MoveCells(Position from, Position to, int offsetX, int offsetY);
     }
 }

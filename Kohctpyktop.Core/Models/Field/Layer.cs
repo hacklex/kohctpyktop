@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Drawing;
 using System.IO;
 
 namespace Kohctpyktop.Models.Field
@@ -185,11 +186,6 @@ namespace Kohctpyktop.Models.Field
             HasUncommitedChanges = true;
         }
 
-        private static LinkContent Invert(LinkContent content)
-        {
-            return new LinkContent(content.SiliconLink.Invert(), content.HasMetalLink);
-        }
-
         private static (Position, Side, LinkContent) NormalizeLinkPosition(Position position, Side side, LinkContent content)
         {
             switch (side)
@@ -198,9 +194,9 @@ namespace Kohctpyktop.Models.Field
                 case Side.Bottom:
                     return (position, side, content);
                 case Side.Left:
-                    return (position.Offset(-1, 0), Side.Right, Invert(content));
+                    return (position.Offset(-1, 0), Side.Right, content.Invert());
                 case Side.Top:
-                    return (position.Offset(0, -1), Side.Bottom, Invert(content));
+                    return (position.Offset(0, -1), Side.Bottom, content.Invert());
                 default: throw new ArgumentException(nameof(side));
             }
         }
@@ -498,6 +494,180 @@ namespace Kohctpyktop.Models.Field
             }
 
             return false;
+        }
+
+        public bool MoveCells(Position from, Position to, int offsetX, int offsetY)
+        {
+            if (offsetX == 0 && offsetY == 0) return true;
+
+            var width = to.X - from.X;
+            var height = to.Y - from.Y;
+
+            var tempCells = new CellContent[height, width];
+            var tempLinks = new (LinkContent right, LinkContent bottom)[height + 1, width + 1];
+            
+            // todo: replace with own classes
+            var sourceRect = Rectangle.FromLTRB(from.X, from.Y, to.X, to.Y);
+            var targetRect = sourceRect;
+            targetRect.Offset(offsetX, offsetY);
+
+            var intersection = sourceRect;
+            intersection.Intersect(targetRect);
+            
+            if (intersection.Width == 0 || intersection.Height == 0) intersection = Rectangle.Empty;
+            
+            // copying map part to temporary array
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                if (!intersection.Contains(j + offsetX, i + offsetY))
+                {
+                    var layerCell = Cells[i + offsetY, j + offsetX];
+                    tempCells[irel, jrel] = new CellContent(layerCell);
+                    var rlink = new LinkContent(
+                        layerCell.Links[Side.Right].SiliconLink,
+                        layerCell.Links[Side.Right].HasMetalLink);
+                    var blink = new LinkContent(
+                        layerCell.Links[Side.Bottom].SiliconLink,
+                        layerCell.Links[Side.Bottom].HasMetalLink);
+                    tempLinks[irel + 1, jrel + 1] = (rlink, blink);
+                }
+            }
+            
+            // copying left-top links
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+                if (!intersection.Contains(from.X + offsetX, i + offsetY))
+                {
+                    var layerCell = Cells[i + offsetY, from.X + offsetX];
+                    var rlink = new LinkContent(
+                        layerCell.Links[Side.Left].SiliconLink,
+                        layerCell.Links[Side.Left].HasMetalLink);
+                    tempLinks[irel + 1, 0] = (rlink.Invert(), default(LinkContent));
+                }
+            
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+                if (!intersection.Contains(j + offsetX, from.Y + offsetY))
+                {
+                    var layerCell = Cells[from.Y + offsetY, j + offsetX];
+                    var blink = new LinkContent(
+                        layerCell.Links[Side.Top].SiliconLink,
+                        layerCell.Links[Side.Top].HasMetalLink);
+                    tempLinks[0, jrel + 1] = (default(LinkContent), blink.Invert());
+                }
+
+            // checking moving possibility (and moving cells)
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                var levelCell = Cells[i, j];
+                ref var tmpCell = ref tempCells[irel, jrel];
+                
+                var isSourceOccupied = levelCell.HasSilicon() || levelCell.HasMetal;
+                var isTargetOccupied = tmpCell.Silicon != SiliconTypes.None || tmpCell.HasMetal;
+
+                if (isSourceOccupied)
+                {
+                    if (isTargetOccupied) return false;
+                    
+                    tmpCell.HasMetal = levelCell.HasMetal;
+                    tmpCell.Silicon = levelCell.Silicon;
+                }
+            }
+            
+            // copying source links
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                var levelCell = Cells[i, j];
+                var tmpCell = tempCells[irel, jrel];
+                ref var tmpLinks = ref tempLinks[irel + 1, jrel + 1];
+                
+                if (tmpCell.Silicon != SiliconTypes.None)
+                {
+                    var rightSiliconLink =
+                        tmpLinks.right.SiliconLink == SiliconLink.None
+                            ? jrel + 1 < width &&
+                              tempCells[irel, jrel + 1].Silicon != SiliconTypes.None
+                                ? levelCell.Links[Side.Right].SiliconLink
+                                : SiliconLink.None
+                            : tmpLinks.right.SiliconLink;
+                    var bottomSiliconLink =
+                        tmpLinks.bottom.SiliconLink == SiliconLink.None
+                            ? irel + 1 < height &&
+                              tempCells[irel + 1, jrel].Silicon != SiliconTypes.None
+                                ? levelCell.Links[Side.Bottom].SiliconLink
+                                : SiliconLink.None
+                            : tmpLinks.bottom.SiliconLink;
+                    tmpLinks = (new LinkContent(rightSiliconLink, tmpLinks.right.HasMetalLink),
+                        new LinkContent(bottomSiliconLink, tmpLinks.bottom.HasMetalLink));
+                }
+                
+                if (tmpCell.HasMetal)
+                {
+                    var rightMetalLink =
+                        tmpLinks.right.HasMetalLink ||
+                        (jrel + 1 < width &&
+                         tempCells[irel, jrel + 1].HasMetal &&
+                         levelCell.Links[Side.Right].HasMetalLink);
+                    var bottomMetalLink =
+                        tmpLinks.bottom.HasMetalLink ||
+                        (irel + 1 < height &&
+                         tempCells[irel + 1, jrel].HasMetal &&
+                         levelCell.Links[Side.Bottom].HasMetalLink);
+                    tmpLinks = (new LinkContent(tmpLinks.right.SiliconLink, rightMetalLink),
+                        new LinkContent(tmpLinks.bottom.SiliconLink, bottomMetalLink));
+                }
+            }
+            
+            // removing cells from source
+            for (var i = from.Y; i < to.Y; i++)
+            for (var j = from.X; j < to.X; j++)
+            {
+                RemoveCellSilicon(new Position(j, i));
+                RemoveCellMetal(new Position(j, i));
+            }
+            
+            // removing existing links from target zone
+            // todo: maybe remove
+            for (var i = from.Y; i < to.Y; i++)
+            for (var j = from.X; j < to.X; j++)
+            {
+                RemoveCellLinks(new Position(j + offsetX, i + offsetY), LinkType.MetalLink);
+                RemoveCellLinks(new Position(j + offsetX, i + offsetY), LinkType.SiliconLink);
+            }
+
+            // copying cells back
+            for (int i = from.Y, irel = 0; i < to.Y; i++, irel++)
+            for (int j = from.X, jrel = 0; j < to.X; j++, jrel++)
+            {
+                var levelCell = Cells[i + offsetY, j + offsetX];
+                var tmpCell = tempCells[irel, jrel];
+
+                _cellMatrix.UpdateCellContent(new Position(j + offsetX, i + offsetY), new CellContent(levelCell)
+                {
+                    HasMetal = tmpCell.HasMetal,
+                    Silicon = tmpCell.Silicon
+                });
+
+                var (rlink, blink) = tempLinks[irel + 1, jrel + 1];
+                _cellMatrix.UpdateLinkContent(new Position(j + offsetX, i + offsetY), Side.Right, rlink);
+                _cellMatrix.UpdateLinkContent(new Position(j + offsetX, i + offsetY), Side.Bottom, blink);
+
+                // restoring left-top links
+                if (irel == 0)
+                {
+                    (_, blink) = tempLinks[0, jrel + 1];
+                    _cellMatrix.UpdateLinkContent(new Position(j + offsetX, i + offsetY - 1), Side.Bottom, blink);
+                }
+                else if (jrel == 0)
+                {
+                    (rlink, _) = tempLinks[irel + 1, 0];
+                    _cellMatrix.UpdateLinkContent(new Position(j + offsetX - 1, i + offsetY), Side.Right, rlink);
+                }
+            }
+            
+            // DestroyBrokenGates();
+            return true;
         }
     }
 }

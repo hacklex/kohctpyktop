@@ -291,10 +291,10 @@ namespace Kohctpyktop.Input
             var offsetX = (int) Math.Round(Selection.DragOffsetX / (Renderer.CellSize + 1.0));
             var offsetY = (int) Math.Round(Selection.DragOffsetY / (Renderer.CellSize + 1.0));
 
-//            if (GameModel.TryMove(from, to, offsetX, offsetY))
-//            {
-//                Selection = Selection.Offset(offsetX, offsetY);
-//            }
+            if (Layer.MoveCells(from, to, offsetX, offsetY))
+            {
+                Selection = Selection.Offset(offsetX, offsetY);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

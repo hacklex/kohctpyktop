@@ -103,5 +103,10 @@ namespace Kohctpyktop
                     throw new ArgumentException(nameof(link));
             }
         }
+
+        public static LinkContent Invert(this LinkContent content)
+        {
+            return new LinkContent(content.SiliconLink.Invert(), content.HasMetalLink);
+        }
     }
 }
