@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models;
+using Kohctpyktop.Models.Field;
 using Kohctpyktop.Rendering;
 
 namespace Kohctpyktop.ViewModels
@@ -18,14 +19,14 @@ namespace Kohctpyktop.ViewModels
 
         public MainViewModel()
         {
-            GameModel = new Game();
-            InputHandler = new InputHandler(GameModel);
-            _renderer = new Renderer(GameModel.Level);
+            Layer = new Layer(30, 30);
+            InputHandler = new InputHandler(Layer);
+            _renderer = new Renderer(Layer);
 
             Redraw();
         }
 
-        public Game GameModel { get; }
+        public ILayer Layer { get; }
         public InputHandler InputHandler { get; }
 
         public ImageSource Field
@@ -55,6 +56,7 @@ namespace Kohctpyktop.ViewModels
         public void ReleaseMouse(Point position)
         {
             InputHandler.ReleaseMouse(position);
+            Layer.CommitChanges();
             RedrawIfChanged();
         }
 
@@ -70,9 +72,18 @@ namespace Kohctpyktop.ViewModels
 
         private void RedrawIfChanged()
         {
-            if (GameModel.IsModelChanged || InputHandler.SelectionState != SelectionState.None) // todo
+//            if (GameModel.IsModelChanged || InputHandler.SelectionState != SelectionState.None) // todo
                 Redraw();
-            GameModel.ResetChangeMark();
+//            GameModel.ResetChangeMark();
+        }
+
+        public void Undo()
+        {
+            if (Layer.CanUndo)
+            {
+                Layer.Undo();
+                Redraw();
+            }
         }
 
         private void Redraw()

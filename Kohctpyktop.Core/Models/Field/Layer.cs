@@ -22,8 +22,13 @@ namespace Kohctpyktop.Models.Field
         private class MatrixNode
         {
             private CellContent _savedCellContent;
+
+            public MatrixNode(Layer layer, int row, int column)
+            {
+                HostedCell = new LayerCell(layer, row, column);
+            }
             
-            public Dictionary<int, CellContent> SavedStates { get; }
+            public Dictionary<int, CellContent> SavedStates { get; } = new Dictionary<int, CellContent>();
             public LayerCell HostedCell { get; }
 
             public void CommitChanges(int transactionId)
@@ -41,17 +46,32 @@ namespace Kohctpyktop.Models.Field
             {
                 HostedCell.Apply(cellContent);
             }
+
+            public void Restore(int transactionId)
+            {
+                if (SavedStates.TryGetValue(transactionId, out var savedState))
+                {
+                    SavedStates.Remove(transactionId);
+                    
+                    _savedCellContent = savedState;
+                    RejectChanges();
+                }
+            }
         }
         
         private readonly Layer _layer;
         private readonly MatrixNode[,] _nodes;
 
-        private int _transactionId = 1;
+        private int _transactionId;
 
         public LayerCellMatrix(Layer layer)
         {
             _layer = layer;
             _nodes = new MatrixNode[RowCount, ColumnCount];
+            
+            for (var i = 0; i < RowCount; i++)
+            for (var j = 0; j < ColumnCount; j++)
+                _nodes[i, j] = new MatrixNode(_layer, i, j);
         }
 
         public int RowCount => _layer.Height;
@@ -62,16 +82,21 @@ namespace Kohctpyktop.Models.Field
 
         public void CommitChanges()
         {
+            if (!HasUncommitedChanges) return;
+            
+            _transactionId++;
+            
             for (var i = 0; i < RowCount; i++)
             for (var j = 0; j < ColumnCount; j++)
                 _nodes[i, j].CommitChanges(_transactionId);
 
-            _transactionId++;
             HasUncommitedChanges = false;
         }
 
         public void RejectChanges()
         {
+            if (!HasUncommitedChanges) return;
+            
             for (var i = 0; i < RowCount; i++)
             for (var j = 0; j < ColumnCount; j++)
                 _nodes[i, j].RejectChanges();
@@ -83,6 +108,21 @@ namespace Kohctpyktop.Models.Field
         {
             _nodes[position.Row, position.Col].Update(cellContent);
             HasUncommitedChanges = true;
+        }
+
+        public void Undo()
+        {
+            if (HasUncommitedChanges)
+            {
+                RejectChanges();
+                return;
+            }
+
+            for (var i = 0; i < RowCount; i++)
+            for (var j = 0; j < ColumnCount; j++)
+                _nodes[i, j].Restore(_transactionId);
+            
+            _transactionId--;
         }
 
         public bool HasUncommitedChanges { get; private set; }
@@ -109,6 +149,22 @@ namespace Kohctpyktop.Models.Field
         
         public void CommitChanges() => _cellMatrix.CommitChanges();
         public void RejectChanges() => _cellMatrix.RejectChanges();
+
+        public int MaxUndoDepth { get; set; }
+        public int MaxRedoDepth { get; set; }
+
+        public bool CanUndo => true;
+        
+        public void Undo()
+        {
+            _cellMatrix.Undo();
+        }
+
+        public bool CanRedo { get; }
+        public void Redo()
+        {
+            throw new System.NotImplementedException();
+        }
         
         public bool AddCellSilicon(Position position, SiliconType siliconType)
         {

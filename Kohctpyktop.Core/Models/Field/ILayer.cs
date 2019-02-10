@@ -65,7 +65,7 @@ namespace Kohctpyktop.Models.Field
     
     public enum LinkType { SiliconLink, MetalLink }
     
-    public interface ILayer : ITransactional
+    public interface ILayer : ISupportsUndoRedo
     {
         int Width { get; }
         int Height { get; }

@@ -2,6 +2,13 @@ using System;
 
 namespace Kohctpyktop.Models.Field
 {
+    public class StubSet : IReadOnlyDirectionalSet<ICellLink>
+    {
+        public ICellLink this[int side] => null;
+
+        public ICellLink this[Side side] => null;
+    }
+
     public class LayerCell : ILayerCell
     {
         private readonly Layer _layer;
@@ -22,7 +29,7 @@ namespace Kohctpyktop.Models.Field
         public SiliconTypes Silicon { get; private set; }
         public bool HasMetal { get; private set; }
 
-        public IReadOnlyDirectionalSet<ICellLink> Links => throw new NotImplementedException();
+        public IReadOnlyDirectionalSet<ICellLink> Links { get; } = new StubSet();
         public IReadOnlyDirectionalSet<ILayerCell> Neighbors => throw new NotImplementedException();
 
         public LayerCellMatrix.CellContent SaveState()

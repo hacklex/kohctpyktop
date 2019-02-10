@@ -11,16 +11,16 @@ namespace Kohctpyktop.Input
 {
     public class InputHandler : INotifyPropertyChanged
     {
-        public Game GameModel { get; }
+        public ILayer Layer { get; }
 
         private bool _isShiftPressed;
         private SelectedTool _selectedTool;
         private DrawMode _drawMode;
         private Cell _hoveredCell;
         
-        public InputHandler(Game gameModel)
+        public InputHandler(ILayer layer)
         {
-            GameModel = gameModel;
+            Layer = layer;
             
             SelectedTool = SelectedTool.Silicon;
         }
@@ -49,10 +49,10 @@ namespace Kohctpyktop.Input
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
                 if (DrawMode == DrawMode.NoDraw)
                 {
-                    GameModel.Level.HoveredNode = IsShiftPressed
-                        ? HoveredCell.LastAssignedSiliconNode
-                        : HoveredCell.LastAssignedMetalNode;
-                    GameModel.MarkModelAsChanged();
+//                    GameModel.Level.HoveredNode = IsShiftPressed
+//                        ? HoveredCell.LastAssignedSiliconNode
+//                        : HoveredCell.LastAssignedMetalNode;
+//                    GameModel.MarkModelAsChanged();
                 }
                 OnPropertyChanged();
             }
@@ -77,10 +77,10 @@ namespace Kohctpyktop.Input
                 if (value == _selectedTool) return;
                 _selectedTool = value;
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
-                if (_selectedTool == SelectedTool.TopologyDebug)
-                    GameModel.BuildTopology();
-                else
-                    GameModel.ClearTopologyMarkers();
+//                if (_selectedTool == SelectedTool.TopologyDebug)
+//                    GameModel.BuildTopology();
+//                else
+//                    GameModel.ClearTopologyMarkers();
                 OnPropertyChanged();
                 
                 ResetSelection();
@@ -129,15 +129,15 @@ namespace Kohctpyktop.Input
         {
             if (pt.X < 1 || pt.Y < 1) return;
             var pos = Position.FromScreenPoint(pt.X, pt.Y);
-            if (pos.Row >= GameModel.Level.Height || pos.Col >= GameModel.Level.Width) return;
-            var hoveredCell = GameModel[pos];
-            if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Col != HoveredCell?.Col)
+            if (pos.Row >= Layer.Height || pos.Col >= Layer.Width) return;
+            var hoveredCell = Layer.Cells[pos];
+            if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Column != HoveredCell?.Col)
             {
-                HoveredCell = hoveredCell;
-                GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
-                    ? hoveredCell.LastAssignedSiliconNode
-                    : hoveredCell.LastAssignedMetalNode;
-                GameModel.MarkModelAsChanged();
+//                HoveredCell = hoveredCell;
+//                GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+//                    ? hoveredCell.LastAssignedSiliconNode
+//                    : hoveredCell.LastAssignedMetalNode;
+                // GameModel.MarkModelAsChanged();
             }
         }
 
@@ -202,35 +202,41 @@ namespace Kohctpyktop.Input
             }
         }
 
-        public void DrawLine(Position from, Position to)
+        public bool DrawLine(Position from, Position to)
         {
             var args = new DrawArgs(from, to);
             
+            if (args.IsOnSingleCell) return DrawSinglePoint(from);
+            if (args.IsBetweenNeighbors)
+            {
+                return DrawSinglePoint(from) || DrawSinglePoint(to);
+            }
+
+            return false;
+        }
+
+        public bool DrawSinglePoint(Position pt)
+        {
             switch (DrawMode)
             {
-                case DrawMode.Metal: GameModel.DrawMetal(args);
+//                case DrawMode.Metal: GameModel.DrawMetal(args);
+//                    break;
+                case DrawMode.PType: return Layer.AddCellSilicon(pt, SiliconType.PType);
                     break;
-                case DrawMode.PType: GameModel.DrawSilicon(args, true);
+                case DrawMode.NType: return Layer.AddCellSilicon(pt, SiliconType.NType);
                     break;
-                case DrawMode.NType: GameModel.DrawSilicon(args, false);
+//                case DrawMode.Via: GameModel.PutVia(to);
+//                    break;
+//                case DrawMode.DeleteMetal: GameModel.DeleteMetal(to);
+//                    break;
+                case DrawMode.DeleteSilicon: return Layer.RemoveCellSilicon(pt);
                     break;
-                case DrawMode.Via: GameModel.PutVia(to);
-                    break;
-                case DrawMode.DeleteMetal: GameModel.DeleteMetal(to);
-                    break;
-                case DrawMode.DeleteSilicon: GameModel.DeleteSilicon(to);
-                    break;
-                case DrawMode.DeleteVia: GameModel.DeleteVia(to);
-                    break;
-                case DrawMode.NoDraw: break;
+//                case DrawMode.DeleteVia: GameModel.DeleteVia(to);
+//                    break;
+//                case DrawMode.NoDraw: break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-
-        public void DrawSinglePoint(Position pt)
-        {
-            DrawLine(pt, pt);
         }
 
         public void ReleaseMouse(Point pt)
@@ -256,10 +262,10 @@ namespace Kohctpyktop.Input
             var offsetX = (int) Math.Round(Selection.DragOffsetX / (Renderer.CellSize + 1.0));
             var offsetY = (int) Math.Round(Selection.DragOffsetY / (Renderer.CellSize + 1.0));
 
-            if (GameModel.TryMove(from, to, offsetX, offsetY))
-            {
-                Selection = Selection.Offset(offsetX, offsetY);
-            }
+//            if (GameModel.TryMove(from, to, offsetX, offsetY))
+//            {
+//                Selection = Selection.Offset(offsetX, offsetY);
+//            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
