@@ -8,8 +8,8 @@
         xmlns:viewModels="clr-namespace:Kohctpyktop.ViewModels"
         mc:Ignorable="d" SizeToContent="WidthAndHeight"
         Title="KOHCTPYKTOP II: Return of the fucking PhD"
-        KeyDown="WindowKeyDown"
-        KeyUp="WindowKeyUp"
+        PreviewKeyDown="WindowKeyDown"
+        PreviewKeyUp="WindowKeyUp"
         d:DataContext="{d:DesignInstance viewModels:MainViewModel, IsDesignTimeCreatable=False}">
     <Window.Resources>
         <converters:EnumBooleanConverter x:Key="EnumBooleanConverter"/>

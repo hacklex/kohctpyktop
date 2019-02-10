@@ -61,12 +61,20 @@ namespace Kohctpyktop
 
         private void WindowKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.LeftShift)
-                ViewModel.SetShiftState(false);
+            ViewModel.SetAltState(e.KeyboardDevice.IsKeyDown(Key.LeftAlt));
+            
+            switch (e.Key)
+            {
+                case Key.LeftShift:
+                    ViewModel.SetShiftState(false);
+                    break;
+            }
         }
 
         private void WindowKeyDown(object sender, KeyEventArgs e)
         {
+            ViewModel.SetAltState(e.KeyboardDevice.IsKeyDown(Key.LeftAlt));
+            
             switch (e.Key)
             {
                 case Key.Z when e.KeyboardDevice.IsKeyDown(Key.LeftCtrl):

@@ -60,6 +60,8 @@ namespace Kohctpyktop.Input
                 OnPropertyChanged();
             }
         }
+        
+        public bool IsAltPressed { get; set; }
 
         public DrawMode DrawMode
         {
@@ -263,13 +265,45 @@ namespace Kohctpyktop.Input
             return DrawLongLine(from, to);
         }
 
+        private enum AlignmentState { Disabled, WaitingNextPoint, Enabled }
+
+        private AlignmentState _alignmentState = AlignmentState.Disabled;
+        private Position _startingAlignmentPos;
+        private bool _isVertAlignment;
+        private double _alignmentOrigin;
+        
         private void ProcessDrawing(Point pt)
         {
             ResetSelection();
             
             if (pt.X < 1 || pt.Y < 1) return;
             var pos = Position.FromScreenPoint(pt.X, pt.Y);
+            
+            if ((_alignmentState != AlignmentState.Disabled) != IsAltPressed)
+            {
+                _alignmentState = IsAltPressed ? AlignmentState.WaitingNextPoint : AlignmentState.Disabled;
+                
+                if (IsAltPressed)
+                {
+                    _startingAlignmentPos = pos;
+                }
+            }
+            else if (_alignmentState == AlignmentState.WaitingNextPoint)
+            {
+                if (pos.X != _startingAlignmentPos.X || pos.Y != _startingAlignmentPos.Y)
+                {
+                    _alignmentState = AlignmentState.Enabled;
+                    _isVertAlignment = pos.X == _startingAlignmentPos.X;
+                    _alignmentOrigin = _isVertAlignment ? pt.X : pt.Y;
+                }
+            }
 
+            if (_alignmentState == AlignmentState.Enabled)
+            {
+                pt = _isVertAlignment ? new Point(_alignmentOrigin, pt.Y) : new Point(pt.X, _alignmentOrigin);
+                pos = Position.FromScreenPoint(pt.X, pt.Y);
+            }
+            
             if (_oldMouseSpot.Row < 0)
             {
                 DrawSinglePoint(pos);
@@ -331,6 +365,7 @@ namespace Kohctpyktop.Input
         public void ReleaseMouse(Point pt)
         {
             _oldMouseSpot = Position.Invalid;
+            _alignmentState = AlignmentState.Disabled;
 
             switch (SelectionState)
             {
