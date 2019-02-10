@@ -43,8 +43,14 @@ namespace Kohctpyktop
         {
             var pt = e.GetPosition((Image) sender);
             if (e.LeftButton == MouseButtonState.Pressed)
+            {
                 ViewModel.ProcessMouse(pt);
-            ViewModel.ProcessMouseMove(pt);
+            }
+            else
+            {
+                ViewModel.ReleaseMouse(pt);
+                ViewModel.ProcessMouseMove(pt);
+            }
         }
 
         private void ImageMouseUp(object sender, MouseButtonEventArgs e)
