@@ -220,12 +220,10 @@ namespace Kohctpyktop.Input
                 case DrawMode.Metal: return Layer.AddCellMetal(pt);
                 case DrawMode.PType: return Layer.AddCellSilicon(pt, SiliconType.PType);
                 case DrawMode.NType: return Layer.AddCellSilicon(pt, SiliconType.NType);
-//                case DrawMode.Via: GameModel.PutVia(to);
-//                    break;
+                case DrawMode.Via: return Layer.AddVia(pt);
                 case DrawMode.DeleteMetal: return Layer.RemoveCellMetal(pt);
                 case DrawMode.DeleteSilicon: return Layer.RemoveCellSilicon(pt);
-//                case DrawMode.DeleteVia: GameModel.DeleteVia(to);
-//                    break;
+                case DrawMode.DeleteVia: return Layer.RemoveVia(pt);
 //                case DrawMode.NoDraw: break;
                 default:
                     throw new ArgumentOutOfRangeException();

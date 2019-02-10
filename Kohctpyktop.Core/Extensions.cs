@@ -58,7 +58,6 @@ namespace Kohctpyktop
 
         public static bool IsVertical(this Side side) => side == Side.Top || side == Side.Bottom;
 
-
         public static SiliconTypes ConvertToGate(this SiliconType slcBase, bool isVertical)
         {
             switch (slcBase)
@@ -66,6 +65,26 @@ namespace Kohctpyktop
                 case SiliconType.NType: return isVertical ? SiliconTypes.NTypeVGate : SiliconTypes.NTypeHGate;
                 case SiliconType.PType: return isVertical ? SiliconTypes.PTypeVGate : SiliconTypes.PTypeHGate;
                 default: throw new ArgumentException(nameof(slcBase));
+            }
+        }
+        
+        public static SiliconTypes AddVia(this SiliconTypes silicon)
+        {
+            switch (silicon)
+            {
+                case SiliconTypes.NType: return SiliconTypes.NTypeVia;
+                case SiliconTypes.PType: return SiliconTypes.PTypeVia;
+                default: throw new ArgumentException(nameof(silicon));
+            }
+        }
+        
+        public static SiliconTypes RemoveVia(this SiliconTypes silicon)
+        {
+            switch (silicon)
+            {
+                case SiliconTypes.NTypeVia: return SiliconTypes.NType;
+                case SiliconTypes.PTypeVia: return SiliconTypes.PType;
+                default: throw new ArgumentException(nameof(silicon));
             }
         }
         

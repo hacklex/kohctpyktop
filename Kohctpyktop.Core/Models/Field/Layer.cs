@@ -452,5 +452,27 @@ namespace Kohctpyktop.Models.Field
         {
             return RemoveLink(from, from.Shift(side), linkType);
         }
+
+        public bool AddVia(Position position)
+        {
+            var cell = _cellMatrix[position];
+            if (!cell.IsValidCell) return false;
+            
+            if (cell.HasVia() || !cell.HasSilicon() || cell.HasGate()) return false;
+
+            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon.AddVia(), cell.HasMetal));
+            return true;
+        }
+
+        public bool RemoveVia(Position position)
+        {
+            var cell = _cellMatrix[position];
+            if (!cell.IsValidCell) return false;
+            
+            if (!cell.HasVia()) return false;
+
+            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon.RemoveVia(), cell.HasMetal));
+            return true;
+        }
     }
 }

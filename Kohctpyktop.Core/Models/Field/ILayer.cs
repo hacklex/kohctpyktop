@@ -84,5 +84,8 @@ namespace Kohctpyktop.Models.Field
 
         bool AddLink(Position from, Position to, LinkType linkType);
         bool RemoveLink(Position from, Position to, LinkType linkType);
+
+        bool AddVia(Position position);
+        bool RemoveVia(Position position);
     }
 }
