@@ -28,5 +28,8 @@ namespace Kohctpyktop.Models.Field
         
         public static bool HasSilicon(this ILayerCell cell) =>
             cell.Silicon != SiliconTypes.None;
+        
+        public static bool IsVerticalGate(this ILayerCell cell) =>
+            cell.Silicon == SiliconTypes.NTypeVGate || cell.Silicon == SiliconTypes.PTypeVGate;
     }
 }

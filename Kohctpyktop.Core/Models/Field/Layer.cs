@@ -388,6 +388,19 @@ namespace Kohctpyktop.Models.Field
             }
         }
 
+        private bool IsValidGate(ILayerCell layerCell)
+        {
+            var isVerticalGate = layerCell.IsVerticalGate();
+            var baseS1 = isVerticalGate ? Side.Top : Side.Left;
+            var baseS2 = baseS1.Invert();
+            var (slS1, slS2) = baseS1.GetPerpendicularSides();
+
+            return layerCell.Links[baseS1].SiliconLink == SiliconLink.BiDirectional &&
+                   layerCell.Links[baseS2].SiliconLink == SiliconLink.BiDirectional &&
+                   (layerCell.Links[slS1].SiliconLink == SiliconLink.Slave ||
+                    layerCell.Links[slS2].SiliconLink == SiliconLink.Slave);
+        }
+
         public bool RemoveLink(Position from, Position to, LinkType linkType)
         {
             if (!from.IsAdjacent(to))
@@ -405,12 +418,25 @@ namespace Kohctpyktop.Models.Field
                     if (existingLink.SiliconLink == SiliconLink.None) return false;
                     
                     _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(SiliconLink.None, existingLink.HasMetalLink));
-                    
-                    if (fromCell.HasGate()) // todo: double gates 
-                        _cellMatrix.UpdateCellContent(from, new LayerCellMatrix.CellContent(fromCell.Silicon.RemoveGate(), fromCell.HasMetal));
-                    if (toCell.HasGate()) 
-                        _cellMatrix.UpdateCellContent(to, new LayerCellMatrix.CellContent(toCell.Silicon.RemoveGate(), toCell.HasMetal));
+
+                    void EnsureGateState(Position pos, ILayerCell cell)
+                    {
+                        if (!cell.HasGate() || IsValidGate(cell)) return;
                         
+                        _cellMatrix.UpdateCellContent(pos,
+                            new LayerCellMatrix.CellContent(cell.Silicon.RemoveGate(), cell.HasMetal));
+                        for (var i = 0; i < 4; i++)
+                        {
+                            var gateLinkSide = (Side) i;
+                            var oldLink = cell.Links[gateLinkSide];
+                            if (oldLink.SiliconLink == SiliconLink.Slave)
+                                _cellMatrix.UpdateLinkContent(pos, (Side) i, new LayerCellMatrix.LinkContent(SiliconLink.None, oldLink.HasMetalLink));
+                        }
+                    }
+                    
+                    EnsureGateState(from, fromCell);
+                    EnsureGateState(to, toCell);
+                    
                     return true;
                 case LinkType.MetalLink:
                     if (!existingLink.HasMetalLink) return false;
