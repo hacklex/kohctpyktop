@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
+using Kohctpyktop.Models.Topology;
 using Kohctpyktop.Rendering;
 using Point = System.Windows.Point;
 
@@ -17,6 +18,8 @@ namespace Kohctpyktop.Input
         private SelectedTool _selectedTool;
         private DrawMode _drawMode;
         private ILayerCell _hoveredCell;
+        [Obsolete]
+        public CellAssignments[,] _assignments;
         
         public InputHandler(ILayer layer)
         {
@@ -77,10 +80,10 @@ namespace Kohctpyktop.Input
                 if (value == _selectedTool) return;
                 _selectedTool = value;
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
-//                if (_selectedTool == SelectedTool.TopologyDebug)
-//                    GameModel.BuildTopology();
-//                else
-//                    GameModel.ClearTopologyMarkers();
+                if (_selectedTool == SelectedTool.TopologyDebug)
+                    (_assignments, _, _) = TopologyBuilder.BuildTopology(Layer);
+                else
+                    _assignments = null;
                 OnPropertyChanged();
                 
                 ResetSelection();
@@ -90,13 +93,15 @@ namespace Kohctpyktop.Input
         public ILayerCell HoveredCell
         {
             get => _hoveredCell;
-            set
+            private set
             {
                 if (_hoveredCell == value) return;
                 _hoveredCell = value;
                 OnPropertyChanged();
             }
         }
+
+        public SchemeNode HoveredNode { get; private set; }
 
         private Point _dragStartPos;
         private SelectionState _selectionState;
@@ -134,9 +139,13 @@ namespace Kohctpyktop.Input
             if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Column != HoveredCell?.Column)
             {
                 HoveredCell = hoveredCell;
-//                GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
-//                    ? hoveredCell.LastAssignedSiliconNode
-//                    : hoveredCell.LastAssignedMetalNode;
+                if (_assignments != null)
+                {
+                    HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+                        ? _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedSiliconNode
+                        : _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedMetalNode;
+                }
+
 //                 GameModel.MarkModelAsChanged();
             }
         }
@@ -224,7 +233,7 @@ namespace Kohctpyktop.Input
                 case DrawMode.DeleteMetal: return Layer.RemoveCellMetal(pt);
                 case DrawMode.DeleteSilicon: return Layer.RemoveCellSilicon(pt);
                 case DrawMode.DeleteVia: return Layer.RemoveVia(pt);
-//                case DrawMode.NoDraw: break;
+                case DrawMode.NoDraw: return false;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

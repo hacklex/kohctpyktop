@@ -373,13 +373,19 @@ namespace Kohctpyktop.Rendering
 //                fillBounds.Height++;
 //                _graphics.FillRectangle(LockedRegionBrush, fillBounds);
 //            }
-//            if ((cell.LastAssignedSiliconNode == _layer.HoveredNode ||
-//                cell.LastAssignedMetalNode == _layer.HoveredNode) && _layer.HoveredNode != null)
-//            {
-//                var fillBounds = bounds;
-//                fillBounds.Inflate(-1, -1);
-//                FillTopologyPlace(fillBounds, cell.LastAssignedMetalNode == _layer.HoveredNode);
-//            }
+
+            if (opts.Assignments != null)
+            {
+                var assignments = opts.Assignments[i, j];
+                if ((assignments.LastAssignedSiliconNode == opts.HoveredNode ||
+                     assignments.LastAssignedMetalNode == opts.HoveredNode) && opts.HoveredNode != null)
+                {
+                    var fillBounds = bounds;
+                    fillBounds.Inflate(-1, -1);
+                    FillTopologyPlace(fillBounds, assignments.LastAssignedMetalNode == opts.HoveredNode);
+                }
+            }
+
 //            if (!string.IsNullOrWhiteSpace(cell.LockedName))
 //            {
 //                namedCells.Add(cell);

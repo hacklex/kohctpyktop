@@ -30,6 +30,6 @@ namespace Kohctpyktop.Models.Topology
         /// The state of the gate during the previous simulation step
         /// </summary>
         public bool WasOpen { get; set; }
-        public List<Cell> GateCells { get; set; } = new List<Cell>();
+        public List<ILayerCell> GateCells { get; set; } = new List<ILayerCell>();
     }
 }

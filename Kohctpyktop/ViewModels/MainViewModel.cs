@@ -88,7 +88,7 @@ namespace Kohctpyktop.ViewModels
 
         private void Redraw()
         {
-            _renderer.Render(new RenderOpts(InputHandler.SelectionState, InputHandler.Selection));
+            _renderer.Render(new RenderOpts(InputHandler.SelectionState, InputHandler.Selection, InputHandler._assignments, InputHandler.HoveredNode));
             
             var bmpImage = new BitmapImage();
             var stream = new MemoryStream();

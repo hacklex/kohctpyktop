@@ -4,13 +4,13 @@ namespace Kohctpyktop.Models.Topology
 {
     public struct ElementaryPlaceLink
     {
-        public Cell Cell { get; set; }
+        public ILayerCell Cell { get; set; }
         public bool IsMetalLayer { get; set; }
 
         public bool IsSameAs(ElementaryPlaceLink other) =>
-            Cell.Row == other.Cell.Row && Cell.Col == other.Cell.Col && IsMetalLayer == other.IsMetalLayer;
+            Cell.Row == other.Cell.Row && Cell.Column == other.Cell.Column && IsMetalLayer == other.IsMetalLayer;
 
-        public ElementaryPlaceLink(Cell cell, bool isMetalLayer)
+        public ElementaryPlaceLink(ILayerCell cell, bool isMetalLayer)
         {
             Cell = cell;
             IsMetalLayer = isMetalLayer;

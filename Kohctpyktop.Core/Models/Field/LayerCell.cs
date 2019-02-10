@@ -42,18 +42,40 @@ namespace Kohctpyktop.Models.Field
     {
         private class Link : ICellLink
         {
+            private readonly Layer _layer;
+            private readonly int _sourceRow;
+            private readonly int _sourceColumn;
+            private readonly int _targetRow;
+            private readonly int _targetColumn;
+            
             private readonly Link _invLink;
             private SiliconLink _siliconLink;
             private bool _hasMetalLink;
 
-            public Link() => _invLink = new Link(this);
+            public Link(Layer layer, int sourceRow, int sourceColumn, int targetRow, int targetColumn)
+            {
+                _layer = layer;
+                _sourceRow = sourceRow;
+                _sourceColumn = sourceColumn;
+                _targetRow = targetRow;
+                _targetColumn = targetColumn;
+                _invLink = new Link(this, layer, sourceRow, sourceColumn, targetRow, targetColumn);
+            }
 
-            private Link(Link invLink) => _invLink = invLink;
-            
-            public bool IsValidLink => true;
-            
-            public ILayerCell SourceCell => throw new NotImplementedException();
-            public ILayerCell TargetCell => throw new NotImplementedException();
+            private Link(Link invLink, Layer layer, int sourceRow, int sourceColumn, int targetRow, int targetColumn)
+            {
+                _layer = layer;
+                _sourceRow = sourceRow;
+                _sourceColumn = sourceColumn;
+                _targetRow = targetRow;
+                _targetColumn = targetColumn;
+                _invLink = invLink;
+            }
+
+            public bool IsValidLink => SourceCell.IsValidCell && TargetCell.IsValidCell;
+
+            public ILayerCell SourceCell => _layer.Cells[_sourceRow, _sourceColumn];
+            public ILayerCell TargetCell => _layer.Cells[_targetRow, _targetColumn];
             
             public SiliconLink SiliconLink
             {
@@ -89,8 +111,8 @@ namespace Kohctpyktop.Models.Field
             _row = row;
             _column = column;
             
-            _rlink = new Link();
-            _blink = new Link();
+            _rlink = new Link(_layer, row, column, row, column + 1);
+            _blink = new Link(_layer, row, column, row + 1, column);
         }
 
         public ICellLink this[int side] => this[(Side) side];
