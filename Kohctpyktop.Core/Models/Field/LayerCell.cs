@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security;
 
 namespace Kohctpyktop.Models.Field
 {
@@ -34,6 +33,8 @@ namespace Kohctpyktop.Models.Field
         public int Column => -1;
         public SiliconTypes Silicon => SiliconTypes.None;
         public bool HasMetal => false;
+        public bool IsLocked => true;
+        public string Name => null;
         public IReadOnlyDirectionalSet<ICellLink> Links { get; }
         public IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
     }
@@ -132,7 +133,7 @@ namespace Kohctpyktop.Models.Field
             }
         }
 
-        public void Apply(Side side, LayerCellMatrix.LinkContent content)
+        public void Apply(Side side, LinkContent content)
         {
             switch (side)
             {
@@ -225,30 +226,29 @@ namespace Kohctpyktop.Models.Field
         public int Column { get; }
         public SiliconTypes Silicon { get; private set; }
         public bool HasMetal { get; private set; }
+        public bool IsLocked { get; private set; }
+        public string Name { get; private set; }
 
         public IReadOnlyDirectionalSet<ICellLink> Links { get; }
         public IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
-
-        public LayerCellMatrix.CellContent SaveState()
-        {
-            return new LayerCellMatrix.CellContent(Silicon, HasMetal);
-        }
         
-        public void Apply(LayerCellMatrix.CellContent content)
+        public void Apply(CellContent content)
         {
             Silicon = content.Silicon;
             HasMetal = content.HasMetal;
+            IsLocked = content.IsLocked;
+            Name = content.Name;
         }
         
-        public (LayerCellMatrix.LinkContent, LayerCellMatrix.LinkContent) SaveLinkState()
+        public (LinkContent, LinkContent) SaveLinkState()
         {
             var rlink = Links[Side.Right];
             var blink = Links[Side.Bottom];
-            return (new LayerCellMatrix.LinkContent(rlink.SiliconLink, rlink.HasMetalLink),
-                new LayerCellMatrix.LinkContent(blink.SiliconLink, blink.HasMetalLink));
+            return (new LinkContent(rlink.SiliconLink, rlink.HasMetalLink),
+                new LinkContent(blink.SiliconLink, blink.HasMetalLink));
         }
         
-        public void ApplyLink(Side side, LayerCellMatrix.LinkContent content)
+        public void ApplyLink(Side side, LinkContent content)
         {
             _links.Apply(side, content);
         }

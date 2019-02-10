@@ -42,16 +42,18 @@ namespace Kohctpyktop.Models.Field
 
         SiliconTypes Silicon { get; } // todo: rename enum
         bool HasMetal { get; }
+        bool IsLocked { get; }
 
         IReadOnlyDirectionalSet<ICellLink> Links { get; }
         IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
+        string Name { get; }
     }
 
     public interface ITransactional
     {
         bool HasUncommitedChanges { get; }
         
-        void CommitChanges();
+        void CommitChanges(bool revertable = true);
         void RejectChanges();
     }
     
@@ -87,5 +89,7 @@ namespace Kohctpyktop.Models.Field
 
         bool AddVia(Position position);
         bool RemoveVia(Position position);
+        bool SetLockState(Position position, bool isLocked);
+        bool SetCellName(Position position, string name);
     }
 }

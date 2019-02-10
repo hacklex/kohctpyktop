@@ -294,7 +294,7 @@ namespace Kohctpyktop.Rendering
 
         static readonly Font PinNameFont = new Font("Courier New", 8);
 
-        private void DrawCell(RenderOpts opts, int i, int j, Position from, Position to, List<Cell> namedCells)
+        private void DrawCell(RenderOpts opts, int i, int j, Position from, Position to, List<ILayerCell> namedCells)
         {
             var cell = _layer.Cells[i, j];
             var bounds = GetCellBounds(j, i);
@@ -364,16 +364,15 @@ namespace Kohctpyktop.Rendering
                 if (!isTopSideDetached)
                     MetalIntercellular(cell, true, bounds);
             }
-//            else if (cell.IsLocked)
-//            {
-//                var fillBounds = bounds;
-//                fillBounds.X--;
-//                fillBounds.Y--;
-//                fillBounds.Width++;
-//                fillBounds.Height++;
-//                _graphics.FillRectangle(LockedRegionBrush, fillBounds);
-//            }
-
+            else if (cell.IsLocked)
+            {
+                var fillBounds = bounds;
+                fillBounds.X--;
+                fillBounds.Y--;
+                fillBounds.Width++;
+                fillBounds.Height++;
+                _graphics.FillRectangle(LockedRegionBrush, fillBounds);
+            }
             if (opts.Assignments != null)
             {
                 var assignments = opts.Assignments[i, j];
@@ -386,15 +385,15 @@ namespace Kohctpyktop.Rendering
                 }
             }
 
-//            if (!string.IsNullOrWhiteSpace(cell.LockedName))
-//            {
-//                namedCells.Add(cell);
-//            }
+            if (!string.IsNullOrWhiteSpace(cell.Name))
+            {
+                namedCells.Add(cell);
+            }
         }
         
         private void DrawSiliconAndMetal(RenderOpts opts)
         {
-            var namedCells = new List<Cell>();
+            var namedCells = new List<ILayerCell>();
             
             var (from, to) = opts.Selection?.ToFieldPositions() ?? default((Position, Position));
             
@@ -421,24 +420,30 @@ namespace Kohctpyktop.Rendering
                 }
             }
 
-//            foreach (var cell in namedCells)
-//            { 
-//                var bounds = GetCellBounds(cell.Col, cell.Row);
-//                bounds.Inflate(CellSize, CellSize);
-//                var centerX = bounds.Left + bounds.Width / 2;
-//                var centerY = bounds.Top + bounds.Height / 2;
-//                _graphics.FillRectangle(Brushes.WhiteSmoke, bounds);
-//                var measure = _graphics.MeasureString(cell.LockedName, PinNameFont);
-//                if ((cell.LastAssignedSiliconNode == _layer.HoveredNode ||
-//                     cell.LastAssignedMetalNode == _layer.HoveredNode) && _layer.HoveredNode != null)
-//                {
-//                    var fillBounds = bounds;
-//                    fillBounds.Inflate(-1, -1);
-//                    FillTopologyPlace(fillBounds, cell.LastAssignedMetalNode == _layer.HoveredNode);
-//                }
-//                _graphics.DrawString(cell.LockedName, PinNameFont, Brushes.Black, centerX - measure.Width / 2,
-//                    centerY - measure.Height / 2);
-//            }
+            foreach (var cell in namedCells)
+            { 
+                var bounds = GetCellBounds(cell.Column, cell.Row);
+                bounds.Inflate(CellSize, CellSize);
+                var centerX = bounds.Left + bounds.Width / 2;
+                var centerY = bounds.Top + bounds.Height / 2;
+                _graphics.FillRectangle(Brushes.WhiteSmoke, bounds);
+                var measure = _graphics.MeasureString(cell.Name, PinNameFont);
+                
+                if (opts.Assignments != null)
+                {
+                    var assignments = opts.Assignments[cell.Row, cell.Column];
+                    if ((assignments.LastAssignedSiliconNode == opts.HoveredNode ||
+                         assignments.LastAssignedMetalNode == opts.HoveredNode) && opts.HoveredNode != null)
+                    {
+                        var fillBounds = bounds;
+                        fillBounds.Inflate(-1, -1);
+                        FillTopologyPlace(fillBounds, assignments.LastAssignedMetalNode == opts.HoveredNode);
+                    }
+                }
+                
+                _graphics.DrawString(cell.Name, PinNameFont, Brushes.Black, centerX - measure.Width / 2,
+                    centerY - measure.Height / 2);
+            }
         }
 
         public void FillTopologyPlace(Rectangle bounds, bool metal)

@@ -1,36 +1,41 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.IO;
 
 namespace Kohctpyktop.Models.Field
 {
+    public struct CellContent
+    {
+        public CellContent(ILayerCell cell)
+        {
+            Silicon = cell.Silicon;
+            HasMetal = cell.HasMetal;
+            IsLocked = cell.IsLocked;
+            Name = cell.Name;
+        }
+
+        public SiliconTypes Silicon { get; set; }
+        public bool HasMetal { get; set; }
+        public bool IsLocked { get; set; }
+        public string Name { get; set; }
+    }
+        
+    public struct LinkContent
+    {
+        public LinkContent(SiliconLink siliconLink, bool hasMetalLink)
+        {
+            SiliconLink = siliconLink;
+            HasMetalLink = hasMetalLink;
+        }
+            
+        public SiliconLink SiliconLink { get; }
+        public bool HasMetalLink { get; }
+    }
+    
     public class LayerCellMatrix : IReadOnlyMatrix<ILayerCell>
     {
         private const long MaxUndoRedoDepth = 10;
-
-        public struct CellContent
-        {
-            public CellContent(SiliconTypes silicon, bool hasMetal)
-            {
-                Silicon = silicon;
-                HasMetal = hasMetal;
-            }
-
-            public SiliconTypes Silicon { get; }
-            public bool HasMetal { get; }
-        }
-        
-        public struct LinkContent
-        {
-            public LinkContent(SiliconLink siliconLink, bool hasMetalLink)
-            {
-                SiliconLink = siliconLink;
-                HasMetalLink = hasMetalLink;
-            }
-            
-            public SiliconLink SiliconLink { get; }
-            public bool HasMetalLink { get; }
-        }
         
         private class CellNode
         {
@@ -44,10 +49,10 @@ namespace Kohctpyktop.Models.Field
             public Dictionary<int, CellContent> SavedStates { get; } = new Dictionary<int, CellContent>();
             public LayerCell HostedCell { get; }
 
-            public void CommitChanges(int transactionId)
+            public void CommitChanges(int transactionId, bool revertable)
             {
-                SavedStates[transactionId] = _savedCellContent;
-                _savedCellContent = HostedCell.SaveState();
+                if (revertable) SavedStates[transactionId] = _savedCellContent;
+                _savedCellContent = new CellContent(HostedCell);
             }
 
             public void RejectChanges()
@@ -84,9 +89,9 @@ namespace Kohctpyktop.Models.Field
             public Dictionary<int, (LinkContent, LinkContent)> SavedStates { get; } = new Dictionary<int, (LinkContent, LinkContent)>();
             public LayerCell HostedCell { get; }
 
-            public void CommitChanges(int transactionId)
+            public void CommitChanges(int transactionId, bool revertable)
             {
-                SavedStates[transactionId] = (_savedRightLinkContent, _savedBottomLinkContent);
+                if (revertable) SavedStates[transactionId] = (_savedRightLinkContent, _savedBottomLinkContent);
                 (_savedRightLinkContent, _savedBottomLinkContent) = HostedCell.SaveLinkState();
             }
 
@@ -144,17 +149,17 @@ namespace Kohctpyktop.Models.Field
 
         public ILayerCell this[Position position] => this[position.Row, position.Col];
 
-        public void CommitChanges()
+        public void CommitChanges(bool revertable)
         {
             if (!HasUncommitedChanges) return;
             
-            _transactionId++;
+            if (revertable) _transactionId++;
             
             for (var i = 0; i < RowCount; i++)
             for (var j = 0; j < ColumnCount; j++)
             {
-                _cellNodes[i, j].CommitChanges(_transactionId);
-                _linkNodes[i, j].CommitChanges(_transactionId);
+                _cellNodes[i, j].CommitChanges(_transactionId, revertable);
+                _linkNodes[i, j].CommitChanges(_transactionId, revertable);
             }
 
             HasUncommitedChanges = false;
@@ -248,7 +253,7 @@ namespace Kohctpyktop.Models.Field
 
         public bool HasUncommitedChanges => _cellMatrix.HasUncommitedChanges;
         
-        public void CommitChanges() => _cellMatrix.CommitChanges();
+        public void CommitChanges(bool revertable = true) => _cellMatrix.CommitChanges(revertable);
         public void RejectChanges() => _cellMatrix.RejectChanges();
 
         public int MaxUndoDepth { get; set; }
@@ -278,24 +283,20 @@ namespace Kohctpyktop.Models.Field
         public bool AddCellSilicon(Position position, SiliconType siliconType)
         {
             var cell = _cellMatrix[position];
-            if (cell.Silicon != SiliconTypes.None) return false;
-
-            if (!cell.IsValidCell) return false;
+            if (!cell.IsValidCell || cell.IsLocked || cell.Silicon != SiliconTypes.None) return false;
 
             var slcType = siliconType == SiliconType.NType ? SiliconTypes.NType : SiliconTypes.PType;
-            
-            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(slcType, cell.HasMetal));
+
+            _cellMatrix.UpdateCellContent(position, new CellContent(cell) {Silicon = slcType});
             return true;
         }
 
         public bool RemoveCellSilicon(Position position)
         {
             var cell = _cellMatrix[position];
-            if (cell.Silicon == SiliconTypes.None) return false;
-            
-            if (!cell.IsValidCell) return false;
+            if (!cell.IsValidCell || cell.IsLocked || cell.Silicon == SiliconTypes.None) return false;
 
-            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(SiliconTypes.None, cell.HasMetal));
+            _cellMatrix.UpdateCellContent(position, new CellContent(cell) {Silicon = SiliconTypes.None});
             RemoveCellLinks(position, LinkType.SiliconLink);
             
             return true;
@@ -304,22 +305,18 @@ namespace Kohctpyktop.Models.Field
         public bool AddCellMetal(Position position)
         {
             var cell = _cellMatrix[position];
-            if (cell.HasMetal) return false;
-            
-            if (!cell.IsValidCell) return false;
+            if (!cell.IsValidCell || cell.IsLocked || cell.HasMetal) return false;
 
-            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon, true));
+            _cellMatrix.UpdateCellContent(position, new CellContent(cell) {HasMetal = true});
             return true;
         }
 
         public bool RemoveCellMetal(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.HasMetal) return false;
-            
-            if (!cell.IsValidCell) return false;
+            if (!cell.IsValidCell || cell.IsLocked || !cell.HasMetal) return false;
 
-            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon, false));
+            _cellMatrix.UpdateCellContent(position, new CellContent(cell) {HasMetal = false});
             RemoveCellLinks(position, LinkType.MetalLink);
             
             return true;
@@ -369,8 +366,8 @@ namespace Kohctpyktop.Models.Field
                     var (canPlace, newLinkType, targetSlc) = CheckSiliconLink(fromCell, toCell, side);
                     if (canPlace)
                     {
-                        _cellMatrix.UpdateCellContent(to, new LayerCellMatrix.CellContent(targetSlc, toCell.HasMetal));
-                        _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(newLinkType, existingLink.HasMetalLink));
+                        _cellMatrix.UpdateCellContent(to, new CellContent(toCell) {Silicon = targetSlc});
+                        _cellMatrix.UpdateLinkContent(from, side, new LinkContent(newLinkType, existingLink.HasMetalLink));
                         return true;
                     }
 
@@ -381,7 +378,7 @@ namespace Kohctpyktop.Models.Field
                         !fromCell.HasMetal ||
                         !toCell.HasMetal) return false;
                     
-                    _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(existingLink.SiliconLink, true));
+                    _cellMatrix.UpdateLinkContent(from, side, new LinkContent(existingLink.SiliconLink, true));
                     return true;
                 default:
                     throw new ArgumentException(nameof(linkType));
@@ -417,20 +414,20 @@ namespace Kohctpyktop.Models.Field
                 case LinkType.SiliconLink:
                     if (existingLink.SiliconLink == SiliconLink.None) return false;
                     
-                    _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(SiliconLink.None, existingLink.HasMetalLink));
+                    _cellMatrix.UpdateLinkContent(from, side, new LinkContent(SiliconLink.None, existingLink.HasMetalLink));
 
                     void EnsureGateState(Position pos, ILayerCell cell)
                     {
                         if (!cell.HasGate() || IsValidGate(cell)) return;
                         
                         _cellMatrix.UpdateCellContent(pos,
-                            new LayerCellMatrix.CellContent(cell.Silicon.RemoveGate(), cell.HasMetal));
+                            new CellContent(cell) { Silicon = cell.Silicon.RemoveGate()});
                         for (var i = 0; i < 4; i++)
                         {
                             var gateLinkSide = (Side) i;
                             var oldLink = cell.Links[gateLinkSide];
                             if (oldLink.SiliconLink == SiliconLink.Slave)
-                                _cellMatrix.UpdateLinkContent(pos, (Side) i, new LayerCellMatrix.LinkContent(SiliconLink.None, oldLink.HasMetalLink));
+                                _cellMatrix.UpdateLinkContent(pos, (Side) i, new LinkContent(SiliconLink.None, oldLink.HasMetalLink));
                         }
                     }
                     
@@ -441,7 +438,7 @@ namespace Kohctpyktop.Models.Field
                 case LinkType.MetalLink:
                     if (!existingLink.HasMetalLink) return false;
                     
-                    _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(existingLink.SiliconLink, false));
+                    _cellMatrix.UpdateLinkContent(from, side, new LinkContent(existingLink.SiliconLink, false));
                     return true;
                 default:
                     throw new ArgumentException(nameof(linkType));
@@ -456,23 +453,51 @@ namespace Kohctpyktop.Models.Field
         public bool AddVia(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell) return false;
+            if (!cell.IsValidCell || cell.IsLocked) return false;
             
             if (cell.HasVia() || !cell.HasSilicon() || cell.HasGate()) return false;
 
-            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon.AddVia(), cell.HasMetal));
+            _cellMatrix.UpdateCellContent(position, new CellContent(cell) { Silicon = cell.Silicon.AddVia()});
             return true;
         }
 
         public bool RemoveVia(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell) return false;
+            if (!cell.IsValidCell || cell.IsLocked) return false;
             
             if (!cell.HasVia()) return false;
 
-            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon.RemoveVia(), cell.HasMetal));
+            _cellMatrix.UpdateCellContent(position, new CellContent(cell) { Silicon = cell.Silicon.RemoveVia()});
             return true;
+        }
+        
+        public bool SetLockState(Position position, bool isLocked)
+        {
+            var cell = _cellMatrix[position];
+            if (!cell.IsValidCell) return false;
+
+            if (cell.IsLocked != isLocked)
+            {
+                _cellMatrix.UpdateCellContent(position, new CellContent(cell) { IsLocked = isLocked });
+                return true;
+            }
+
+            return false;
+        }
+        
+        public bool SetCellName(Position position, string name)
+        {
+            var cell = _cellMatrix[position];
+            if (!cell.IsValidCell) return false;
+
+            if (cell.Name != name)
+            {
+                _cellMatrix.UpdateCellContent(position, new CellContent(cell) { Name = name });
+                return true;
+            }
+
+            return false;
         }
     }
 }
