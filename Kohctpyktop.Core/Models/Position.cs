@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows;
+using Kohctpyktop.Models.Field;
 
 namespace Kohctpyktop.Models
 {
@@ -33,5 +34,10 @@ namespace Kohctpyktop.Models
         public int ManhattanDistance(Position target) => Math.Abs(X - target.X) + Math.Abs(Y - target.Y);
 
         public override string ToString() => $"{X},{Y}";
+
+        public bool IsAdjacent(Position to) => ManhattanDistance(to) == 1;
+
+        public Side GetAdjacentSide(Position to) => 
+            to.X > X ? Side.Right : to.X < X ? Side.Left : to.Y > Y ? Side.Bottom : Side.Top;
     }
 }

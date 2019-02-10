@@ -207,11 +207,9 @@ namespace Kohctpyktop.Input
             var args = new DrawArgs(from, to);
             
             if (args.IsOnSingleCell) return DrawSinglePoint(from);
-            if (args.IsBetweenNeighbors)
-            {
-                return DrawSinglePoint(from) || DrawSinglePoint(to);
-            }
-
+            if (args.IsBetweenNeighbors) return DrawAdjacentPoints(from, to);
+            
+            // todo: bresenham's line algorithm
             return false;
         }
 
@@ -219,23 +217,39 @@ namespace Kohctpyktop.Input
         {
             switch (DrawMode)
             {
-//                case DrawMode.Metal: GameModel.DrawMetal(args);
-//                    break;
+                case DrawMode.Metal: return Layer.AddCellMetal(pt);
                 case DrawMode.PType: return Layer.AddCellSilicon(pt, SiliconType.PType);
-                    break;
                 case DrawMode.NType: return Layer.AddCellSilicon(pt, SiliconType.NType);
-                    break;
 //                case DrawMode.Via: GameModel.PutVia(to);
 //                    break;
-//                case DrawMode.DeleteMetal: GameModel.DeleteMetal(to);
-//                    break;
+                case DrawMode.DeleteMetal: return Layer.AddCellMetal(pt);
                 case DrawMode.DeleteSilicon: return Layer.RemoveCellSilicon(pt);
-                    break;
 //                case DrawMode.DeleteVia: GameModel.DeleteVia(to);
 //                    break;
 //                case DrawMode.NoDraw: break;
                 default:
                     throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        public bool DrawAdjacentPoints(Position from, Position to)
+        {
+            switch (DrawMode)
+            {
+                case DrawMode.Metal: 
+                    return Layer.AddCellMetal(from) | 
+                           Layer.AddCellMetal(to) | 
+                           Layer.AddLink(from, to, LinkType.MetalLink);
+                case DrawMode.PType:
+                    return Layer.AddCellSilicon(from, SiliconType.PType) | 
+                           Layer.AddCellSilicon(to, SiliconType.PType) | 
+                           Layer.AddLink(from, to, LinkType.SiliconLink);
+                case DrawMode.NType: 
+                    return Layer.AddCellSilicon(from, SiliconType.NType) | 
+                           Layer.AddCellSilicon(to, SiliconType.NType) | 
+                           Layer.AddLink(from, to, LinkType.SiliconLink);
+                default:
+                    return DrawSinglePoint(from) | DrawSinglePoint(to);
             }
         }
 
