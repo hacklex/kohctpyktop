@@ -6,13 +6,40 @@ namespace Kohctpyktop.Models.Field
     {
         private class Link : ICellLink
         {
+            private readonly Link _invLink;
+            private SiliconLink _siliconLink;
+            private bool _hasMetalLink;
+
+            public Link() => _invLink = new Link(this);
+
+            private Link(Link invLink) => _invLink = invLink;
+            
             public bool IsValidLink => true;
             
             public ILayerCell SourceCell => throw new NotImplementedException();
             public ILayerCell TargetCell => throw new NotImplementedException();
-            
-            public SiliconLink SiliconLink { get; set; }
-            public bool HasMetalLink { get; set; }
+
+            public SiliconLink SiliconLink
+            {
+                get => _siliconLink;
+                set
+                {
+                    _siliconLink = value;
+                    _invLink._siliconLink = value;
+                }
+            }
+
+            public bool HasMetalLink
+            {
+                get => _hasMetalLink;
+                set
+                {
+                    _hasMetalLink = value;
+                    _invLink._hasMetalLink = value;
+                }
+            }
+
+            public ICellLink Inverted => _invLink;
         }
 
         private readonly Layer _layer;
@@ -40,8 +67,8 @@ namespace Kohctpyktop.Models.Field
                 {
                     case Side.Right: return _rlink;
                     case Side.Bottom: return _blink;
-                    case Side.Left: return _layer.Cells[_row, _column - 1].Links[Side.Right];
-                    case Side.Top: return _layer.Cells[_row - 1, _column].Links[Side.Bottom];
+                    case Side.Left: return _layer.Cells[_row, _column - 1].Links[Side.Right].Inverted;
+                    case Side.Top: return _layer.Cells[_row - 1, _column].Links[Side.Bottom].Inverted;
                     default: throw new ArgumentException(nameof(side));
                 }
             }
@@ -63,6 +90,37 @@ namespace Kohctpyktop.Models.Field
             }
         }
     }
+    
+    public class LayerCellNeighborSet : IReadOnlyDirectionalSet<ILayerCell>
+    {
+        private readonly Layer _layer;
+        private readonly int _row;
+        private readonly int _column;
+
+        public LayerCellNeighborSet(Layer layer, int row, int column)
+        {
+            _layer = layer;
+            _row = row;
+            _column = column;
+        }
+
+        public ILayerCell this[int side] => this[(Side) side];
+
+        public ILayerCell this[Side side]
+        {
+            get
+            {
+                switch (side)
+                {
+                    case Side.Left: return _layer.Cells[_row, _column - 1];
+                    case Side.Top: return _layer.Cells[_row - 1, _column];
+                    case Side.Right: return _layer.Cells[_row, _column + 1];
+                    case Side.Bottom: return _layer.Cells[_row + 1, _column];;
+                    default: throw new ArgumentException(nameof(side));
+                }
+            }
+        }
+    }
 
     public class LayerCell : ILayerCell
     {
@@ -76,6 +134,7 @@ namespace Kohctpyktop.Models.Field
             Column = column;
             
             Links = _links = new LayerCellLinkSet(layer, row, column);
+            Neighbors = new LayerCellNeighborSet(layer, row, column);
             
             IsValidCell = true;
         }
@@ -88,7 +147,7 @@ namespace Kohctpyktop.Models.Field
         public bool HasMetal { get; private set; }
 
         public IReadOnlyDirectionalSet<ICellLink> Links { get; }
-        public IReadOnlyDirectionalSet<ILayerCell> Neighbors => throw new NotImplementedException();
+        public IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
 
         public LayerCellMatrix.CellContent SaveState()
         {

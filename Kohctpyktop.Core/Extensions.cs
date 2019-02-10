@@ -39,5 +39,21 @@ namespace Kohctpyktop
                     return type;
             }
         }
+
+        public static (Side, Side) GetPerpendicularSides(this Side side)
+        {
+            switch (side)
+            {
+                case Side.Left:
+                case Side.Right:
+                    return (Side.Top, Side.Bottom);
+                case Side.Top:
+                case Side.Bottom:
+                    return (Side.Left, Side.Right);
+                default: throw new ArgumentException(nameof(side));
+            }
+        }
+
+        public static Side Invert(this Side side) => (Side) (((int) side + 2) % 4);
     }
 }

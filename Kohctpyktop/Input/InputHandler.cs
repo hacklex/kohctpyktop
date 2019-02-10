@@ -222,7 +222,7 @@ namespace Kohctpyktop.Input
                 case DrawMode.NType: return Layer.AddCellSilicon(pt, SiliconType.NType);
 //                case DrawMode.Via: GameModel.PutVia(to);
 //                    break;
-                case DrawMode.DeleteMetal: return Layer.AddCellMetal(pt);
+                case DrawMode.DeleteMetal: return Layer.RemoveCellMetal(pt);
                 case DrawMode.DeleteSilicon: return Layer.RemoveCellSilicon(pt);
 //                case DrawMode.DeleteVia: GameModel.DeleteVia(to);
 //                    break;
@@ -248,6 +248,14 @@ namespace Kohctpyktop.Input
                     return Layer.AddCellSilicon(from, SiliconType.NType) | 
                            Layer.AddCellSilicon(to, SiliconType.NType) | 
                            Layer.AddLink(from, to, LinkType.SiliconLink);
+                case DrawMode.DeleteMetal: 
+                    return Layer.RemoveCellMetal(from) | 
+                           Layer.RemoveCellMetal(to) | 
+                           Layer.RemoveLink(from, to, LinkType.MetalLink);
+                case DrawMode.DeleteSilicon: 
+                    return Layer.RemoveCellSilicon(from) | 
+                           Layer.RemoveCellSilicon(to) | 
+                           Layer.RemoveLink(from, to, LinkType.SiliconLink);
                 default:
                     return DrawSinglePoint(from) | DrawSinglePoint(to);
             }

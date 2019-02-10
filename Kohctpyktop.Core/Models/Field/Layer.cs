@@ -261,13 +261,23 @@ namespace Kohctpyktop.Models.Field
         {
             throw new System.NotImplementedException();
         }
+
+        private void RemoveCellLinks(Position position, LinkType type)
+        {
+            RemoveLink(position, Side.Left, type);
+            RemoveLink(position, Side.Top, type);
+            RemoveLink(position, Side.Right, type);
+            RemoveLink(position, Side.Bottom, type);
+        }
         
         public bool AddCellSilicon(Position position, SiliconType siliconType)
         {
             var cell = _cellMatrix[position];
             if (cell.Silicon != SiliconTypes.None) return false;
 
-            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(SiliconTypes.NType, cell.HasMetal));
+            var slcType = siliconType == SiliconType.NType ? SiliconTypes.NType : SiliconTypes.PType;
+            
+            _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(slcType, cell.HasMetal));
             return true;
         }
 
@@ -277,6 +287,8 @@ namespace Kohctpyktop.Models.Field
             if (cell.Silicon == SiliconTypes.None) return false;
 
             _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(SiliconTypes.None, cell.HasMetal));
+            RemoveCellLinks(position, LinkType.SiliconLink);
+            
             return true;
         }
 
@@ -295,9 +307,32 @@ namespace Kohctpyktop.Models.Field
             if (!cell.HasMetal) return false;
 
             _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon, false));
+            RemoveCellLinks(position, LinkType.MetalLink);
+            
             return true;
         }
 
+        private (bool, SiliconLink) CheckSiliconLink(ILayerCell fromCell, ILayerCell toCell, Side side)
+        {
+            var fromBase = fromCell.IsBaseN() ? SiliconType.NType : SiliconType.PType;
+            var toBase = toCell.IsBaseN() ? SiliconType.NType : SiliconType.PType;
+
+            if (fromBase != toBase)
+            {
+                var (p1, p2) = side.GetPerpendicularSides();
+                return toCell.Links[p1].SiliconLink == SiliconLink.BiDirectional &&
+                       toCell.Links[p2].SiliconLink == SiliconLink.BiDirectional
+                    ? (true, SiliconLink.Master)
+                    : (false, SiliconLink.None);
+            }
+            else
+            {
+                return fromCell.HasGate() || toCell.HasGate()
+                    ? (false, SiliconLink.None)
+                    : (true, SiliconLink.BiDirectional);
+            }
+        }
+        
         public bool AddLink(Position from, Position to, LinkType linkType)
         {
             if (!from.IsAdjacent(to)) // cells aren't adjacent
@@ -311,7 +346,20 @@ namespace Kohctpyktop.Models.Field
             
             switch (linkType)
             {
-                case LinkType.SiliconLink: return false;
+                case LinkType.SiliconLink:
+                    if (existingLink.SiliconLink != SiliconLink.None ||
+                        !fromCell.HasSilicon() ||
+                        !toCell.HasSilicon()) return false;
+
+                    var (canPlace, newLinkType) = CheckSiliconLink(fromCell, toCell, side);
+                    if (canPlace)
+                    {
+                        _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(newLinkType, existingLink.HasMetalLink));
+                        return true;
+                    }
+
+                    return false;
+
                 case LinkType.MetalLink:
                     if (existingLink.HasMetalLink ||
                         !fromCell.HasMetal ||
@@ -324,9 +372,33 @@ namespace Kohctpyktop.Models.Field
             }
         }
 
-        public bool RemoveLink(Position @from, Position to, LinkType linkType)
+        public bool RemoveLink(Position from, Position to, LinkType linkType)
         {
-            throw new System.NotImplementedException();
+            if (!from.IsAdjacent(to)) // cells aren't adjacent
+                return false;
+            
+            var side = from.GetAdjacentSide(to);
+            return RemoveLink(from, side, linkType);
+        }
+
+        public bool RemoveLink(Position from, Side side, LinkType linkType)
+        {
+            var fromCell = _cellMatrix[from];
+            //var toCell = fromCell.Neighbors[side];
+            
+            var existingLink = fromCell.Links[side];
+            
+            switch (linkType)
+            {
+                case LinkType.SiliconLink: return false;
+                case LinkType.MetalLink:
+                    if (!existingLink.HasMetalLink) return false;
+                    
+                    _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(existingLink.SiliconLink, false));
+                    return true;
+                default:
+                    throw new ArgumentException(nameof(linkType));
+            }
         }
     }
 }

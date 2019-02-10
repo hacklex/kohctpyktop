@@ -27,6 +27,8 @@ namespace Kohctpyktop.Models.Field
         
         SiliconLink SiliconLink { get; }
         bool HasMetalLink { get; }
+
+        ICellLink Inverted { get; }
     }
 
     public interface ILayerCell
