@@ -59,7 +59,7 @@ namespace Kohctpyktop.Models.Field
                 _sourceColumn = sourceColumn;
                 _targetRow = targetRow;
                 _targetColumn = targetColumn;
-                _invLink = new Link(this, layer, sourceRow, sourceColumn, targetRow, targetColumn);
+                _invLink = new Link(this, layer, targetRow, targetColumn, sourceRow, sourceColumn);
             }
 
             private Link(Link invLink, Layer layer, int sourceRow, int sourceColumn, int targetRow, int targetColumn)

@@ -1,30 +1,29 @@
+using System.Runtime.InteropServices.ComTypes;
+
 namespace Kohctpyktop.Models.Field
 {
     public static class CellExts
     {
-        public static bool IsBaseN(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.NType, SiliconTypes.NTypeVia, SiliconTypes.NTypeHGate, SiliconTypes.NTypeVGate);
+        public static bool IsBaseN(this ILayerCell cell) => HasN(cell) || HasNGate(cell);
         
-        public static bool IsBaseP(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.PType, SiliconTypes.PTypeVia, SiliconTypes.PTypeHGate, SiliconTypes.PTypeVGate);
-        
-        public static bool HasGate(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.NTypeHGate, SiliconTypes.NTypeVGate, SiliconTypes.PTypeHGate, SiliconTypes.PTypeVGate);
+        public static bool IsBaseP(this ILayerCell cell) => HasP(cell) || HasPGate(cell);
+
+        public static bool HasGate(this ILayerCell cell) => HasNGate(cell) || HasPGate(cell);
         
         public static bool HasNGate(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.NTypeHGate, SiliconTypes.NTypeVGate);
+            cell.Silicon == SiliconTypes.NTypeHGate || cell.Silicon == SiliconTypes.NTypeVGate;
         
         public static bool HasPGate(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.PTypeHGate, SiliconTypes.PTypeVGate);
+            cell.Silicon == SiliconTypes.PTypeHGate || cell.Silicon == SiliconTypes.PTypeVGate;
         
         public static bool HasN(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.NType, SiliconTypes.NTypeVia);
+            cell.Silicon == SiliconTypes.NType || cell.Silicon == SiliconTypes.NTypeVia;
         
         public static bool HasP(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.PType, SiliconTypes.PTypeVia);
+            cell.Silicon == SiliconTypes.PType || cell.Silicon == SiliconTypes.PTypeVia;
         
         public static bool HasVia(this ILayerCell cell) =>
-            cell.Silicon.IsAmong(SiliconTypes.NTypeVia, SiliconTypes.PTypeVia);
+            cell.Silicon == SiliconTypes.NTypeVia || cell.Silicon == SiliconTypes.PTypeVia;
         
         public static bool HasSilicon(this ILayerCell cell) =>
             cell.Silicon != SiliconTypes.None;

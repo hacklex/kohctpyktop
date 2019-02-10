@@ -141,7 +141,7 @@ namespace Kohctpyktop.Input
                 HoveredCell = hoveredCell;
                 if (_assignments != null)
                 {
-                    HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
+                    HoveredNode = IsShiftPressed
                         ? _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedSiliconNode
                         : _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedMetalNode;
                 }
