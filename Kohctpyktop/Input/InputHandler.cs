@@ -192,6 +192,77 @@ namespace Kohctpyktop.Input
             }
         }
 
+        // stack-overflow driven development incoming
+        public bool DrawLongLine(Position from, Position to)
+        {
+            var x = from.X;
+            var y = from.Y;
+            
+            var w = to.X - from.X;
+            var h = to.Y - from.Y;
+            
+            int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+            if (w < 0) dx1 = -1;
+            else if (w > 0) dx1 = 1;
+            if (h < 0) dy1 = -1;
+            else if (h > 0) dy1 = 1;
+            if (w < 0) dx2 = -1;
+            else if (w > 0) dx2 = 1;
+            var longest = Math.Abs(w);
+            var shortest = Math.Abs(h);
+            if (!(longest > shortest))
+            {
+                longest = Math.Abs(h);
+                shortest = Math.Abs(w);
+                if (h < 0) dy2 = -1;
+                else if (h > 0) dy2 = 1;
+                dx2 = 0;
+            }
+
+            var numerator = longest >> 1;
+
+            var prevX = -1;
+            var prevY = -1;
+
+            var drawResult = false;
+            
+            for (var i = 0; i <= longest; i++)
+            {
+                if ((x, y).ManhattanDistance((prevX, prevY)) == 1)
+                    drawResult |= DrawAdjacentPoints(new Position(prevX, prevY), new Position(x, y));
+                else
+                    drawResult |= DrawSinglePoint(new Position(x, y));
+
+                prevX = x;
+                prevY = y;
+                
+                numerator += shortest;
+                if (!(numerator < longest))
+                {
+                    numerator -= longest;
+                    x += dx1;
+                    y += dy1;
+                }
+                else
+                {
+                    x += dx2;
+                    y += dy2;
+                }
+            }
+
+            return drawResult;
+        }
+
+        public bool DrawLine(Position from, Position to)
+        {
+            var args = new DrawArgs(from, to);
+            
+            if (args.IsOnSingleCell) return DrawSinglePoint(from);
+            if (args.IsBetweenNeighbors) return DrawAdjacentPoints(from, to);
+
+            return DrawLongLine(from, to);
+        }
+
         private void ProcessDrawing(Point pt)
         {
             ResetSelection();
@@ -209,17 +280,6 @@ namespace Kohctpyktop.Input
                 DrawLine(_oldMouseSpot, pos);
                 _oldMouseSpot = pos;
             }
-        }
-
-        public bool DrawLine(Position from, Position to)
-        {
-            var args = new DrawArgs(from, to);
-            
-            if (args.IsOnSingleCell) return DrawSinglePoint(from);
-            if (args.IsBetweenNeighbors) return DrawAdjacentPoints(from, to);
-            
-            // todo: bresenham's line algorithm
-            return false;
         }
 
         public bool DrawSinglePoint(Position pt)
