@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Windows;
-using System.Windows.Converters;
-using System.Windows.Diagnostics;
 using Kohctpyktop.Models.Field;
 using Kohctpyktop.Models.Topology;
 

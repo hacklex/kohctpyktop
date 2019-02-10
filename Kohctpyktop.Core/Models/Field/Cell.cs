@@ -7,6 +7,7 @@ namespace Kohctpyktop.Models.Field
     /// <summary>
     /// Describes the cell with all layers' contents
     /// </summary>
+    [Obsolete]
     public class Cell
     {
         public bool HasNoSilicon => SiliconLayerContent == SiliconTypes.None;

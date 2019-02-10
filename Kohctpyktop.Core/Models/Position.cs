@@ -1,6 +1,6 @@
 using System;
+using System.Drawing;
 using System.Windows;
-using Kohctpyktop.Rendering;
 
 namespace Kohctpyktop.Models
 {
@@ -26,8 +26,9 @@ namespace Kohctpyktop.Models
         public static Position Invalid { get; } = new Position(-1, -1); 
 
         public static Position FromScreenPoint(int x, int y) =>
-            new Position((x - 1) / (Renderer.CellSize + 1), (y - 1) / (Renderer.CellSize + 1));
-        public static Position FromScreenPoint(Point pt) => FromScreenPoint((int) pt.X, (int) pt.Y);
+            new Position((x - 1) / (12 + 1), (y - 1) / (12 + 1));
+        
+        public static Position FromScreenPoint(double x, double y) => FromScreenPoint((int) x, (int) y);
         
         public int ManhattanDistance(Position target) => Math.Abs(X - target.X) + Math.Abs(Y - target.Y);
 

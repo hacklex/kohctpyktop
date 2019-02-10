@@ -128,7 +128,7 @@ namespace Kohctpyktop.Input
         public void ProcessMouseMove(Point pt)
         {
             if (pt.X < 1 || pt.Y < 1) return;
-            var pos = Position.FromScreenPoint(pt);
+            var pos = Position.FromScreenPoint(pt.X, pt.Y);
             if (pos.Row >= GameModel.Level.Height || pos.Col >= GameModel.Level.Width) return;
             var hoveredCell = GameModel[pos];
             if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Col != HoveredCell?.Col)
@@ -157,7 +157,7 @@ namespace Kohctpyktop.Input
 
         private void ProcessSelection(Point pt)
         {
-            var position = Position.FromScreenPoint(pt);
+            var position = Position.FromScreenPoint(pt.X, pt.Y);
             
             switch (SelectionState)
             {
@@ -188,7 +188,7 @@ namespace Kohctpyktop.Input
             ResetSelection();
             
             if (pt.X < 1 || pt.Y < 1) return;
-            var pos = Position.FromScreenPoint(pt);
+            var pos = Position.FromScreenPoint(pt.X, pt.Y);
 
             if (_oldMouseSpot.Row < 0)
             {

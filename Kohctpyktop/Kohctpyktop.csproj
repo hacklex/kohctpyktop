@@ -64,22 +64,11 @@
     <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\NeighborInfoConverter.cs" />
     <Compile Include="Converters\SelectionConverter.cs" />
+    <Compile Include="DrawingExts.cs" />
     <Compile Include="Input\DrawMode.cs" />
     <Compile Include="Input\InputHandler.cs" />
     <Compile Include="Input\SelectedTool.cs" />
     <Compile Include="Input\Selection.cs" />
-    <Compile Include="Models\DrawArgs.cs" />
-    <Compile Include="Models\Field\Cell.cs" />
-    <Compile Include="Models\Field\Level.cs" />
-    <Compile Include="Models\Field\NeighborInfo.cs" />
-    <Compile Include="Models\Field\Pin.cs" />
-    <Compile Include="Models\Field\SiliconLink.cs" />
-    <Compile Include="Models\Field\SiliconTypes.cs" />
-    <Compile Include="Models\Game.cs" />
-    <Compile Include="Models\Position.cs" />
-    <Compile Include="Models\Topology\ElementaryPlaceLink.cs" />
-    <Compile Include="Models\Topology\SchemeGate.cs" />
-    <Compile Include="Models\Topology\SchemeNode.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Rendering\RenderOpts.cs" />
     <Compile Include="ToolInfoHolder.cs" />
@@ -92,7 +81,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Extensions.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -127,6 +115,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Fonts\Poco.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kohctpyktop.Core\Kohctpyktop.Core.csproj">
+      <Project>{1d637a7c-0258-4f26-9f93-74919934c372}</Project>
+      <Name>Kohctpyktop.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
