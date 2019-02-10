@@ -55,5 +55,34 @@ namespace Kohctpyktop
         }
 
         public static Side Invert(this Side side) => (Side) (((int) side + 2) % 4);
+
+        public static bool IsVertical(this Side side) => side == Side.Top || side == Side.Bottom;
+
+
+        public static SiliconTypes ConvertToGate(this SiliconType slcBase, bool isVertical)
+        {
+            switch (slcBase)
+            {
+                case SiliconType.NType: return isVertical ? SiliconTypes.NTypeVGate : SiliconTypes.NTypeHGate;
+                case SiliconType.PType: return isVertical ? SiliconTypes.PTypeVGate : SiliconTypes.PTypeHGate;
+                default: throw new ArgumentException(nameof(slcBase));
+            }
+        }
+        
+        public static SiliconLink Invert(this SiliconLink link)
+        {
+            switch (link)
+            {
+                case SiliconLink.None:
+                case SiliconLink.BiDirectional:
+                    return link;
+                case SiliconLink.Slave:
+                    return SiliconLink.Master;
+                case SiliconLink.Master:
+                    return SiliconLink.Slave;
+                default:
+                    throw new ArgumentException(nameof(link));
+            }
+        }
     }
 }

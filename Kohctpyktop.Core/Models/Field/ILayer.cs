@@ -1,8 +1,10 @@
+using System.Collections.Generic;
+
 namespace Kohctpyktop.Models.Field
 {
     public enum Side { Left, Top, Right, Bottom }
     
-    public interface IReadOnlyDirectionalSet<T>
+    public interface IReadOnlyDirectionalSet<T> : IEnumerable<T>
     {
         T this[int side] { get; } // for @hacklex only
         T this[Side side] { get; }

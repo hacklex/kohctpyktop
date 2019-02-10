@@ -16,7 +16,7 @@ namespace Kohctpyktop.Input
         private bool _isShiftPressed;
         private SelectedTool _selectedTool;
         private DrawMode _drawMode;
-        private Cell _hoveredCell;
+        private ILayerCell _hoveredCell;
         
         public InputHandler(ILayer layer)
         {
@@ -87,7 +87,7 @@ namespace Kohctpyktop.Input
             }
         }
         
-        public Cell HoveredCell
+        public ILayerCell HoveredCell
         {
             get => _hoveredCell;
             set
@@ -131,13 +131,13 @@ namespace Kohctpyktop.Input
             var pos = Position.FromScreenPoint(pt.X, pt.Y);
             if (pos.Row >= Layer.Height || pos.Col >= Layer.Width) return;
             var hoveredCell = Layer.Cells[pos];
-            if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Column != HoveredCell?.Col)
+            if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Column != HoveredCell?.Column)
             {
-//                HoveredCell = hoveredCell;
+                HoveredCell = hoveredCell;
 //                GameModel.Level.HoveredNode = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)
 //                    ? hoveredCell.LastAssignedSiliconNode
 //                    : hoveredCell.LastAssignedMetalNode;
-                // GameModel.MarkModelAsChanged();
+//                 GameModel.MarkModelAsChanged();
             }
         }
 

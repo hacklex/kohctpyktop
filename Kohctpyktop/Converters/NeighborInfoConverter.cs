@@ -10,12 +10,12 @@ namespace Kohctpyktop.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is Cell cell)) return "****|****";
+            if (!(value is ILayerCell cell)) return "****|****";
             
             var sBuilder = new StringBuilder();
             var mBuilder = new StringBuilder();
             
-            foreach (var neighborInfo in cell.NeighborInfos)
+            foreach (var neighborInfo in cell.Links)
             {
                 if (neighborInfo == null)
                 {

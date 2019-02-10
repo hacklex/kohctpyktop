@@ -22,6 +22,19 @@ namespace Kohctpyktop.Models
 
         public Position Shift(bool vertical, int steps) => vertical ? new Position(X, Y + steps) : new Position(X + steps, Y);
 
+        public Position Shift(Side side)
+        {
+            switch (side)
+            {
+                case Side.Left: return Offset(-1, 0);
+                case Side.Top: return Offset(0, -1);
+                case Side.Right: return Offset(1, 0);
+                case Side.Bottom: return Offset(0, 1);
+                default:
+                    throw new ArgumentException(nameof(side));
+            }
+        }
+
         public Position Offset(int offsetX, int offsetY) => new Position(X + offsetX, Y + offsetY);
 
         public static Position Invalid { get; } = new Position(-1, -1); 

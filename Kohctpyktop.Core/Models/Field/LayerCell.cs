@@ -1,7 +1,43 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Security;
 
 namespace Kohctpyktop.Models.Field
 {
+    public class InvalidLink : ICellLink
+    {
+        private InvalidLink() {}
+        
+        public static InvalidLink Instance { get; } = new InvalidLink();
+        
+        public bool IsValidLink => false;
+        public ILayerCell SourceCell => InvalidCell.Instance;
+        public ILayerCell TargetCell => InvalidCell.Instance;
+        public SiliconLink SiliconLink => SiliconLink.None;
+        public bool HasMetalLink => false;
+        public ICellLink Inverted => this;
+    }
+    
+    public class InvalidCell : ILayerCell
+    {
+        private InvalidCell()
+        {
+            Links = new LayerCellLinkSet(null, -2, -2);
+            Neighbors = new LayerCellNeighborSet(null, -2, -2);
+        }
+
+        public static InvalidCell Instance { get; } = new InvalidCell();
+
+        public bool IsValidCell => false;
+        public int Row => -1;
+        public int Column => -1;
+        public SiliconTypes Silicon => SiliconTypes.None;
+        public bool HasMetal => false;
+        public IReadOnlyDirectionalSet<ICellLink> Links { get; }
+        public IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
+    }
+
     public class LayerCellLinkSet : IReadOnlyDirectionalSet<ICellLink>
     {
         private class Link : ICellLink
@@ -18,14 +54,14 @@ namespace Kohctpyktop.Models.Field
             
             public ILayerCell SourceCell => throw new NotImplementedException();
             public ILayerCell TargetCell => throw new NotImplementedException();
-
+            
             public SiliconLink SiliconLink
             {
                 get => _siliconLink;
                 set
                 {
                     _siliconLink = value;
-                    _invLink._siliconLink = value;
+                    _invLink._siliconLink = value.Invert();
                 }
             }
 
@@ -84,10 +120,22 @@ namespace Kohctpyktop.Models.Field
                     break;
                 case Side.Bottom:
                     _blink.SiliconLink = content.SiliconLink;
-                    _blink.HasMetalLink= content.HasMetalLink;
+                    _blink.HasMetalLink = content.HasMetalLink;
                     break;
                 default: throw new ArgumentException(nameof(side));
             }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        
+        public IEnumerator<ICellLink> GetEnumerator()
+        {
+            IEnumerable<ICellLink> Enumerable()
+            {
+                for (var i = 0; i < 4; i++) yield return this[i];
+            }
+
+            return Enumerable().GetEnumerator();
         }
     }
     
@@ -120,16 +168,26 @@ namespace Kohctpyktop.Models.Field
                 }
             }
         }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        
+        public IEnumerator<ILayerCell> GetEnumerator()
+        {
+            IEnumerable<ILayerCell> Enumerable()
+            {
+                for (var i = 0; i < 4; i++) yield return this[i];
+            }
+
+            return Enumerable().GetEnumerator();
+        }
     }
 
     public class LayerCell : ILayerCell
     {
-        private readonly Layer _layer;
         private readonly LayerCellLinkSet _links;
 
         public LayerCell(Layer layer, int row, int column)
         {
-            _layer = layer;
             Row = row;
             Column = column;
             

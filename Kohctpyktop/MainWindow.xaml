@@ -145,10 +145,10 @@
                 <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
                     <TextBlock>HOVERED:</TextBlock>
                     <TextBlock>
-                        [<Run Text="{Binding HoveredCell.Row}"/>,
-                        <Run Text="{Binding HoveredCell.Col}"/>]
+                        [<Run Text="{Binding HoveredCell.Row, Mode=OneWay}"/>,
+                        <Run Text="{Binding HoveredCell.Column, Mode=OneWay}"/>]
                     </TextBlock>
-                    <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding HoveredCell.SiliconLayerContent}"/>
+                    <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding HoveredCell.Silicon}"/>
                     <TextBlock>HasMetal:</TextBlock><TextBlock Text="{Binding HoveredCell.HasMetal}"/>
                     <TextBlock>Links:</TextBlock><TextBlock Text="{Binding HoveredCell, Converter={StaticResource NeighborInfoConverter}}"/>
                     <TextBlock>Selection:</TextBlock>

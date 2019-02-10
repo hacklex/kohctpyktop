@@ -124,22 +124,25 @@ namespace Kohctpyktop.Models.Field
         {
             _layer = layer;
             _cellNodes = new CellNode[RowCount, ColumnCount];
-            _linkNodes = new LinkNode[RowCount - 1, ColumnCount - 1];
+            _linkNodes = new LinkNode[RowCount, ColumnCount];
             
             for (var i = 0; i < RowCount; i++)
             for (var j = 0; j < ColumnCount; j++)
+            {
                 _cellNodes[i, j] = new CellNode(_layer, i, j);
-            
-            for (var i = 0; i < RowCount - 1; i++)
-            for (var j = 0; j < ColumnCount - 1; j++)
                 _linkNodes[i, j] = new LinkNode(_cellNodes[i, j].HostedCell);
+            }
         }
 
         public int RowCount => _layer.Height;
         public int ColumnCount => _layer.Width;
 
-        public ILayerCell this[int row, int column] => _cellNodes[row, column].HostedCell;
-        public ILayerCell this[Position position] => _cellNodes[position.Row, position.Col].HostedCell;
+        public ILayerCell this[int row, int column] =>
+            row < 0 || column < 0 || row >= RowCount || column >= ColumnCount
+                ? (ILayerCell) InvalidCell.Instance
+                : _cellNodes[row, column].HostedCell;
+
+        public ILayerCell this[Position position] => this[position.Row, position.Col];
 
         public void CommitChanges()
         {
@@ -149,11 +152,10 @@ namespace Kohctpyktop.Models.Field
             
             for (var i = 0; i < RowCount; i++)
             for (var j = 0; j < ColumnCount; j++)
+            {
                 _cellNodes[i, j].CommitChanges(_transactionId);
-            
-            for (var i = 0; i < RowCount - 1; i++)
-            for (var j = 0; j < ColumnCount - 1; j++)
                 _linkNodes[i, j].CommitChanges(_transactionId);
+            }
 
             HasUncommitedChanges = false;
         }
@@ -164,11 +166,10 @@ namespace Kohctpyktop.Models.Field
             
             for (var i = 0; i < RowCount; i++)
             for (var j = 0; j < ColumnCount; j++)
+            {
                 _cellNodes[i, j].RejectChanges();
-            
-            for (var i = 0; i < RowCount - 1; i++)
-            for (var j = 0; j < ColumnCount - 1; j++)
                 _linkNodes[i, j].RejectChanges();
+            }
 
             HasUncommitedChanges = false;
         }
@@ -179,24 +180,29 @@ namespace Kohctpyktop.Models.Field
             HasUncommitedChanges = true;
         }
 
-        private static (Position, Side) NormalizeLinkPosition(Position position, Side side)
+        private static LinkContent Invert(LinkContent content)
+        {
+            return new LinkContent(content.SiliconLink.Invert(), content.HasMetalLink);
+        }
+
+        private static (Position, Side, LinkContent) NormalizeLinkPosition(Position position, Side side, LinkContent content)
         {
             switch (side)
             {
                 case Side.Right:
                 case Side.Bottom:
-                    return (position, side);
+                    return (position, side, content);
                 case Side.Left:
-                    return (position.Offset(-1, 0), Side.Right);
+                    return (position.Offset(-1, 0), Side.Right, Invert(content));
                 case Side.Top:
-                    return (position.Offset(0, -1), Side.Bottom);
+                    return (position.Offset(0, -1), Side.Bottom, Invert(content));
                 default: throw new ArgumentException(nameof(side));
             }
         }
         
         public void UpdateLinkContent(Position position, Side side, LinkContent linkContent)
         {
-            (position, side) = NormalizeLinkPosition(position, side);
+            (position, side, linkContent) = NormalizeLinkPosition(position, side, linkContent);
             
             _linkNodes[position.Row, position.Col].Update(side, linkContent);
             HasUncommitedChanges = true;
@@ -212,11 +218,10 @@ namespace Kohctpyktop.Models.Field
 
             for (var i = 0; i < RowCount; i++)
             for (var j = 0; j < ColumnCount; j++)
+            {
                 _cellNodes[i, j].Restore(_transactionId);
-
-            for (var i = 0; i < RowCount - 1; i++)
-            for (var j = 0; j < ColumnCount - 1; j++)
                 _linkNodes[i, j].Restore(_transactionId);
+            }
 
             _transactionId--;
         }
@@ -275,6 +280,8 @@ namespace Kohctpyktop.Models.Field
             var cell = _cellMatrix[position];
             if (cell.Silicon != SiliconTypes.None) return false;
 
+            if (!cell.IsValidCell) return false;
+
             var slcType = siliconType == SiliconType.NType ? SiliconTypes.NType : SiliconTypes.PType;
             
             _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(slcType, cell.HasMetal));
@@ -285,6 +292,8 @@ namespace Kohctpyktop.Models.Field
         {
             var cell = _cellMatrix[position];
             if (cell.Silicon == SiliconTypes.None) return false;
+            
+            if (!cell.IsValidCell) return false;
 
             _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(SiliconTypes.None, cell.HasMetal));
             RemoveCellLinks(position, LinkType.SiliconLink);
@@ -296,6 +305,8 @@ namespace Kohctpyktop.Models.Field
         {
             var cell = _cellMatrix[position];
             if (cell.HasMetal) return false;
+            
+            if (!cell.IsValidCell) return false;
 
             _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon, true));
             return true;
@@ -305,6 +316,8 @@ namespace Kohctpyktop.Models.Field
         {
             var cell = _cellMatrix[position];
             if (!cell.HasMetal) return false;
+            
+            if (!cell.IsValidCell) return false;
 
             _cellMatrix.UpdateCellContent(position, new LayerCellMatrix.CellContent(cell.Silicon, false));
             RemoveCellLinks(position, LinkType.MetalLink);
@@ -312,7 +325,7 @@ namespace Kohctpyktop.Models.Field
             return true;
         }
 
-        private (bool, SiliconLink) CheckSiliconLink(ILayerCell fromCell, ILayerCell toCell, Side side)
+        private (bool, SiliconLink, SiliconTypes) CheckSiliconLink(ILayerCell fromCell, ILayerCell toCell, Side side)
         {
             var fromBase = fromCell.IsBaseN() ? SiliconType.NType : SiliconType.PType;
             var toBase = toCell.IsBaseN() ? SiliconType.NType : SiliconType.PType;
@@ -320,22 +333,24 @@ namespace Kohctpyktop.Models.Field
             if (fromBase != toBase)
             {
                 var (p1, p2) = side.GetPerpendicularSides();
+
                 return toCell.Links[p1].SiliconLink == SiliconLink.BiDirectional &&
-                       toCell.Links[p2].SiliconLink == SiliconLink.BiDirectional
-                    ? (true, SiliconLink.Master)
-                    : (false, SiliconLink.None);
+                       toCell.Links[p2].SiliconLink == SiliconLink.BiDirectional &&
+                       !toCell.HasVia()
+                    ? (true, SiliconLink.Master, toCell.HasGate() ? toCell.Silicon : toBase.ConvertToGate(!side.IsVertical()))
+                    : (false, SiliconLink.None, SiliconTypes.None);
             }
             else
             {
                 return fromCell.HasGate() || toCell.HasGate()
-                    ? (false, SiliconLink.None)
-                    : (true, SiliconLink.BiDirectional);
+                    ? (false, SiliconLink.None, SiliconTypes.None)
+                    : (true, SiliconLink.BiDirectional, toCell.Silicon);
             }
         }
         
         public bool AddLink(Position from, Position to, LinkType linkType)
         {
-            if (!from.IsAdjacent(to)) // cells aren't adjacent
+            if (!from.IsAdjacent(to))
                 return false;
             
             var fromCell = _cellMatrix[from];
@@ -351,9 +366,10 @@ namespace Kohctpyktop.Models.Field
                         !fromCell.HasSilicon() ||
                         !toCell.HasSilicon()) return false;
 
-                    var (canPlace, newLinkType) = CheckSiliconLink(fromCell, toCell, side);
+                    var (canPlace, newLinkType, targetSlc) = CheckSiliconLink(fromCell, toCell, side);
                     if (canPlace)
                     {
+                        _cellMatrix.UpdateCellContent(to, new LayerCellMatrix.CellContent(targetSlc, toCell.HasMetal));
                         _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(newLinkType, existingLink.HasMetalLink));
                         return true;
                     }
@@ -374,23 +390,28 @@ namespace Kohctpyktop.Models.Field
 
         public bool RemoveLink(Position from, Position to, LinkType linkType)
         {
-            if (!from.IsAdjacent(to)) // cells aren't adjacent
+            if (!from.IsAdjacent(to))
                 return false;
             
-            var side = from.GetAdjacentSide(to);
-            return RemoveLink(from, side, linkType);
-        }
-
-        public bool RemoveLink(Position from, Side side, LinkType linkType)
-        {
             var fromCell = _cellMatrix[from];
-            //var toCell = fromCell.Neighbors[side];
+            var toCell = _cellMatrix[to];
+            var side = from.GetAdjacentSide(to);
             
             var existingLink = fromCell.Links[side];
             
             switch (linkType)
             {
-                case LinkType.SiliconLink: return false;
+                case LinkType.SiliconLink:
+                    if (existingLink.SiliconLink == SiliconLink.None) return false;
+                    
+                    _cellMatrix.UpdateLinkContent(from, side, new LayerCellMatrix.LinkContent(SiliconLink.None, existingLink.HasMetalLink));
+                    
+                    if (fromCell.HasGate()) // todo: double gates 
+                        _cellMatrix.UpdateCellContent(from, new LayerCellMatrix.CellContent(fromCell.Silicon.RemoveGate(), fromCell.HasMetal));
+                    if (toCell.HasGate()) 
+                        _cellMatrix.UpdateCellContent(to, new LayerCellMatrix.CellContent(toCell.Silicon.RemoveGate(), toCell.HasMetal));
+                        
+                    return true;
                 case LinkType.MetalLink:
                     if (!existingLink.HasMetalLink) return false;
                     
@@ -399,6 +420,11 @@ namespace Kohctpyktop.Models.Field
                 default:
                     throw new ArgumentException(nameof(linkType));
             }
+        }
+
+        public bool RemoveLink(Position from, Side side, LinkType linkType)
+        {
+            return RemoveLink(from, from.Shift(side), linkType);
         }
     }
 }
