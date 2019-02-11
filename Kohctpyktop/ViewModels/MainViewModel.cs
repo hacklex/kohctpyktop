@@ -153,6 +153,15 @@ namespace Kohctpyktop.ViewModels
                 Redraw();
             }
         }
+        
+        public void Redo()
+        {
+            if (Layer.CanRedo)
+            {
+                Layer.Redo();
+                Redraw();
+            }
+        }
 
         private void Redraw()
         {

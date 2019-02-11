@@ -78,7 +78,10 @@ namespace Kohctpyktop
             switch (e.Key)
             {
                 case Key.Z when e.KeyboardDevice.IsKeyDown(Key.LeftCtrl):
-                    ViewModel.Undo();
+                    if (e.KeyboardDevice.IsKeyDown(Key.LeftShift))
+                        ViewModel.Redo();
+                    else
+                        ViewModel.Undo();
                     break;
                 case Key.LeftShift:
                     ViewModel.SetShiftState(true);
