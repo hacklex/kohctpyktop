@@ -195,7 +195,7 @@ namespace Kohctpyktop.Input
         }
 
         // stack-overflow driven development incoming
-        public bool DrawLongLine(Position from, Position to)
+        public bool DrawLongLine(Position from, Position to, bool drawContinuousLine = true)
         {
             var x = from.X;
             var y = from.Y;
@@ -212,8 +212,11 @@ namespace Kohctpyktop.Input
             else if (w > 0) dx2 = 1;
             var longest = Math.Abs(w);
             var shortest = Math.Abs(h);
-            if (!(longest > shortest))
+            var isWidthLonger = true; 
+                
+            if (longest <= shortest)
             {
+                isWidthLonger = false;
                 longest = Math.Abs(h);
                 shortest = Math.Abs(w);
                 if (h < 0) dy2 = -1;
@@ -230,10 +233,23 @@ namespace Kohctpyktop.Input
             
             for (var i = 0; i <= longest; i++)
             {
-                if ((x, y).ManhattanDistance((prevX, prevY)) == 1)
-                    drawResult |= DrawAdjacentPoints(new Position(prevX, prevY), new Position(x, y));
-                else
-                    drawResult |= DrawSinglePoint(new Position(x, y));
+                var distance = (x, y).ManhattanDistance((prevX, prevY)); 
+                switch (distance)
+                {
+                    case 1:
+                        drawResult |= DrawAdjacentPoints(new Position(prevX, prevY), new Position(x, y));
+                        break;
+                    case 2 when drawContinuousLine && Math.Abs(x - prevX) == 1:
+                        var midPos = isWidthLonger
+                            ? new Position(prevX + dx1, prevY)
+                            : new Position(prevX, prevY + dy1); 
+                        drawResult |= DrawAdjacentPoints(new Position(prevX, prevY), midPos);
+                        drawResult |= DrawAdjacentPoints(midPos, new Position(x, y));
+                        break;
+                    default:
+                        drawResult |= DrawSinglePoint(new Position(x, y));
+                        break;
+                }
 
                 prevX = x;
                 prevY = y;
@@ -266,7 +282,7 @@ namespace Kohctpyktop.Input
         }
 
         private const int AlignmentThreshold = 6;
-        private const int AlignmentSwitchThreshold = 12;
+        private const int AlignmentSwitchThreshold = 18;
         
         private enum AlignmentState { Disabled, WaitingNextPoint, Enabled }
 
