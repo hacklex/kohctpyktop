@@ -61,7 +61,7 @@ namespace Kohctpyktop.Input
             }
         }
         
-        public bool IsAltPressed { get; set; }
+        public bool IsCtrlPressed { get; set; }
 
         public DrawMode DrawMode
         {
@@ -265,10 +265,13 @@ namespace Kohctpyktop.Input
             return DrawLongLine(from, to);
         }
 
+        private const int AlignmentThreshold = 6;
+        private const int AlignmentSwitchThreshold = 12;
+        
         private enum AlignmentState { Disabled, WaitingNextPoint, Enabled }
 
         private AlignmentState _alignmentState = AlignmentState.Disabled;
-        private Position _startingAlignmentPos;
+        private Point _lastAlignmentPos;
         private bool _isVertAlignment;
         private double _alignmentOrigin;
         
@@ -279,22 +282,39 @@ namespace Kohctpyktop.Input
             if (pt.X < 1 || pt.Y < 1) return;
             var pos = Position.FromScreenPoint(pt.X, pt.Y);
             
-            if ((_alignmentState != AlignmentState.Disabled) != IsAltPressed)
+            if ((_alignmentState != AlignmentState.Disabled) != IsCtrlPressed)
             {
-                _alignmentState = IsAltPressed ? AlignmentState.WaitingNextPoint : AlignmentState.Disabled;
+                _alignmentState = IsCtrlPressed ? AlignmentState.WaitingNextPoint : AlignmentState.Disabled;
                 
-                if (IsAltPressed)
+                if (IsCtrlPressed)
                 {
-                    _startingAlignmentPos = pos;
+                    _lastAlignmentPos = pt;
                 }
             }
             else if (_alignmentState == AlignmentState.WaitingNextPoint)
             {
-                if (pos.X != _startingAlignmentPos.X || pos.Y != _startingAlignmentPos.Y)
+                var xdelta = Math.Abs(pt.X - _lastAlignmentPos.X);
+                var ydelta = Math.Abs(pt.Y - _lastAlignmentPos.Y);
+                if (xdelta > AlignmentThreshold || ydelta > AlignmentThreshold)
                 {
                     _alignmentState = AlignmentState.Enabled;
-                    _isVertAlignment = pos.X == _startingAlignmentPos.X;
+                    _isVertAlignment = ydelta > xdelta;
                     _alignmentOrigin = _isVertAlignment ? pt.X : pt.Y;
+                }
+            }
+            else if (_alignmentState == AlignmentState.Enabled)
+            {
+                var xdelta = Math.Abs(pt.X - _lastAlignmentPos.X);
+                var ydelta = Math.Abs(pt.Y - _lastAlignmentPos.Y);
+
+                var revDelta = _isVertAlignment ? xdelta : ydelta;
+                
+                if (revDelta > AlignmentSwitchThreshold)
+                {
+                    _alignmentState = AlignmentState.Enabled;
+                    _isVertAlignment ^= true;
+                    _alignmentOrigin = _isVertAlignment ? pt.X : pt.Y;
+                    _lastAlignmentPos = pt;
                 }
             }
 

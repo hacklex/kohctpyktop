@@ -136,7 +136,7 @@ namespace Kohctpyktop.ViewModels
         }
 
         public void SetShiftState(bool shiftPressed) => InputHandler.IsShiftPressed = shiftPressed;
-        public void SetAltState(bool altPressed) => InputHandler.IsAltPressed = altPressed;
+        public void SetCtrlState(bool altPressed) => InputHandler.IsCtrlPressed = altPressed;
 
         private void RedrawIfChanged()
         {

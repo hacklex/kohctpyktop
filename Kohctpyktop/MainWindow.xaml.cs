@@ -61,7 +61,7 @@ namespace Kohctpyktop
 
         private void WindowKeyUp(object sender, KeyEventArgs e)
         {
-            ViewModel.SetAltState(e.KeyboardDevice.IsKeyDown(Key.LeftAlt));
+            ViewModel.SetCtrlState(e.KeyboardDevice.IsKeyDown(Key.LeftCtrl));
             
             switch (e.Key)
             {
@@ -73,7 +73,7 @@ namespace Kohctpyktop
 
         private void WindowKeyDown(object sender, KeyEventArgs e)
         {
-            ViewModel.SetAltState(e.KeyboardDevice.IsKeyDown(Key.LeftAlt));
+            ViewModel.SetCtrlState(e.KeyboardDevice.IsKeyDown(Key.LeftCtrl));
             
             switch (e.Key)
             {
