@@ -184,7 +184,7 @@ namespace Kohctpyktop.Rendering
             {
                 // that won't work on insets larger than 2 (System.Drawing sucks)
                 _graphics.DrawPolygon(pen, new[] { nearToCenter, nearHorzLink, nearToBounds, nearVertLink });
-                Bitmap.SetPixel(nearToBounds.X, nearToBounds.Y, BorderColor);
+                SetPixel(nearToBounds.X, nearToBounds.Y, BorderColor);
             }
             else if (hasHorzLink)
             {
@@ -250,8 +250,8 @@ namespace Kohctpyktop.Rendering
         {
             if (isVertical)
             {
-                Bitmap.SetPixel(cellBounds.Left, cellBounds.Top - 1, BorderColor);
-                Bitmap.SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, BorderColor);
+                SetPixel(cellBounds.Left, cellBounds.Top - 1, BorderColor);
+                SetPixel(cellBounds.Right - 1, cellBounds.Top - 1, BorderColor);
                 _graphics.DrawLine(pen, 
                     cellBounds.Left + 1, 
                     cellBounds.Top - 1, 
@@ -260,14 +260,21 @@ namespace Kohctpyktop.Rendering
             } 
             else 
             {
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Top, BorderColor);
-                Bitmap.SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, BorderColor);
+                SetPixel(cellBounds.Left - 1, cellBounds.Top, BorderColor);
+                SetPixel(cellBounds.Left - 1, cellBounds.Bottom - 1, BorderColor);
                 _graphics.DrawLine(pen, 
                     cellBounds.Left - 1, 
                     cellBounds.Top + 1, 
                     cellBounds.Left - 1,
                     cellBounds.Bottom - 2);
             }
+        }
+
+        private void SetPixel(int x, int y, Color color)
+        {
+            if (x < 0 || x >= Bitmap.Width || y < 0 || y >= Bitmap.Height) return;
+            
+            Bitmap.SetPixel(x, y, color);
         }
         
         private void SiliconIntercellular(ILayerCell cell, bool isVertical, SiliconLink siliconLink, Rectangle cellBounds)

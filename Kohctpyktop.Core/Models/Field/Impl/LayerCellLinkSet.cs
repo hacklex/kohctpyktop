@@ -76,9 +76,12 @@ namespace Kohctpyktop.Models.Field
             _layer = layer;
             _row = row;
             _column = column;
-            
-            _rlink = new Link(_layer, row, column, row, column + 1);
-            _blink = new Link(_layer, row, column, row + 1, column);
+
+            if (_layer != null)
+            {
+                _rlink = new Link(_layer, row, column, row, column + 1);
+                _blink = new Link(_layer, row, column, row + 1, column);
+            }
         }
 
         public ICellLink this[int side] => this[(Side) side];
@@ -87,6 +90,8 @@ namespace Kohctpyktop.Models.Field
         {
             get
             {
+                if (_layer == null) return InvalidLink.Instance;
+                
                 switch (side)
                 {
                     case Side.Right: return _rlink;
@@ -100,6 +105,8 @@ namespace Kohctpyktop.Models.Field
 
         public void Apply(Side side, LinkContent content)
         {
+            if (_layer == null) return;
+            
             switch (side)
             {
                 case Side.Right:
