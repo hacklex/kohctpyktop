@@ -110,21 +110,20 @@ namespace Kohctpyktop.ViewModels
 
         public void ProcessMouse(Point position)
         {
-            InputHandler.ProcessMouse(position);
-            RedrawIfChanged();
+            if (InputHandler.ProcessMouse(position))
+                Redraw();
         }
 
         public void ProcessMouseMove(Point position)
         {
-            InputHandler.ProcessMouseMove(position);
-            RedrawIfChanged();
+            if (InputHandler.ProcessMouseMove(position))
+                Redraw();
         }
 
         public void ReleaseMouse(Point position)
         {
             InputHandler.ReleaseMouse(position);
             Layer.CommitChanges();
-            RedrawIfChanged();
         }
 
         public void SelectTool(SelectedTool tool)
@@ -137,13 +136,6 @@ namespace Kohctpyktop.ViewModels
 
         public void SetShiftState(bool shiftPressed) => InputHandler.IsShiftPressed = shiftPressed;
         public void SetCtrlState(bool altPressed) => InputHandler.IsCtrlPressed = altPressed;
-
-        private void RedrawIfChanged()
-        {
-//            if (GameModel.IsModelChanged || InputHandler.SelectionState != SelectionState.None) // todo
-                Redraw();
-//            GameModel.ResetChangeMark();
-        }
 
         public void Undo()
         {

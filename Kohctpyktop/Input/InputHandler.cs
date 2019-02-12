@@ -132,11 +132,11 @@ namespace Kohctpyktop.Input
 
         private Position _oldMouseSpot = Position.Invalid;
 
-        public void ProcessMouseMove(Point pt)
+        public bool ProcessMouseMove(Point pt)
         {
-            if (pt.X < 1 || pt.Y < 1) return;
+            if (pt.X < 1 || pt.Y < 1) return false;
             var pos = Position.FromScreenPoint(pt.X, pt.Y);
-            if (pos.Row >= Layer.Height || pos.Col >= Layer.Width) return;
+            if (pos.Row >= Layer.Height || pos.Col >= Layer.Width) return false;
             var hoveredCell = Layer.Cells[pos];
             if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Column != HoveredCell?.Column)
             {
@@ -147,9 +147,9 @@ namespace Kohctpyktop.Input
                         ? _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedSiliconNode
                         : _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedMetalNode;
                 }
-
-//                 GameModel.MarkModelAsChanged();
             }
+
+            return true;
         }
 
         private void ResetSelection()
@@ -158,15 +158,15 @@ namespace Kohctpyktop.Input
             Selection = null;
         }
 
-        public void ProcessMouse(Point pt)
+        public bool ProcessMouse(Point pt)
         {
             if (DrawMode == DrawMode.Selection)
-                ProcessSelection(pt);
+                return ProcessSelection(pt);
             else
-                ProcessDrawing(pt);
+                return ProcessDrawing(pt);
         }
 
-        private void ProcessSelection(Point pt)
+        private bool ProcessSelection(Point pt)
         {
             var position = Position.FromScreenPoint(pt.X, pt.Y);
             
@@ -192,6 +192,8 @@ namespace Kohctpyktop.Input
                     Selection = Selection.Drag((int) diff.X, (int) diff.Y);
                     break;
             }
+
+            return true;
         }
 
         // stack-overflow driven development incoming
@@ -291,11 +293,11 @@ namespace Kohctpyktop.Input
         private bool _isVertAlignment;
         private double _alignmentOrigin;
         
-        private void ProcessDrawing(Point pt)
+        private bool ProcessDrawing(Point pt)
         {
             ResetSelection();
             
-            if (pt.X < 1 || pt.Y < 1) return;
+            if (pt.X < 1 || pt.Y < 1) return false;
             var pos = Position.FromScreenPoint(pt.X, pt.Y);
             
             if ((_alignmentState != AlignmentState.Disabled) != IsCtrlPressed)
@@ -339,17 +341,21 @@ namespace Kohctpyktop.Input
                 pt = _isVertAlignment ? new Point(_alignmentOrigin, pt.Y) : new Point(pt.X, _alignmentOrigin);
                 pos = Position.FromScreenPoint(pt.X, pt.Y);
             }
+
+            bool result;
             
             if (_oldMouseSpot.Row < 0)
             {
-                DrawSinglePoint(pos);
+                result = DrawSinglePoint(pos);
                 _oldMouseSpot = pos;
             }
             else
             {
-                DrawLine(_oldMouseSpot, pos);
+                result = DrawLine(_oldMouseSpot, pos);
                 _oldMouseSpot = pos;
             }
+
+            return result;
         }
 
         public bool DrawSinglePoint(Position pt)
