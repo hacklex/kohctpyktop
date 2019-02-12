@@ -115,6 +115,8 @@ namespace Kohctpyktop.Models.Field
             
             var fromCell = _cellMatrix[from];
             var toCell = _cellMatrix[to];
+            if (!fromCell.IsValidCell || !toCell.IsValidCell) return false;
+            
             var side = from.GetAdjacentSide(to);
             
             var existingLink = fromCell.Links[side];
@@ -168,6 +170,8 @@ namespace Kohctpyktop.Models.Field
             
             var fromCell = _cellMatrix[from];
             var toCell = _cellMatrix[to];
+            if (!fromCell.IsValidCell || !toCell.IsValidCell) return false;
+            
             var side = from.GetAdjacentSide(to);
             
             var existingLink = fromCell.Links[side];
