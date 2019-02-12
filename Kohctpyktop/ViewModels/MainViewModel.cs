@@ -16,7 +16,7 @@ namespace Kohctpyktop.ViewModels
 {
     public class MainViewModel : IDisposable, INotifyPropertyChanged
     {
-        private readonly Renderer _renderer;
+        private Renderer _renderer;
         private ImageSource _field;
 
         private static void InitLayer(ILayer layer)
@@ -84,17 +84,23 @@ namespace Kohctpyktop.ViewModels
 
         public MainViewModel()
         {
-            Layer = new Layer(30, 27);
+            OpenLayer(new Layer(30, 27));
+        }
+
+        public void OpenLayer(Layer layer)
+        {
+            Layer = layer;
             InitLayer(Layer);
             
             InputHandler = new InputHandler(Layer);
+            _renderer?.Dispose();
             _renderer = new Renderer(Layer);
 
             Redraw();
         }
 
-        public ILayer Layer { get; }
-        public InputHandler InputHandler { get; }
+        public ILayer Layer { get; private set; }
+        public InputHandler InputHandler { get; private set; }
 
         public ImageSource Field
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ using System.Windows.Shapes;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models.Field;
 using Kohctpyktop.ViewModels;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace Kohctpyktop
 {
@@ -104,6 +107,46 @@ namespace Kohctpyktop
                 case Key.D6:
                     ViewModel.SelectTool(SelectedTool.TopologyDebug);
                     break;
+            }
+        }
+
+        private void OnOpenMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() ?? false)
+            {
+                try
+                {
+                    var json = File.ReadAllText(ofd.FileName);
+                    var layerData = JsonConvert.DeserializeObject<LayerData>(json);
+
+                    ViewModel.OpenLayer(new Layer(layerData));
+                }
+                catch (Exception ex)
+                {
+                    // todo: handling
+                    MessageBox.Show("Failed to open layer data", "Error", MessageBoxButton.OK);
+                }
+            }
+        }
+
+        private void OnSaveMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            var sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() ?? false)
+            {
+                var layerData = ViewModel.Layer.ExportLayerData();
+                var json = JsonConvert.SerializeObject(layerData);
+
+                try
+                {
+                    File.WriteAllText(sfd.FileName, json);
+                }
+                catch (Exception ex)
+                {
+                    // todo: handling
+                    MessageBox.Show("Failed to save layer data", "Error", MessageBoxButton.OK);
+                }
             }
         }
     }

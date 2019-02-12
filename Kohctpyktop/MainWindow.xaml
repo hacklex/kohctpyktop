@@ -111,6 +111,13 @@
                                       OnTrue="{StaticResource PSiliconToolHolder}"/>
     </Window.Resources>
     <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <!-- todo: commands -->
+                <MenuItem Header="Open" Click="OnOpenMenuItemClick"/>
+                <MenuItem Header="Save" Click="OnSaveMenuItemClick"/>
+            </MenuItem>
+        </Menu>
         <Image DockPanel.Dock="Left" VerticalAlignment="Center"
                SnapsToDevicePixels="True"
                MouseDown="ImageMouseDown" 

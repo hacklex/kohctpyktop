@@ -1,5 +1,19 @@
 namespace Kohctpyktop.Models.Field
 {
+    public sealed class LayerData
+    {
+        public LayerData(CellContent[,] cells, LinkContent[,] rightLinks, LinkContent[,] bottomLinks)
+        {
+            Cells = cells;
+            RightLinks = rightLinks;
+            BottomLinks = bottomLinks;
+        }
+
+        public CellContent[,] Cells { get; }
+        public LinkContent[,] RightLinks { get; }
+        public LinkContent[,] BottomLinks { get; }
+    }
+    
     public enum Side { Left, Top, Right, Bottom }
 
     public enum LinkType { SiliconLink, MetalLink }
@@ -26,5 +40,7 @@ namespace Kohctpyktop.Models.Field
         bool SetCellName(Position position, string name);
         
         bool MoveCells(Position from, Position to, int offsetX, int offsetY);
+
+        LayerData ExportLayerData();
     }
 }
