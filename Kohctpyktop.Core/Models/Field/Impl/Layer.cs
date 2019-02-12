@@ -267,6 +267,9 @@ namespace Kohctpyktop.Models.Field
         {
             if (offsetX == 0 && offsetY == 0) return true;
 
+            foreach (var point in new[] { from, to, from.Offset(offsetX, offsetY), to.Offset(offsetX, offsetY)})
+                if (point.X < 0 || point.Y < 0 || point.X >= Width || point.Y >= Height) return false;
+
             var width = to.X - from.X;
             var height = to.Y - from.Y;
 
