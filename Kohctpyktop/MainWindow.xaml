@@ -10,16 +10,29 @@
         Title="KOHCTPYKTOP II: Return of the fucking PhD"
         PreviewKeyDown="WindowKeyDown"
         PreviewKeyUp="WindowKeyUp"
+        d:DesignWidth="800"
+        d:DesignHeight="600"
         d:DataContext="{d:DesignInstance viewModels:MainViewModel, IsDesignTimeCreatable=False}">
     <Window.Resources>
         <converters:EnumBooleanConverter x:Key="EnumBooleanConverter"/>
         <converters:NeighborInfoConverter x:Key="NeighborInfoConverter"/>
-        <converters:BooleanChoiceConverter x:Key="SiliconTypeConverter" OnFalse="SILICON (N)" OnTrue="SILICON (P)"/>
+        <converters:BooleanChoiceConverter x:Key="SiliconTypeConverter" OnFalse="DRAW SILICON (N)" OnTrue="DRAW SILICON (P)"/>
         <converters:BooleanChoiceConverter x:Key="DeleteTypeConverter" OnFalse="DELETE SILICON" OnTrue="DELETE METAL"/>
-        <converters:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="ADD VIA" OnTrue="DELETE VIA"/>
+        <converters:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="INSERT   VIA" OnTrue="DELETE   VIA"/>
         <converters:BooleanChoiceConverter x:Key="TopologyTypeConverter" OnFalse="TOPOLOGY (METAL)" OnTrue="TOPOLOGY (SILICON)"/>
         <converters:SelectionConverter x:Key="SelectionConverter"/>
-        
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="#40000000"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+        </Style>
+        <Style TargetType="Border" x:Key="Separator">
+            <Setter Property="Margin" Value="5"></Setter>
+            <Setter Property="MinWidth" Value="2"></Setter>
+            <Setter Property="MinHeight" Value="2"></Setter>
+            <Setter Property="BorderBrush" Value="#40FFFFFF"></Setter>
+            <Setter Property="Background" Value="#40000000"></Setter>
+            <Setter Property="BorderThickness" Value="1 1 0 0"></Setter>
+        </Style>
         <local:ToolInfoHolder x:Key="NSiliconToolHolder" Index="1">
             <local:ToolInfoHolder.Icon>
                 <Border Margin="0, 6" BorderThickness="0,1" BorderBrush="Black" Background="#b50000"/>
@@ -105,64 +118,128 @@
                       RenderOptions.EdgeMode="Aliased"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
-        
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="5"></Setter>
+            <Setter Property="Margin" Value="3"></Setter>
+        </Style>
         <converters:BooleanChoiceConverter x:Key="SiliconHolderConverter" 
                                       OnFalse="{StaticResource NSiliconToolHolder}" 
                                       OnTrue="{StaticResource PSiliconToolHolder}"/>
     </Window.Resources>
     <DockPanel>
-        <Image DockPanel.Dock="Left" VerticalAlignment="Center"
+        <TabControl DockPanel.Dock="Top">
+            <TabItem Header="Game">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <Label>User</Label>
+                        <Button Content="Logout"></Button>
+                        <Button Content="Manage..."></Button>
+                    </StackPanel>
+                    <Border Style="{StaticResource Separator}"></Border>
+                    <StackPanel>
+                        <Label Content="Level"></Label>
+                        <Button Content="Pick..."></Button>
+                        <Button Content="Editor..."></Button>
+                    </StackPanel>
+                    <Border Style="{StaticResource Separator}"></Border>
+                    <StackPanel>
+                        <Label Content="Theme"></Label>
+                        <Button Content="Game"></Button>
+                        <Button Content="UI"></Button>
+                    </StackPanel>
+                    <Border Style="{StaticResource Separator}"></Border>
+                    <StackPanel>
+                        <Label Content="Help"></Label>
+                        <Button Content="About"></Button>
+                        <Button Content="Tutorial"></Button>
+                    </StackPanel>
+                    <Border Style="{StaticResource Separator}"></Border>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Edit">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <Label>File</Label>
+                        <Button Content="Open..."></Button>
+                        <Button Content="Save..."></Button>
+                    </StackPanel>
+                    <Border Style="{StaticResource Separator}"></Border>
+                    <StackPanel>
+                        <Label Content="Selection"></Label>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Cut"></Button>
+                            <Button Content="Copy"></Button>
+                            <Button Content="Paste"></Button>
+                        </StackPanel>
+                        <Button Content="Clear"></Button>
+                    </StackPanel>
+                    <Border Style="{StaticResource Separator}"></Border>
+                    <StackPanel>
+                        <Label Content="Tool"></Label>
+                        <StackPanel Orientation="Horizontal" Margin="5" DockPanel.Dock="Right" Grid.IsSharedSizeScope="True">
+                            <StackPanel.Resources>
+                                <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
+                            </StackPanel.Resources>
+                            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
+                             Tag="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}" HorizontalAlignment="Center"
+                             Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
+                            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" 
+                             Tag="{StaticResource MetalToolHolder}" HorizontalAlignment="Center"
+                             Content="DRAW METAL"/>
+                            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=AddOrDeleteVia}"
+                             Tag="{StaticResource ViaToolHolder}" HorizontalAlignment="Center"
+                             Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}"/>
+                            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Selection}" 
+                             Tag="{StaticResource SelectionToolHolder}" HorizontalAlignment="Center"
+                             Content="SELECTION MODE"/>
+                            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
+                             Tag="{StaticResource DeleteToolHolder}" HorizontalAlignment="Center"
+                             Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
+                            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=TopologyDebug}"
+                             Tag="{StaticResource TopologyDebugHolder}" HorizontalAlignment="Center"
+                             Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource TopologyTypeConverter}}"/>
+                        </StackPanel>
+
+                    </StackPanel> 
+                    <Border Style="{StaticResource Separator}"></Border>
+                    <StackPanel>
+                        <Label Content="Status"></Label>
+                        <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
+                            <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
+                                <TextBlock>HOVERED:</TextBlock>
+                                <TextBlock>
+                                    [<Run Text="{Binding HoveredCell.Row, Mode=OneWay}"/>,
+                                    <Run Text="{Binding HoveredCell.Column, Mode=OneWay}"/>]
+                                </TextBlock>
+                                <TextBlock>Silicon:</TextBlock>
+                                <TextBlock Text="{Binding HoveredCell.Silicon}"/>
+                                <TextBlock>HasMetal:</TextBlock>
+                                <TextBlock Text="{Binding HoveredCell.HasMetal}"/>
+                                <TextBlock>Links:</TextBlock>
+                                <TextBlock Text="{Binding HoveredCell, Converter={StaticResource NeighborInfoConverter}}"/>
+                                <TextBlock>Selection:</TextBlock>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding Converter="{StaticResource SelectionConverter}">
+                                            <Binding Path="SelectionState"/>
+                                            <Binding Path="Selection"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </UniformGrid>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+        <Image VerticalAlignment="Center"
                SnapsToDevicePixels="True"
                MouseDown="ImageMouseDown" 
                MouseMove="ImageMouseMove" 
                MouseUp="ImageMouseUp" 
-               Stretch="None" RenderOptions.BitmapScalingMode="NearestNeighbor"
+               UseLayoutRounding="True"
+               Stretch="None" RenderOptions.BitmapScalingMode="Fant"
                Source="{Binding Field}"/>
-        <StackPanel Margin="5" DockPanel.Dock="Right" Grid.IsSharedSizeScope="True">
-            <StackPanel.Resources>
-                <Style TargetType="RadioButton" BasedOn="{StaticResource ToolRadioButtonStyle}"/>
-            </StackPanel.Resources>
-            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Silicon}" 
-                         Tag="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconHolderConverter}}" HorizontalAlignment="Center"
-                         Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource SiliconTypeConverter}}"/>
-            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Metal}" 
-                         Tag="{StaticResource MetalToolHolder}" HorizontalAlignment="Center"
-                         Content="METAL"/>
-            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=AddOrDeleteVia}"
-                         Tag="{StaticResource ViaToolHolder}" HorizontalAlignment="Center"
-                         Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource ViaTypeConverter}}"/>
-            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=Selection}" 
-                         Tag="{StaticResource SelectionToolHolder}" HorizontalAlignment="Center"
-                         Content="SELECT"/>
-            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=DeleteMetalOrSilicon}"
-                         Tag="{StaticResource DeleteToolHolder}" HorizontalAlignment="Center"
-                         Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource DeleteTypeConverter}}"/>
-            <RadioButton IsChecked="{Binding InputHandler.SelectedTool, Mode=TwoWay, Converter={StaticResource EnumBooleanConverter}, ConverterParameter=TopologyDebug}"
-                         Tag="{StaticResource TopologyDebugHolder}" HorizontalAlignment="Center"
-                         Content="{Binding InputHandler.IsShiftPressed, Mode=OneWay, Converter={StaticResource TopologyTypeConverter}}"/>
-            <Separator></Separator>
-            <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
-                <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
-                    <TextBlock>HOVERED:</TextBlock>
-                    <TextBlock>
-                        [<Run Text="{Binding HoveredCell.Row, Mode=OneWay}"/>,
-                        <Run Text="{Binding HoveredCell.Column, Mode=OneWay}"/>]
-                    </TextBlock>
-                    <TextBlock>Silicon:</TextBlock><TextBlock Text="{Binding HoveredCell.Silicon}"/>
-                    <TextBlock>HasMetal:</TextBlock><TextBlock Text="{Binding HoveredCell.HasMetal}"/>
-                    <TextBlock>Links:</TextBlock><TextBlock Text="{Binding HoveredCell, Converter={StaticResource NeighborInfoConverter}}"/>
-                    <TextBlock>Selection:</TextBlock>
-                    <TextBlock>
-                        <TextBlock.Text>
-                            <MultiBinding Converter="{StaticResource SelectionConverter}">
-                                <Binding Path="SelectionState"/>
-                                <Binding Path="Selection"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </UniformGrid>
-            </StackPanel>
-        </StackPanel>
     </DockPanel>
 </Window>
 
