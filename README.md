@@ -1,9 +1,9 @@
 # KOHCTPYKTOP
 A famous Zachtronics Industries game remake for WPF.
 
-![Game screenshot](/screenshot.png?raw=true)
+![Game screenshot](/screenshot2.png?raw=true)
 
-So far it is largely work in progress, and not playable.
+So far it is largely work in progress, and not playable. Some features from the screenshot above are not even in the public branches yet. But we're progressing really quickly!
 
 What we aim for is:
 
