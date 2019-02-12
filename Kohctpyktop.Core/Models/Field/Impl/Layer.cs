@@ -143,6 +143,7 @@ namespace Kohctpyktop.Models.Field
 
                 return toCell.Links[p1].SiliconLink == SiliconLink.BiDirectional &&
                        toCell.Links[p2].SiliconLink == SiliconLink.BiDirectional &&
+                       toCell.Links[side].SiliconLink != SiliconLink.BiDirectional &&
                        !toCell.HasVia()
                     ? (true, SiliconLink.Master, toCell.HasGate() ? toCell.Silicon : toBase.ConvertToGate(!side.IsVertical()))
                     : (false, SiliconLink.None, SiliconTypes.None);
