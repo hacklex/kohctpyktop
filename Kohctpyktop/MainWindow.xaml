@@ -126,7 +126,7 @@
                                       OnFalse="{StaticResource NSiliconToolHolder}" 
                                       OnTrue="{StaticResource PSiliconToolHolder}"/>
     </Window.Resources>
-    <DockPanel>
+    <DockPanel UseLayoutRounding="True">
         <TabControl DockPanel.Dock="Top">
             <TabItem Header="Game">
                 <StackPanel Orientation="Horizontal">
@@ -205,7 +205,7 @@
                     <StackPanel>
                         <Label Content="Status"></Label>
                         <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
-                            <UniformGrid Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
+                            <UniformGrid TextOptions.TextFormattingMode="Display"  Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
                                 <TextBlock>HOVERED:</TextBlock>
                                 <TextBlock>
                                     [<Run Text="{Binding HoveredCell.Row, Mode=OneWay}"/>,
