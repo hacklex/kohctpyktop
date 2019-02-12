@@ -169,6 +169,7 @@ namespace Kohctpyktop.Input
         private bool ProcessSelection(Point pt)
         {
             var position = Position.FromScreenPoint(pt.X, pt.Y);
+            position = new Position(Math.Min(position.X, Layer.Width - 1), Math.Min(position.Y, Layer.Height - 1));
             
             switch (SelectionState)
             {

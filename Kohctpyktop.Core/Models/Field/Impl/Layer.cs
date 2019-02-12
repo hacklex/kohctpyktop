@@ -271,7 +271,15 @@ namespace Kohctpyktop.Models.Field
         {
             if (offsetX == 0 && offsetY == 0) return true;
 
-            foreach (var point in new[] { from, to, from.Offset(offsetX, offsetY), to.Offset(offsetX, offsetY)})
+            var points = new[]
+            {
+                from,
+                to.Offset(-1, -1),
+                from.Offset(offsetX, offsetY),
+                to.Offset(offsetX - 1, offsetY - 1)
+            };
+            
+            foreach (var point in points)
                 if (point.X < 0 || point.Y < 0 || point.X >= Width || point.Y >= Height) return false;
 
             var width = to.X - from.X;
@@ -428,12 +436,12 @@ namespace Kohctpyktop.Models.Field
                 _cellMatrix.UpdateLinkContent(new Position(j + offsetX, i + offsetY), Side.Bottom, blink);
 
                 // restoring left-top links
-                if (irel == 0)
+                if (irel == 0 && i + offsetY - 1 >= 0)
                 {
                     (_, blink) = tempLinks[0, jrel + 1];
                     _cellMatrix.UpdateLinkContent(new Position(j + offsetX, i + offsetY - 1), Side.Bottom, blink);
                 }
-                else if (jrel == 0)
+                else if (jrel == 0 && j + offsetX - 1 >= 0)
                 {
                     (rlink, _) = tempLinks[irel + 1, 0];
                     _cellMatrix.UpdateLinkContent(new Position(j + offsetX - 1, i + offsetY), Side.Right, rlink);
