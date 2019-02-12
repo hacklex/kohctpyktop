@@ -1,7 +1,5 @@
 using System;
-using System.ComponentModel.Design;
 using System.Drawing;
-using System.IO;
 
 namespace Kohctpyktop.Models.Field
 {

@@ -13,7 +13,7 @@ namespace Kohctpyktop.Models.Topology
     
     public static class TopologyBuilder
     {
-        public static (CellAssignments[,] assignments, List<SchemeNode> nodes, List<SchemeGate> gates) BuildTopology(ILayer layer)
+        public static CellAssignments[,] BuildTopology(ILayer layer)
         {
             var nodes = new List<SchemeNode>();
             var gates = new List<SchemeGate>();
@@ -72,8 +72,8 @@ namespace Kohctpyktop.Models.Topology
                                 //TODO: check if it really should be Slave, not Master, below:
                                 .Where(q => q.SiliconLink == SiliconLink.Slave) //expect one or two connections perpendicular to travel direction
                                 .Select(q => new { Node = new SchemeNode(), initCell = q.TargetCell })
-                                .ToArray(); //we generate nodes for each signal input 
-                            Array.ForEach(signalNodes, node => FloodFill(new ElementaryPlaceLink(node.initCell, false), node.Node)); //and floodfill them
+                                .ToList(); //we generate nodes for each signal input 
+                            signalNodes.ForEach(node => FloodFill(new ElementaryPlaceLink(node.initCell, false), node.Node)); //and floodfill them
                             aggregateGate.GateInputs.Add(signalNodes.Select(q=>q.Node).ToArray()); //and add the array to the aggregate gate's list 
                         }
                         var lastGatePowerCell = layer.Cells[pos]; //the cell next to the last gate cell will inevitably be the second power cell
@@ -151,7 +151,7 @@ namespace Kohctpyktop.Models.Topology
                     else assignments[p.Cell.Row, p.Cell.Column].LastAssignedSiliconNode = schemeNode;
                 });
             }
-            return (assignments, nodes, gates); //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
+            return assignments; //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
         }
     }
 }

@@ -83,7 +83,7 @@ namespace Kohctpyktop.Input
                 _selectedTool = value;
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
                 if (_selectedTool == SelectedTool.TopologyDebug)
-                    (_assignments, _, _) = TopologyBuilder.BuildTopology(Layer);
+                    _assignments = TopologyBuilder.BuildTopology(Layer);
                 else
                     _assignments = null;
                 OnPropertyChanged();
