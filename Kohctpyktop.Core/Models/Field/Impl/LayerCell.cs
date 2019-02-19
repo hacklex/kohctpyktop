@@ -4,14 +4,14 @@ namespace Kohctpyktop.Models.Field
     {
         private readonly LayerCellLinkSet _links;
 
-        public LayerCell(Layer layer, int row, int column)
+        public LayerCell(Layer layer, int row, int column, Pin pin = null)
         {
             Row = row;
             Column = column;
             
             Links = _links = new LayerCellLinkSet(layer, row, column);
             Neighbors = new LayerCellNeighborSet(layer, row, column);
-            
+            Pin = pin;
             IsValidCell = true;
         }
 
@@ -22,7 +22,7 @@ namespace Kohctpyktop.Models.Field
         public SiliconTypes Silicon { get; private set; }
         public bool HasMetal { get; private set; }
         public bool IsLocked { get; private set; }
-        public string Name { get; private set; }
+        public Pin Pin { get; set; }
 
         public IReadOnlyDirectionalSet<ICellLink> Links { get; }
         public IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
@@ -32,7 +32,7 @@ namespace Kohctpyktop.Models.Field
             Silicon = content.Silicon;
             HasMetal = content.HasMetal;
             IsLocked = content.IsLocked;
-            Name = content.Name;
+            Pin = content.Pin;
         }
         
         public (LinkContent, LinkContent) SaveLinkState()

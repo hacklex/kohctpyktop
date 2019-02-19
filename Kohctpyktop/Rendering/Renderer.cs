@@ -218,17 +218,15 @@ namespace Kohctpyktop.Rendering
 
             GenericCellCorner(hasHorzLink, hasVertLink, pen,
                 nearToCenter, nearToBounds, nearHorzLink, nearVertLink);
-            
-            if (cell.HasGate()) // overdraw!!!
-            {
-                var oppositeVertNeigh = cell.Links[corner.HasFlag(Corner.FarY) ? 1 : 3];
-                var isVerticalGate =
-                    (vertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave ||
-                    (oppositeVertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave;
-                
-                if (isVerticalGate) _graphics.DrawLine(BorderPen, nearVertLink, nearToCenter);
-                else _graphics.DrawLine(BorderPen, nearHorzLink, nearToCenter);
-            }
+
+            if (!cell.HasGate()) return;
+
+            var oppositeVertNeigh = cell.Links[corner.HasFlag(Corner.FarY) ? 1 : 3];
+            var isVerticalGate =
+                (vertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave ||
+                (oppositeVertNeigh?.SiliconLink ?? SiliconLink.None) == SiliconLink.Slave;
+            var srcPoint = isVerticalGate ? nearVertLink : nearHorzLink;
+            _graphics.DrawLine(BorderPen, srcPoint, nearToCenter);
         }
 
         private void MetalCellCorner(ILayerCell cell, Corner corner, Rectangle cellBounds, bool isVertCornerDetached, 
@@ -392,7 +390,7 @@ namespace Kohctpyktop.Rendering
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(cell.Name))
+            if (cell.Pin != null)
             {
                 namedCells.Add(cell);
             }
@@ -434,7 +432,8 @@ namespace Kohctpyktop.Rendering
                 var centerX = bounds.Left + bounds.Width / 2;
                 var centerY = bounds.Top + bounds.Height / 2;
                 _graphics.FillRectangle(Brushes.WhiteSmoke, bounds);
-                var measure = _graphics.MeasureString(cell.Name, PinNameFont);
+                var name = cell.Pin?.Name ?? "XZ";
+                var measure = _graphics.MeasureString(name, PinNameFont);
                 
                 if (opts.Assignments != null)
                 {
@@ -448,7 +447,7 @@ namespace Kohctpyktop.Rendering
                     }
                 }
                 
-                _graphics.DrawString(cell.Name, PinNameFont, Brushes.Black, centerX - measure.Width / 2,
+                _graphics.DrawString(name, PinNameFont, Brushes.Black, centerX - measure.Width / 2,
                     centerY - measure.Height / 2);
             }
         }

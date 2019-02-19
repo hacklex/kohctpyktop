@@ -7,12 +7,12 @@ namespace Kohctpyktop.Models.Field
             Silicon = cell.Silicon;
             HasMetal = cell.HasMetal;
             IsLocked = cell.IsLocked;
-            Name = cell.Name;
+            Pin = cell.Pin;
         }
 
         public SiliconTypes Silicon { get; set; }
         public bool HasMetal { get; set; }
         public bool IsLocked { get; set; }
-        public string Name { get; set; }
+        public Pin Pin { get; set; }
     }
 }

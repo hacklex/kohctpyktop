@@ -253,14 +253,14 @@ namespace Kohctpyktop.Models.Field
             return false;
         }
         
-        public bool SetCellName(Position position, string name)
+        public bool SetCellPin(Position position, Pin pin)
         {
             var cell = _cellMatrix[position];
             if (!cell.IsValidCell) return false;
 
-            if (cell.Name != name)
+            if (cell.Pin != pin)
             {
-                _cellMatrix.UpdateCellContent(position, new CellContent(cell) { Name = name });
+                _cellMatrix.UpdateCellContent(position, new CellContent(cell) { Pin = pin });
                 return true;
             }
 

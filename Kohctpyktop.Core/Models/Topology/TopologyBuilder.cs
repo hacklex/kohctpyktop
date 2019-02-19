@@ -10,15 +10,25 @@ namespace Kohctpyktop.Models.Topology
         public SchemeNode LastAssignedMetalNode { get; set; }
         public SchemeNode LastAssignedSiliconNode { get; set; }
     }
-    
+
+    public class Topology
+    {
+        public CellAssignments [ ,] CellMappings { get; set; }
+        public List<SchemeNode> Nodes { get; set; }
+        public List<SchemeGate> Gates { get; set; }
+    }
+
     public static class TopologyBuilder
     {
-        public static CellAssignments[,] BuildTopology(ILayer layer)
+        public static Topology BuildTopology(ILayer layer)
         {
             var nodes = new List<SchemeNode>();
             var gates = new List<SchemeGate>();
 
             var assignments = new CellAssignments[layer.Height, layer.Width];
+
+            // this will contain only the pins not connected to any of the gates.
+            var pins = new HashSet<Pin>();
 
             // Flood fill propagates the node to all cells accessible from its origin without passing thru gates
             void FloodFill(ElementaryPlaceLink origin, SchemeNode logicalNode)
@@ -27,6 +37,12 @@ namespace Kohctpyktop.Models.Topology
                 if (!origin.Cell.HasN() && !origin.Cell.HasP() && !origin.IsMetalLayer) return;
                 var isCurrentlyOnMetal = origin.IsMetalLayer;
                 var currentNode = logicalNode;
+                // Pin Handling
+                if (origin.IsMetalLayer && origin.Cell.Pin != null)
+                {
+                    logicalNode.Pins.Add(origin.Cell.Pin);
+                    pins.Remove(origin.Cell.Pin);
+                }
                 if (logicalNode.AssociatedPlaces.Any(origin.IsSameAs)) return; //we've been there already, it seems
                 logicalNode.AssociatedPlaces.Add(origin);
                 origin.Cell.Links.Where(q => 
@@ -38,9 +54,14 @@ namespace Kohctpyktop.Models.Topology
                 if (origin.Cell.HasVia())
                     FloodFill(new ElementaryPlaceLink(origin.Cell, !origin.IsMetalLayer), logicalNode);
             }
-            //Stage I. Level-wide gate detection
+            //Stage I. Level-wide gate and pin detection
             for (int i = 0; i < layer.Height; i++)
                 for (int j = 0; j < layer.Width; j++)
+                {
+                    if (layer.Cells[i, j].Pin != null)
+                    {
+                        pins.Add(layer.Cells[i, j].Pin);
+                    }
                     if (layer.Cells[i, j].HasGate()) 
                     {
                         // If the chain of gates looks like this (║ and │ stand for P and N)
@@ -87,9 +108,15 @@ namespace Kohctpyktop.Models.Topology
                         aggregateGate.GatePowerNodes = new List<SchemeNode>{powerNode1, powerNode2};
                         aggregateGate.GateInputs.ForEach(nodes.AddRange);
                     }
+                }
 
             //Stage II. Pin Handling
-            //TODO: add pin handling here
+            foreach (var pin in pins.ToArray()) //ToArray() call avoids exceptions thrown by element removals in FloodFill()
+            {
+                var pinNode = new SchemeNode { Pins = { pin } };
+                FloodFill(new ElementaryPlaceLink(layer.Cells[pin.Row, pin.Col], true), pinNode);
+                nodes.Add(pinNode);
+            }
 
             //Stage III. Node Merging
 
@@ -99,7 +126,8 @@ namespace Kohctpyktop.Models.Topology
                 var mergedNode = new SchemeNode
                 {
                     AssociatedPlaces = a.AssociatedPlaces.Concat(b.AssociatedPlaces.Where(place=>!a.AssociatedPlaces.Any(place.IsSameAs))).ToList()
-                }; 
+                };
+                a.Pins.Concat(b.Pins).ToList().ForEach(p => mergedNode.Pins.Add(p));
                 foreach (var gate in gates)
                 {
                     if (gate.GatePowerNodes[0] == a || gate.GatePowerNodes[0] == b) gate.GatePowerNodes[0] = mergedNode;
@@ -151,7 +179,12 @@ namespace Kohctpyktop.Models.Topology
                     else assignments[p.Cell.Row, p.Cell.Column].LastAssignedSiliconNode = schemeNode;
                 });
             }
-            return assignments; //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
+            return new Topology
+            {
+                CellMappings = assignments,
+                Gates = gates,
+                Nodes = nodes
+            }; //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
         }
     }
 }

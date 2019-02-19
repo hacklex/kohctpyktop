@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
 using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
 using Kohctpyktop.Models.Topology;
@@ -18,9 +17,8 @@ namespace Kohctpyktop.Input
         private SelectedTool _selectedTool;
         private DrawMode _drawMode;
         private ILayerCell _hoveredCell;
-        [Obsolete]
-        public CellAssignments[,] _assignments;
-        
+        public CellAssignments[,] Assignments { get; set; }
+
         public InputHandler(ILayer layer)
         {
             Layer = layer;
@@ -82,10 +80,7 @@ namespace Kohctpyktop.Input
                 if (value == _selectedTool) return;
                 _selectedTool = value;
                 DrawMode = GetDrawMode(_selectedTool, IsShiftPressed);
-                if (_selectedTool == SelectedTool.TopologyDebug)
-                    _assignments = TopologyBuilder.BuildTopology(Layer);
-                else
-                    _assignments = null;
+                Assignments = _selectedTool == SelectedTool.TopologyDebug ? TopologyBuilder.BuildTopology(Layer).CellMappings : null;
                 OnPropertyChanged();
                 
                 ResetSelection();
@@ -141,11 +136,11 @@ namespace Kohctpyktop.Input
             if (hoveredCell.Row != HoveredCell?.Row || hoveredCell.Column != HoveredCell?.Column)
             {
                 HoveredCell = hoveredCell;
-                if (_assignments != null)
+                if (Assignments != null)
                 {
                     HoveredNode = IsShiftPressed
-                        ? _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedSiliconNode
-                        : _assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedMetalNode;
+                        ? Assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedSiliconNode
+                        : Assignments[HoveredCell.Row, HoveredCell.Column].LastAssignedMetalNode;
                 }
             }
 

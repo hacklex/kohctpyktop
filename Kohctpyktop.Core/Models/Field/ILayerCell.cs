@@ -13,6 +13,6 @@ namespace Kohctpyktop.Models.Field
 
         IReadOnlyDirectionalSet<ICellLink> Links { get; }
         IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
-        string Name { get; }
+        Pin Pin { get; }
     }
 }

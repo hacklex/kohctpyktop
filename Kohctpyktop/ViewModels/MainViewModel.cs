@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -69,7 +68,7 @@ namespace Kohctpyktop.ViewModels
             {
                 var pos = new Position(pin.Col, pin.Row);
                 BuildPin(pos);
-                layer.SetCellName(pos, pin.Name);
+                layer.SetCellPin(pos, pin);
             }
             
             for (var i = 0; i < layer.Height; i++)
@@ -101,8 +100,7 @@ namespace Kohctpyktop.ViewModels
             get => _field;
             set
             {
-                if (_field == value) return;
-                
+                if (Equals(_field, value)) return;
                 _field = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Field)));
             }
@@ -157,7 +155,7 @@ namespace Kohctpyktop.ViewModels
 
         private void Redraw()
         {
-            _renderer.Render(new RenderOpts(InputHandler.SelectionState, InputHandler.Selection, InputHandler._assignments, InputHandler.HoveredNode));
+            _renderer.Render(new RenderOpts(InputHandler.SelectionState, InputHandler.Selection, InputHandler.Assignments, InputHandler.HoveredNode));
             
             var bmpImage = new BitmapImage();
             var stream = new MemoryStream();
