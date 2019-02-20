@@ -16,6 +16,7 @@ namespace Kohctpyktop.Models.Topology
         public CellAssignments [ ,] CellMappings { get; set; }
         public List<SchemeNode> Nodes { get; set; }
         public List<SchemeGate> Gates { get; set; }
+        public List<Pin> Pins { get; set; }
     }
 
     public static class TopologyBuilder
@@ -179,11 +180,15 @@ namespace Kohctpyktop.Models.Topology
                     else assignments[p.Cell.Row, p.Cell.Column].LastAssignedSiliconNode = schemeNode;
                 });
             }
+            var listOfPins = nodes.Where(n => n.Pins.Any()).SelectMany(m => m.Pins).ToList();
+            if(listOfPins.Distinct().Count() != listOfPins.Count)
+                throw new InvalidOperationException("Duplicate pins found. This indicates there is an error in topology builder.");
             return new Topology
             {
                 CellMappings = assignments,
                 Gates = gates,
-                Nodes = nodes
+                Nodes = nodes,
+                Pins = listOfPins
             }; //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
         }
     }

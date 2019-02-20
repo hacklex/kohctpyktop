@@ -1,4 +1,8 @@
-﻿namespace Kohctpyktop.Models.Field
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace Kohctpyktop.Models.Field
 {
     /// <summary>
     /// Describes a pin, that is, input or output
@@ -12,5 +16,7 @@
         public int Row { get; set; }
         public int Col { get; set; }
         public string Name { get; set; }
+        public Func<IEnumerable<bool>> ValuesFunction { get; set; } = ValueFunctionHelper.PowerSupply;
+        public bool IsOutputPin { get; set; }
     }
 }
