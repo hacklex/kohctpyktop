@@ -28,7 +28,7 @@ namespace Kohctpyktop.Converters
             for (var i = 0; i < result.Length; i++)
             {
                 var val = values[i];
-                result[i] = new PinState(val, val != prev);
+                result[i] = new PinState(val, val != prev && i > 0);
 
                 prev = val;
             }
