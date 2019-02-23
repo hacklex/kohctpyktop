@@ -22,6 +22,7 @@
         <converters:BooleanChoiceConverter x:Key="TopologyTypeConverter" OnFalse="TOPOLOGY (METAL)" OnTrue="TOPOLOGY (SILICON)"/>
         <converters:SelectionConverter x:Key="SelectionConverter"/>
         <converters:PinValuesConverter x:Key="PinValuesConverter"/>
+        <converters:PinValueBorderThicknessConverter x:Key="PinValueBorderThicknessConverter"/>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="#40000000"></Setter>
             <Setter Property="HorizontalAlignment" Value="Center"></Setter>
@@ -258,23 +259,8 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border BorderBrush="Gray" Width="1" Height="16" Margin="0 2">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Changed}" Value="True">
-                                                                <Setter Property="Background" Value="Gray"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Value}" Value="True">
-                                                                <Setter Property="BorderThickness" Value="0 1 0 0"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Value}" Value="False">
-                                                                <Setter Property="BorderThickness" Value="0 0 0 1"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                            </Border>
+                                            <Border BorderBrush="Gray" Width="2" Height="16" Margin="0 2"
+                                                    BorderThickness="{Binding Converter={StaticResource PinValueBorderThicknessConverter}}"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -286,23 +272,8 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border BorderBrush="Black" Width="1" Height="16" Margin="0 2">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Changed}" Value="True">
-                                                                <Setter Property="Background" Value="Black"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Value}" Value="True">
-                                                                <Setter Property="BorderThickness" Value="0 1 0 0"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Value}" Value="False">
-                                                                <Setter Property="BorderThickness" Value="0 0 0 1"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                            </Border>
+                                            <Border BorderBrush="Black" Width="2" Height="16" Margin="0 2"
+                                                    BorderThickness="{Binding Converter={StaticResource PinValueBorderThicknessConverter}}"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
