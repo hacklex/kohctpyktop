@@ -24,7 +24,7 @@
         <converters:PinValuesConverter x:Key="PinValuesConverter"/>
         <converters:PinValueBorderThicknessConverter x:Key="PinValueBorderThicknessConverter"/>
         <Style TargetType="Label">
-            <Setter Property="Foreground" Value="#40000000"></Setter>
+            <Setter Property="Foreground" Value="#b0000000"></Setter>
             <Setter Property="HorizontalAlignment" Value="Center"></Setter>
         </Style>
         <Style TargetType="Border" x:Key="Separator">
@@ -127,7 +127,7 @@
     <DockPanel UseLayoutRounding="True">
         <TabControl DockPanel.Dock="Top">
             <TabControl.Resources>
-                <Style TargetType="Button">
+                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                     <Setter Property="Padding" Value="5"></Setter>
                     <Setter Property="Margin" Value="3"></Setter>
                 </Style>
@@ -290,7 +290,7 @@
                 </TextBlock.Style>
             </TextBlock>
             <StackPanel Orientation="Horizontal">
-                <Button Click="StartSimulation" Margin="0">Simulate</Button>
+                <Button Click="StartSimulation" Margin="0" Padding="5">Simulate</Button>
             </StackPanel>
         </StackPanel>
         <Image VerticalAlignment="Center"
