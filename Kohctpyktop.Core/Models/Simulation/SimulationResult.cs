@@ -8,14 +8,16 @@ namespace Kohctpyktop.Models.Simulation
 
     public class SimulatedPin
     {
-        public SimulatedPin(string name, IReadOnlyList<bool> values)
+        public SimulatedPin(string name, IReadOnlyList<bool> actualValues, IReadOnlyList<bool> correctValues)
         {
             Name = name;
-            Values = values;
+            ActualValues = actualValues;
+            CorrectValues = correctValues;
         }
 
         public string Name { get; }
-        public IReadOnlyList<bool> Values { get; }
+        public IReadOnlyList<bool> ActualValues { get; }
+        public IReadOnlyList<bool> CorrectValues { get; }
     }
     
     public class SimulationResult

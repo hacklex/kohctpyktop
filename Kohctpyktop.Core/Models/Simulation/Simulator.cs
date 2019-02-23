@@ -16,10 +16,12 @@ namespace Kohctpyktop.Models.Simulation
             {
                 gate.IsOpen = gate.IsInversionGate;
             }
+            
             var inputPins = topology.Pins.Where(x => !x.IsOutputPin).ToList();
             var outputPins = topology.Pins.Where(x => x.IsOutputPin).ToList();
             var pinNodes = topology.Pins.ToDictionary(p => p, p => topology.Nodes.Where(n => n.Pins.Contains(p)).ToList());
             var inputs = inputPins.ToDictionary(p => p, p => p.ValuesFunction.Generate().GetEnumerator());
+            var outputs = outputPins.ToDictionary(p => p, p => p.ValuesFunction.Generate().GetEnumerator());
             var correctOutputValues = outputPins.ToDictionary(p => p, p => new List<bool>());
             var simulatedOutputValues = outputPins.ToDictionary(p => p, p => new List<bool>());
             var inputPinValues = inputPins.ToDictionary(p => p, p => new List<bool>());
@@ -43,8 +45,14 @@ namespace Kohctpyktop.Models.Simulation
                     {
                         var currentPinValue = input.Current;
                         currentPinValues[pin] = currentPinValue;
-                        (pin.IsOutputPin ? correctOutputValues[pin] : inputPinValues[pin]).Add(currentPinValue);
-                        inputs[pin].MoveNext();
+                        inputPinValues[pin].Add(currentPinValue);
+                        input.MoveNext();
+                    } 
+                    else if (outputs.TryGetValue(pin, out var output))
+                    {
+                        var currentPinValue = output.Current;
+                        correctOutputValues[pin].Add(currentPinValue);
+                        output.MoveNext();
                     }
                 }
             }
@@ -98,16 +106,17 @@ namespace Kohctpyktop.Models.Simulation
             }
             var score = 1.0;
 
-            for (int i = 0; i < maxSimulationSteps; i++)
+            for (int i = 0; i < maxSimulationSteps + 1; i++)
             {
                 SimulationStep();
-//                double scorePart = 0;
-//                foreach (var pin in outputPins)
-//                {
-//                    if (simulatedOutputValues[pin].Last() == correctOutputValues[pin].Last())
-//                        scorePart += 1.0 / outputPins.Count;
-//                }
-//                score = (score * i + scorePart) / (i + 1);
+                
+                double scorePart = 0;
+                foreach (var pin in outputPins)
+                {
+                    if (simulatedOutputValues[pin].Last() == correctOutputValues[pin].Last())
+                        scorePart += 1.0 / outputPins.Count;
+                }
+                score = (score * i + scorePart) / (i + 1);
             }
 
             return new SimulationResult(
@@ -116,7 +125,11 @@ namespace Kohctpyktop.Models.Simulation
                     .Where(x => x.Key.IsSignificant)
                     .OrderBy(x => x.Key.IsOutputPin)
                     .ThenBy(x => x.Key.Name)
-                    .Select(x => new SimulatedPin(x.Key.Name, x.Value))
+                    .Select(x =>
+                    {
+                        x.Value.RemoveAt(0);
+                        return new SimulatedPin(x.Key.Name, x.Value, x.Key.IsOutputPin ? correctOutputValues[x.Key] : x.Value);
+                    })
                     .ToArray(), score);
         }
     }

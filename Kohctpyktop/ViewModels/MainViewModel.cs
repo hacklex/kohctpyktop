@@ -51,25 +51,30 @@ namespace Kohctpyktop.ViewModels
 
             ValuesFunction FlipFlop(int on, int off, int skip = 0)
                 => new PeriodicValuesFunction(on, off, skip);
+
+            var a0 = FlipFlop(10, 10);
+            var a1 = FlipFlop(10, 10, 10);
+            var a2 = FlipFlop(20, 10);
+            var a3 = FlipFlop(10, 30);
             
             var rightPinCol = layer.Width - 3;
             var powerPins = new[]
             {
-                new Pin { Col = 2, Row = 3, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
-                new Pin { Col = 2, Row = 23, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
-                new Pin { Col = rightPinCol, Row = 3, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
-                new Pin { Col = rightPinCol, Row = 23, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
+                new Pin { Col = 2, Row = 3, Name = "+VCC", ValuesFunction = true, IsSignificant = false },
+                new Pin { Col = 2, Row = 23, Name = "+VCC", ValuesFunction = true, IsSignificant = false },
+                new Pin { Col = rightPinCol, Row = 3, Name = "+VCC", ValuesFunction = true, IsSignificant = false },
+                new Pin { Col = rightPinCol, Row = 23, Name = "+VCC", ValuesFunction = true, IsSignificant = false },
             };
             var dataPins = new[]
             {
-                new Pin { Col = 2, Row = 7, Name = "A0", ValuesFunction = FlipFlop(10, 10) },
-                new Pin { Col = 2, Row = 11, Name = "A1", ValuesFunction = FlipFlop(10, 10, 10) },
-                new Pin { Col = 2, Row = 15, Name = "A2", ValuesFunction = FlipFlop(20, 10) },
-                new Pin { Col = 2, Row = 19, Name = "A3", ValuesFunction = FlipFlop(10, 30) },
-                new Pin { Col = rightPinCol, Row = 7, Name = "B0", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
-                new Pin { Col = rightPinCol, Row = 11, Name = "B1", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
-                new Pin { Col = rightPinCol, Row = 15, Name = "B2", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
-                new Pin { Col = rightPinCol, Row = 19, Name = "B3", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
+                new Pin { Col = 2, Row = 7, Name = "A0", ValuesFunction = a0 },
+                new Pin { Col = 2, Row = 11, Name = "A1", ValuesFunction = a1 },
+                new Pin { Col = 2, Row = 15, Name = "A2", ValuesFunction = a2 },
+                new Pin { Col = 2, Row = 19, Name = "A3", ValuesFunction = a3 },
+                new Pin { Col = rightPinCol, Row = 7, Name = "B0", IsOutputPin = true, ValuesFunction = !a0 },
+                new Pin { Col = rightPinCol, Row = 11, Name = "B1", IsOutputPin = true, ValuesFunction = !a1 },
+                new Pin { Col = rightPinCol, Row = 15, Name = "B2", IsOutputPin = true, ValuesFunction = !a2 },
+                new Pin { Col = rightPinCol, Row = 19, Name = "B3", IsOutputPin = true, ValuesFunction = !a3 },
             };
 
             var pins = dataPins.Concat(powerPins);
