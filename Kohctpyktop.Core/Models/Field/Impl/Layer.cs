@@ -1,5 +1,7 @@
 using System;
+using System.ComponentModel.Design;
 using System.Drawing;
+using System.IO;
 
 namespace Kohctpyktop.Models.Field
 {
@@ -13,6 +15,50 @@ namespace Kohctpyktop.Models.Field
             Height = height;
             
             _cellMatrix = new LayerCellMatrix(this);
+        }
+
+        public Layer(LayerData layerData) 
+        {
+            // todo: verification
+            var height = layerData.Cells.GetLength(0);
+            var width = layerData.Cells.GetLength(1);
+            
+            if (layerData.RightLinks.GetLength(0) != height || layerData.RightLinks.GetLength(1) != width) 
+                throw new ArgumentException();
+            if (layerData.BottomLinks.GetLength(0) != height || layerData.BottomLinks.GetLength(1) != width) 
+                throw new ArgumentException();
+            
+            Width = width;
+            Height = height;
+            
+            _cellMatrix = new LayerCellMatrix(this);
+            for (var i = 0; i < height; i++)
+            for (var j = 0; j < width; j++)
+            {
+                _cellMatrix.UpdateCellContent(new Position(j, i), layerData.Cells[i, j]);
+                _cellMatrix.UpdateLinkContent(new Position(j, i), Side.Right, layerData.RightLinks[i, j]);
+                _cellMatrix.UpdateLinkContent(new Position(j, i), Side.Bottom, layerData.BottomLinks[i, j]);
+            }
+            
+            CommitChanges(false);
+        }
+
+        public LayerData ExportLayerData()
+        {
+            var cells = new CellContent[Height, Width];
+            var rightLinks = new LinkContent[Height, Width];
+            var bottomLinks = new LinkContent[Height, Width];
+            
+            for (var i = 0; i < Height; i++)
+            for (var j = 0; j < Width; j++)
+            {
+                var cell = Cells[i, j];
+                cells[i, j] = new CellContent(cell);
+                rightLinks[i, j] = new LinkContent(cell.Links[Side.Right].SiliconLink, cell.Links[Side.Right].HasMetalLink);
+                bottomLinks[i, j] = new LinkContent(cell.Links[Side.Bottom].SiliconLink, cell.Links[Side.Bottom].HasMetalLink);
+            }
+
+            return new LayerData(cells, rightLinks, bottomLinks);
         }
         
         public int Width { get; }
@@ -96,6 +142,7 @@ namespace Kohctpyktop.Models.Field
 
                 return toCell.Links[p1].SiliconLink == SiliconLink.BiDirectional &&
                        toCell.Links[p2].SiliconLink == SiliconLink.BiDirectional &&
+                       toCell.Links[side].SiliconLink != SiliconLink.BiDirectional &&
                        !toCell.HasVia()
                     ? (true, SiliconLink.Master, toCell.HasGate() ? toCell.Silicon : toBase.ConvertToGate(!side.IsVertical()))
                     : (false, SiliconLink.None, SiliconTypes.None);

@@ -69,8 +69,6 @@ namespace Kohctpyktop.Rendering
         {
             return new Rectangle(1 + x * (CellSize + 1), 1 + y * (CellSize + 1), CellSize, CellSize);
         }
-        
-        public enum Side { Left, Top, Right, Bottom }
 
         [Flags]
         public enum Corner
@@ -153,8 +151,8 @@ namespace Kohctpyktop.Rendering
         {
             var (_, brush, gateBrush) = SelectSiliconBrush(cell);
 
-            var link = cell.Links[(int) side]?.SiliconLink ?? SiliconLink.None;
-            var oppositeLink = cell.Links[(int) GetOppositeSide(side)]?.SiliconLink ?? SiliconLink.None;
+            var link = cell.Links[side]?.SiliconLink ?? SiliconLink.None;
+            var oppositeLink = cell.Links[GetOppositeSide(side)]?.SiliconLink ?? SiliconLink.None;
             var hasSlaveLinkInDimension = link == SiliconLink.Slave || oppositeLink == SiliconLink.Slave;
             
             var actualBrush = hasSlaveLinkInDimension ? gateBrush : brush;
@@ -173,7 +171,7 @@ namespace Kohctpyktop.Rendering
             var (rect, nearToBounds, _) = GetCellSideBounds(cellBounds.X, cellBounds.Y, side);
             _graphics.FillRectangle(MetalBrush, rect);
             
-            if (isSideDetached || !(cell.Links[(int) side]?.HasMetalLink ?? false))
+            if (isSideDetached || !(cell.Links[side]?.HasMetalLink ?? false))
                 _graphics.FillRectangle(BorderBrush, nearToBounds);
         }
 
