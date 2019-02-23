@@ -24,6 +24,8 @@ namespace Kohctpyktop.ViewModels
         private SimulationResult _simulation;
         private InputHandler _inputHandler;
 
+        private DateTimeOffset _lastOpenTime;
+
         private static void InitLayer(ILayer layer)
         {
             void BuildPin(Position pos)
@@ -106,7 +108,8 @@ namespace Kohctpyktop.ViewModels
             _renderer = new Renderer(Layer);
 
             Simulation = null;
-            
+
+            _lastOpenTime = DateTimeOffset.Now;
             Redraw();
         }
 
@@ -131,6 +134,11 @@ namespace Kohctpyktop.ViewModels
 
         public void ProcessMouse(Point position)
         {
+            // prevent click after level open
+            // doubleclick inside OpenFileDialog causes click over field and single silicon cell draw
+            // todo - find better way to work around, or move to view
+            if ((DateTime.Now - _lastOpenTime).TotalMilliseconds < 300) return;
+            
             if (InputHandler.ProcessMouse(position))
                 Redraw();
         }
