@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Kohctpyktop.Input;
@@ -21,6 +22,7 @@ namespace Kohctpyktop.ViewModels
         private Renderer _renderer;
         private ImageSource _field;
         private SimulationResult _simulation;
+        private InputHandler _inputHandler;
 
         private static void InitLayer(ILayer layer)
         {
@@ -46,31 +48,16 @@ namespace Kohctpyktop.ViewModels
                 }
             }
 
-            IEnumerable<bool> AlwaysUp() { while (true) yield return true; }
-
-            Func<IEnumerable<bool>> FlipFlop(int on, int off, int skip = 0)
-            {
-                IEnumerable<bool> FlipFlopFunc()
-                {
-                    for (var i = 0; i < skip; i++) yield return false;
-
-                    while (true)
-                    {
-                        for (var i = 0; i < on; i++) yield return true;
-                        for (var i = 0; i < off; i++) yield return false;
-                    }
-                }
-
-                return FlipFlopFunc;
-            }
+            ValuesFunction FlipFlop(int on, int off, int skip = 0)
+                => new PeriodicValuesFunction(on, off, skip);
             
             var rightPinCol = layer.Width - 3;
             var powerPins = new[]
             {
-                new Pin { Col = 2, Row = 3, Name = "+VCC", ValuesFunction = AlwaysUp },
-                new Pin { Col = 2, Row = 23, Name = "+VCC", ValuesFunction = AlwaysUp },
-                new Pin { Col = rightPinCol, Row = 3, Name = "+VCC", ValuesFunction = AlwaysUp },
-                new Pin { Col = rightPinCol, Row = 23, Name = "+VCC", ValuesFunction = AlwaysUp },
+                new Pin { Col = 2, Row = 3, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
+                new Pin { Col = 2, Row = 23, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
+                new Pin { Col = rightPinCol, Row = 3, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
+                new Pin { Col = rightPinCol, Row = 23, Name = "+VCC", ValuesFunction = StaticValuesFunction.AlwaysOn, IsSignificant = false },
             };
             var dataPins = new[]
             {
@@ -78,10 +65,10 @@ namespace Kohctpyktop.ViewModels
                 new Pin { Col = 2, Row = 11, Name = "A1", ValuesFunction = FlipFlop(10, 10, 10) },
                 new Pin { Col = 2, Row = 15, Name = "A2", ValuesFunction = FlipFlop(20, 10) },
                 new Pin { Col = 2, Row = 19, Name = "A3", ValuesFunction = FlipFlop(10, 30) },
-                new Pin { Col = rightPinCol, Row = 7, Name = "B0", IsOutputPin = true, ValuesFunction = AlwaysUp },
-                new Pin { Col = rightPinCol, Row = 11, Name = "B1", IsOutputPin = true, ValuesFunction = AlwaysUp },
-                new Pin { Col = rightPinCol, Row = 15, Name = "B2", IsOutputPin = true, ValuesFunction = AlwaysUp },
-                new Pin { Col = rightPinCol, Row = 19, Name = "B3", IsOutputPin = true, ValuesFunction = AlwaysUp },
+                new Pin { Col = rightPinCol, Row = 7, Name = "B0", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
+                new Pin { Col = rightPinCol, Row = 11, Name = "B1", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
+                new Pin { Col = rightPinCol, Row = 15, Name = "B2", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
+                new Pin { Col = rightPinCol, Row = 19, Name = "B3", IsOutputPin = true, ValuesFunction = StaticValuesFunction.AlwaysOff },
             };
 
             var pins = dataPins.Concat(powerPins);
@@ -105,23 +92,31 @@ namespace Kohctpyktop.ViewModels
 
         public MainViewModel()
         {
-            OpenLayer(new Layer(30, 27));
+            var layer = new Layer(30, 27);
+            InitLayer(layer);
+            OpenLayer(layer);
         }
 
         public void OpenLayer(Layer layer)
         {
             Layer = layer;
-            InitLayer(Layer);
             
             InputHandler = new InputHandler(Layer);
             _renderer?.Dispose();
             _renderer = new Renderer(Layer);
 
+            Simulation = null;
+            
             Redraw();
         }
 
         public ILayer Layer { get; private set; }
-        public InputHandler InputHandler { get; private set; }
+
+        public InputHandler InputHandler
+        {
+            get => _inputHandler;
+            private set { _inputHandler = value; OnPropertyChanged(); }
+        }
 
         public ImageSource Field
         {
@@ -130,7 +125,7 @@ namespace Kohctpyktop.ViewModels
             {
                 if (Equals(_field, value)) return;
                 _field = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Field)));
+                OnPropertyChanged();
             }
         }
 
@@ -190,7 +185,7 @@ namespace Kohctpyktop.ViewModels
         public SimulationResult Simulation
         {
             get => _simulation;
-            set { _simulation = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Simulation))); }
+            set { _simulation = value; OnPropertyChanged(); }
         }
 
         private void Redraw()
@@ -211,5 +206,7 @@ namespace Kohctpyktop.ViewModels
         public void Dispose() => _renderer.Dispose();
 
         public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

@@ -19,7 +19,7 @@ namespace Kohctpyktop.Models.Simulation
             var inputPins = topology.Pins.Where(x => !x.IsOutputPin).ToList();
             var outputPins = topology.Pins.Where(x => x.IsOutputPin).ToList();
             var pinNodes = topology.Pins.ToDictionary(p => p, p => topology.Nodes.Where(n => n.Pins.Contains(p)).ToList());
-            var inputs = inputPins.ToDictionary(p => p, p => p.ValuesFunction().GetEnumerator());
+            var inputs = inputPins.ToDictionary(p => p, p => p.ValuesFunction.Generate().GetEnumerator());
             var correctOutputValues = outputPins.ToDictionary(p => p, p => new List<bool>());
             var simulatedOutputValues = outputPins.ToDictionary(p => p, p => new List<bool>());
             var inputPinValues = inputPins.ToDictionary(p => p, p => new List<bool>());
@@ -111,7 +111,13 @@ namespace Kohctpyktop.Models.Simulation
             }
 
             return new SimulationResult(
-                inputPinValues.Concat(simulatedOutputValues).Select(x => new SimulatedPin(x.Key.Name, x.Value)).ToArray(), score);
+                inputPinValues
+                    .Concat(simulatedOutputValues)
+                    .Where(x => x.Key.IsSignificant)
+                    .OrderBy(x => x.Key.IsOutputPin)
+                    .ThenBy(x => x.Key.Name)
+                    .Select(x => new SimulatedPin(x.Key.Name, x.Value))
+                    .ToArray(), score);
         }
     }
 }

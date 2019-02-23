@@ -16,7 +16,8 @@ namespace Kohctpyktop.Models.Field
         public int Row { get; set; }
         public int Col { get; set; }
         public string Name { get; set; }
-        public Func<IEnumerable<bool>> ValuesFunction { get; set; } = ValueFunctionHelper.PowerSupply;
+        public ValuesFunction ValuesFunction { get; set; } = StaticValuesFunction.AlwaysOn;
         public bool IsOutputPin { get; set; }
+        public bool IsSignificant { get; set; } = true;
     }
 }

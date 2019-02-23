@@ -39,6 +39,10 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="JsonSubTypes, Version=1.5.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\JsonSubTypes.1.5.2\lib\net46\JsonSubTypes.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -72,6 +76,7 @@
     <Compile Include="Converters\BooleanChoiceConverter.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\NeighborInfoConverter.cs" />
+    <Compile Include="Converters\PinValuesConverter.cs" />
     <Compile Include="Converters\SelectionConverter.cs" />
     <Compile Include="DrawingExts.cs" />
     <Compile Include="Input\DrawMode.cs" />

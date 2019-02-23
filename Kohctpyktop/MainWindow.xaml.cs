@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,11 +14,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using JsonSubTypes;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models.Field;
 using Kohctpyktop.ViewModels;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Kohctpyktop
 {
@@ -110,6 +113,20 @@ namespace Kohctpyktop
             }
         }
 
+        private JsonSerializerSettings BuildSerializerSettings()
+        {
+            var settings = new JsonSerializerSettings();
+            
+            settings.Converters.Add(new StringEnumConverter());
+            settings.Converters.Add(JsonSubtypesConverterBuilder
+                .Of(typeof(ValuesFunction), nameof(ValuesFunction.Type))
+                .RegisterSubtype(typeof(StaticValuesFunction), ValuesFunctionType.Static)
+                .RegisterSubtype(typeof(PeriodicValuesFunction), ValuesFunctionType.Periodic)
+                .Build());
+
+            return settings;
+        }
+
         private void OnOpenMenuItemClick(object sender, RoutedEventArgs e)
         {
             var ofd = new OpenFileDialog();
@@ -117,10 +134,15 @@ namespace Kohctpyktop
             {
                 try
                 {
-                    var json = File.ReadAllText(ofd.FileName);
-                    var layerData = JsonConvert.DeserializeObject<LayerData>(json);
+                    using (var file = File.OpenRead(ofd.FileName))
+                    using (var gzipStream = new GZipStream(file, CompressionMode.Decompress))
+                    using (var reader = new StreamReader(gzipStream))
+                    {
+                        var json = reader.ReadToEnd();
+                        var layerData = JsonConvert.DeserializeObject<LayerData>(json, BuildSerializerSettings());
 
-                    ViewModel.OpenLayer(new Layer(layerData));
+                        ViewModel.OpenLayer(new Layer(layerData));
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -136,11 +158,18 @@ namespace Kohctpyktop
             if (sfd.ShowDialog() ?? false)
             {
                 var layerData = ViewModel.Layer.ExportLayerData();
-                var json = JsonConvert.SerializeObject(layerData);
+                var json = JsonConvert.SerializeObject(layerData, BuildSerializerSettings());
 
                 try
                 {
-                    File.WriteAllText(sfd.FileName, json);
+                    using (var file = File.OpenWrite(sfd.FileName))
+                    {
+                        file.SetLength(0);
+                        
+                        using (var gzipStream = new GZipStream(file, CompressionMode.Compress))
+                        using (var writer = new StreamWriter(gzipStream))
+                            writer.Write(json);
+                    }
                 }
                 catch (Exception ex)
                 {

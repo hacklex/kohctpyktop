@@ -9,6 +9,7 @@ namespace Kohctpyktop.Models.Field
     /// <summary>
     /// Provides useful prefabs for describing input and output value functions
     /// </summary>
+    [Obsolete("non-serializable, use ValuesFunction class")]
     public static class ValueFunctionHelper
     {
         private static BoolSeq PowerSupplyFunc()
