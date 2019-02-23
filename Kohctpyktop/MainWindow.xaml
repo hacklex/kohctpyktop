@@ -120,16 +120,18 @@
                       RenderOptions.EdgeMode="Aliased"/>
             </local:ToolInfoHolder.Icon>
         </local:ToolInfoHolder>
-        <Style TargetType="Button">
-            <Setter Property="Padding" Value="5"></Setter>
-            <Setter Property="Margin" Value="3"></Setter>
-        </Style>
         <converters:BooleanChoiceConverter x:Key="SiliconHolderConverter" 
                                       OnFalse="{StaticResource NSiliconToolHolder}" 
                                       OnTrue="{StaticResource PSiliconToolHolder}"/>
     </Window.Resources>
     <DockPanel UseLayoutRounding="True">
         <TabControl DockPanel.Dock="Top">
+            <TabControl.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Padding" Value="5"></Setter>
+                    <Setter Property="Margin" Value="3"></Setter>
+                </Style>
+            </TabControl.Resources>
             <TabItem Header="Game">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel>
@@ -234,23 +236,17 @@
                 </StackPanel>
             </TabItem>
         </TabControl>
-        <Image VerticalAlignment="Center"
-               SnapsToDevicePixels="True"
-               MouseDown="ImageMouseDown" 
-               MouseMove="ImageMouseMove" 
-               MouseUp="ImageMouseUp" 
-               UseLayoutRounding="True"
-               Stretch="None" RenderOptions.BitmapScalingMode="Fant"
-               Source="{Binding Field}"/>
-        <StackPanel>
-            <Button Click="StartSimulation">Simulate</Button>
-            <TextBlock Text="{Binding Simulation.Score, StringFormat='Score: {0}'}"/>
-            <ItemsControl ItemsSource="{Binding Simulation.Pins}">
+        <StackPanel DockPanel.Dock="Bottom" Margin="10">
+            <ItemsControl ItemsSource="{Binding Simulation.Pins}" Grid.IsSharedSizeScope="True">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Width="100" VerticalAlignment="Center"/>
-                            <Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Names"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                            <Grid Column="1">
                                 <ItemsControl ItemsSource="{Binding CorrectValues, Converter={StaticResource PinValuesConverter}}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
@@ -272,17 +268,39 @@
                                     </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border BorderBrush="Black" Width="2" Height="16" Margin="0 2"
+                                            <Border BorderBrush="Black" Width="2" Height="16" Margin="0 5"
                                                     BorderThickness="{Binding Converter={StaticResource PinValueBorderThicknessConverter}}"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
                             </Grid>
-                        </DockPanel>
+                        </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            <TextBlock Text="{Binding Simulation.Score, StringFormat='Score: {0}'}" Margin="0 5">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Simulation}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Button Click="StartSimulation" Margin="0">Simulate</Button>
+            </StackPanel>
         </StackPanel>
+        <Image VerticalAlignment="Center"
+               SnapsToDevicePixels="True"
+               MouseDown="ImageMouseDown" 
+               MouseMove="ImageMouseMove" 
+               MouseUp="ImageMouseUp" 
+               UseLayoutRounding="True"
+               Stretch="None" RenderOptions.BitmapScalingMode="Fant"
+               Source="{Binding Field}"/>
     </DockPanel>
 </Window>
 
