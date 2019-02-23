@@ -106,7 +106,7 @@ namespace Kohctpyktop.Models.Simulation
             }
             var score = 1.0;
 
-            for (int i = 0; i < maxSimulationSteps + 1; i++)
+            for (var i = 0; i < maxSimulationSteps + 1; i++)
             {
                 SimulationStep();
                 
@@ -128,7 +128,15 @@ namespace Kohctpyktop.Models.Simulation
                     .Select(x =>
                     {
                         x.Value.RemoveAt(0);
-                        return new SimulatedPin(x.Key.Name, x.Value, x.Key.IsOutputPin ? correctOutputValues[x.Key] : x.Value);
+                        List<bool> correctValues;
+                        if (x.Key.IsOutputPin)
+                        {
+                            correctValues = correctOutputValues[x.Key];
+                            correctValues.RemoveAt(0);
+                        }
+                        else correctValues = x.Value;
+                        
+                        return new SimulatedPin(x.Key.Name, x.Value, correctValues);
                     })
                     .ToArray(), score);
         }
