@@ -85,6 +85,7 @@
     <Compile Include="Input\Selection.cs" />
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Rendering\RenderOpts.cs" />
+    <Compile Include="Serialization\LayerSerializer.cs" />
     <Compile Include="ToolInfoHolder.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">

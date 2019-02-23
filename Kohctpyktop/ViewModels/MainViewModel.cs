@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
@@ -99,7 +98,7 @@ namespace Kohctpyktop.ViewModels
             OpenLayer(layer);
         }
 
-        public void OpenLayer(Layer layer)
+        public void OpenLayer(ILayer layer)
         {
             Layer = layer;
             
