@@ -5,7 +5,8 @@ namespace Kohctpyktop.Models.Topology
 {
     /// <summary>
     /// Handles groups of gates directly following each other.
-    /// A singular gate is counted as a group of one. 
+    /// A singular gate is counted as a group of one.
+    /// <!-- todo: make object immutable --> 
     /// </summary>
     public class SchemeGate
     {
@@ -22,14 +23,7 @@ namespace Kohctpyktop.Models.Topology
         /// otherwise the gate is open if and only if the input is high (NPN)
         /// </summary>
         public bool IsInversionGate { get; set; }
-        /// <summary>
-        /// The current state of the gate
-        /// </summary>
-        public bool IsOpen { get; set; }
-        /// <summary>
-        /// The state of the gate during the previous simulation step
-        /// </summary>
-        public bool WasOpen { get; set; }
+
         public List<ILayerCell> GateCells { get; set; } = new List<ILayerCell>();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,61 +11,79 @@ namespace Kohctpyktop.Models.Simulation
 {
     public static class Simulator
     {
+        public static SchemeState InitState(Topology.Topology topology)
+        {
+            var state = new SchemeState(topology);
+            return Step(state, true); // ensuring gates in the right states
+        }
+        
         public static SimulationResult Simulate(Topology.Topology topology, int maxSimulationSteps)
         {
-            foreach (var gate in topology.Gates)
+            var state = InitState(topology);
+            var stateList = new List<SchemeState>();
+            
+            for (var i = 0; i < maxSimulationSteps; i++)
             {
-                gate.IsOpen = gate.IsInversionGate;
+                state = Step(state, false);
+                stateList.Add(state);
             }
             
-            var inputPins = topology.Pins.Where(x => !x.IsOutputPin).ToList();
-            var outputPins = topology.Pins.Where(x => x.IsOutputPin).ToList();
-            var pinNodes = topology.Pins.ToDictionary(p => p, p => topology.Nodes.Where(n => n.Pins.Contains(p)).ToList());
-            var inputs = inputPins.ToDictionary(p => p, p => p.ValuesFunction.Generate().GetEnumerator());
-            var outputs = outputPins.ToDictionary(p => p, p => p.ValuesFunction.Generate().GetEnumerator());
-            var correctOutputValues = outputPins.ToDictionary(p => p, p => new List<bool>());
-            var simulatedOutputValues = outputPins.ToDictionary(p => p, p => new List<bool>());
-            var inputPinValues = inputPins.ToDictionary(p => p, p => new List<bool>());
+            return new SimulationResult(stateList);
+        }
 
-            var currentPinValues = inputPins.ToDictionary(p => p, p => false);
+        public static SchemeState StepBack(SchemeState state)
+        {
+            // todo:
+            // - declare StepBack in value generators
+            // - ???
+            throw new NotImplementedException();
+        }
 
-            bool Nor(SchemeNode[] nodes) => nodes.Aggregate(true, (b, node) => b && !node.IsHigh);
-            bool Or(SchemeNode[] nodes) => nodes.Aggregate(false, (b, node) => b || node.IsHigh);
-            void UpdateGateState(SchemeGate gate)
+        public static SchemeState Step(SchemeState state) => Step(state, false);
+        
+        private static SchemeState Step(SchemeState state, bool dry)
+        {
+            var gateStates = state.Gates.ToDictionary(x => x.Key, x => x.Value); // duplicating gate states
+            var nodeStates = state.Nodes.ToDictionary(x => x.Key, x => new NodeState(x.Key, false));
+            var inputPinStates = new Dictionary<Pin, PinState>();
+            var outputPinStates = new Dictionary<Pin, PinState>();
+
+            bool Nor(SchemeNode[] nodes) => nodes.Aggregate(true, (b, node) => b && !nodeStates[node].IsHigh);
+            bool Or(SchemeNode[] nodes) => nodes.Aggregate(false, (b, node) => b || nodeStates[node].IsHigh);
+            
+            void UpdateGateState(KeyValuePair<SchemeGate, GateState> gateInfo)
             {
-                gate.IsOpen = gate.IsInversionGate 
+                var gate = gateInfo.Key;
+                gateStates[gate] = new GateState(gate, gate.IsInversionGate 
                     ? gate.GateInputs.Aggregate(true, (old, pair) => old && Nor(pair)) 
-                    : gate.GateInputs.Aggregate(true, (old, pair) => old && Or(pair));
+                    : gate.GateInputs.Aggregate(true, (old, pair) => old && Or(pair)));
             }
 
             void UpdatePinValues()
             { 
-                foreach (var pin in topology.Pins)
+                foreach (var (pin, pinState) in state.InputPinStates.Concat(state.OutputPinStates))
                 {
-                    if (inputs.TryGetValue(pin, out var input))
+                    var (isHigh, newState) = dry ? (false, pinState.GeneratorState) : pin.ValuesFunction.Step(pinState.GeneratorState);
+                    
+                    if (pin.IsOutputPin)
                     {
-                        var currentPinValue = input.Current;
-                        currentPinValues[pin] = currentPinValue;
-                        inputPinValues[pin].Add(currentPinValue);
-                        input.MoveNext();
-                    } 
-                    else if (outputs.TryGetValue(pin, out var output))
+                        outputPinStates[pin] = new PinState(pin, isHigh, newState);
+                    }
+                    else
                     {
-                        var currentPinValue = output.Current;
-                        correctOutputValues[pin].Add(currentPinValue);
-                        output.MoveNext();
+                        inputPinStates[pin] = new PinState(pin, isHigh, newState);
                     }
                 }
             }
 
-            void ZeroAllNodes() => topology.Nodes.ForEach(n => n.IsHigh = false);
             void LoadPinNodes()
             {
-                foreach (var n in topology.Nodes)
+                foreach (var (n, _) in state.Nodes)
                 {
                     foreach (var p in n.Pins)
                     {
-                        if (currentPinValues.TryGetValue(p, out var input) && input) n.IsHigh = true;
+                        if (inputPinStates.TryGetValue(p, out var pinState) && pinState.IsHigh) 
+                            nodeStates[n] = new NodeState(n, true);
                     }
                 }
             }
@@ -72,77 +91,45 @@ namespace Kohctpyktop.Models.Simulation
             {
                 for (bool hadChanges = true; hadChanges; hadChanges = false)
                 {
-                    foreach (var gate in topology.Gates)
+                    foreach (var (gate, gateState) in gateStates)
                     {
-                        if (gate.IsOpen)
+                        if (gateState.IsOpen)
                         {
-                            var left = gate.GatePowerNodes[0];
-                            var right = gate.GatePowerNodes[1];
+                            var left = nodeStates[gate.GatePowerNodes[0]];
+                            var right = nodeStates[gate.GatePowerNodes[1]];
                             var isHigh = left.IsHigh || right.IsHigh;
                             hadChanges |= left.IsHigh != right.IsHigh;
-                            gate.GatePowerNodes[0].IsHigh = gate.GatePowerNodes[1].IsHigh = isHigh;
+                            nodeStates[gate.GatePowerNodes[0]] = new NodeState(gate.GatePowerNodes[0], isHigh);
+                            nodeStates[gate.GatePowerNodes[1]] = new NodeState(gate.GatePowerNodes[1], isHigh);
                         }
                     }
                 }
             }
             void CalculateGates()
             {
-                topology.Gates.ForEach(UpdateGateState);
+                state.Gates.ForEach(UpdateGateState);
             }
-            void WriteSimulatedValues()
-            {
-                foreach (var pin in outputPins)
-                    simulatedOutputValues[pin].Add(pinNodes[pin].Any(node => node.IsHigh));
-            }
+            
+            UpdatePinValues();
+            LoadPinNodes();
+            PropagateHigh();
+            CalculateGates();
+            
+            return new SchemeState(state.InputPins, state.OutputPins, state.PinNodes,
+                gateStates, nodeStates, inputPinStates, outputPinStates,
+                state.OutputPins.ToDictionary(pin => pin, pin => state.PinNodes[pin].Any(node => nodeStates[node].IsHigh)));
+        }
 
-            void SimulationStep()
-            {
-                UpdatePinValues();
-                ZeroAllNodes();
-                LoadPinNodes();
-                PropagateHigh();
-                CalculateGates();
-                WriteSimulatedValues(); 
-            }
+        private static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key,
+            out TValue value)
+        {
+            key = pair.Key;
+            value = pair.Value;
+        }
 
-            var score = .0;
-
-            for (var i = 0; i < maxSimulationSteps + 1; i++)
-            {
-                SimulationStep();
-
-                if (i > 0)
-                {
-                    foreach (var pin in outputPins)
-                    {
-                        if (simulatedOutputValues[pin].Last() == correctOutputValues[pin].Last())
-                            score += 1.0 / outputPins.Count;
-                    }
-                }
-            }
-
-            score /= maxSimulationSteps;
-
-            return new SimulationResult(
-                inputPinValues
-                    .Concat(simulatedOutputValues)
-                    .Where(x => x.Key.IsSignificant)
-                    .OrderBy(x => x.Key.IsOutputPin)
-                    .ThenBy(x => x.Key.Name)
-                    .Select(x =>
-                    {
-                        x.Value.RemoveAt(0);
-                        List<bool> correctValues;
-                        if (x.Key.IsOutputPin)
-                        {
-                            correctValues = correctOutputValues[x.Key];
-                            correctValues.RemoveAt(0);
-                        }
-                        else correctValues = x.Value;
-                        
-                        return new SimulatedPin(x.Key.Name, x.Value, correctValues);
-                    })
-                    .ToArray(), score);
+        private static void ForEach<TValue>(this IEnumerable<TValue> list, Action<TValue> actor)
+        {
+            foreach (var item in list) actor(item);
         }
     }
 }

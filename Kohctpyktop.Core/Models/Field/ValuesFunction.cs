@@ -9,7 +9,8 @@ namespace Kohctpyktop.Models.Field
     public abstract class ValuesFunction
     {
         public abstract ValuesFunctionType Type { get; }
-        public abstract IEnumerable<bool> Generate();
+        public abstract object Begin();
+        public abstract (bool, object) Step(object state);
 
         public static implicit operator ValuesFunction(bool v) =>
             v ? StaticValuesFunction.AlwaysOn : StaticValuesFunction.AlwaysOff;
@@ -27,6 +28,17 @@ namespace Kohctpyktop.Models.Field
             => new AggregateValuesFunction(AggregateOperation.Xor, a, b);
     }
 
+    public abstract class ValuesFunction<TState> : ValuesFunction
+    {
+        public sealed override (bool, object) Step(object state)
+        {
+            if (state is TState s) return Step(s);
+            throw new ArgumentException("Invalid state type", nameof(state));
+        }
+
+        public abstract (bool, TState) Step(TState state);
+    }
+
     public class StaticValuesFunction : ValuesFunction
     {
         public override ValuesFunctionType Type => ValuesFunctionType.Static;
@@ -37,18 +49,24 @@ namespace Kohctpyktop.Models.Field
         {
             Value = value;
         }
-        
-        public override IEnumerable<bool> Generate()
-        {
-            while (true) yield return Value;
-        }
+
+        public override (bool, object) Step(object state) => (Value, null);
+        public override object Begin() => null;
 
         public static StaticValuesFunction AlwaysOn { get; } = new StaticValuesFunction(true);
         public static StaticValuesFunction AlwaysOff { get; } = new StaticValuesFunction(false);
     }
 
-    public class PeriodicValuesFunction : ValuesFunction
+    public class PeriodicValuesFunction : ValuesFunction<PeriodicValuesFunction.State>
     {
+        public class State
+        {
+            public State(int skipped, int position) { Skipped = skipped; Position = position; }
+
+            public int Skipped { get; }
+            public int Position { get; }
+        }
+        
         public override ValuesFunctionType Type => ValuesFunctionType.Periodic;
         
         public int Skip { get; }
@@ -62,16 +80,16 @@ namespace Kohctpyktop.Models.Field
             Off = off;
         }
         
-        public override IEnumerable<bool> Generate()
+        public override (bool, State) Step(State state)
         {
-            for (var i = 0; i < Skip; i++) yield return false;
-
-            while (true)
-            {
-                for (var i = 0; i < On; i++) yield return true;
-                for (var i = 0; i < Off; i++) yield return false;
-            }
+            if (state.Skipped < Skip) return (false, new State(state.Skipped + 1, 0));
+            if (state.Position < On) return (true, new State(state.Skipped, state.Position + 1));
+            return state.Position < On + Off - 1
+                ? (false, new State(state.Skipped, state.Position + 1))
+                : (false, new State(state.Skipped, 0));
         }
+
+        public override object Begin() => new State(0, 0);
     }
 
     public enum AggregateOperation
@@ -79,8 +97,18 @@ namespace Kohctpyktop.Models.Field
         And, Or, Xor
     }
 
-    public class AggregateValuesFunction : ValuesFunction
+    public class AggregateValuesFunction : ValuesFunction<AggregateValuesFunction.State>
     {
+        public class State
+        {
+            public State(object[] states)
+            {
+                States = states;
+            }
+
+            public object[] States { get; }
+        }
+        
         public override ValuesFunctionType Type => ValuesFunctionType.Aggregate;
         
         public ValuesFunction[] Functions { get; }
@@ -97,19 +125,32 @@ namespace Kohctpyktop.Models.Field
             Operation = operation;
         }
 
-        public override IEnumerable<bool> Generate() =>
-            Functions.Aggregate(GenerateZero(Operation),
-                (a, b) => a.Zip(b.Generate(), (av, bv) => Apply(av, bv, Operation)));
+        public override object Begin() => new State(Functions.Select(x => x.Begin()).ToArray());
 
-        private IEnumerable<bool> GenerateZero(AggregateOperation operation)
+        public override (bool, State) Step(State state)
+        {
+            var newStates = new object[Functions.Length];
+            var newValue = Zero(Operation);
+
+            for (var i = 0; i < Functions.Length; i++)
+            {
+                var (v, s) = Functions[i].Step(state.States[i]);
+                newValue = Apply(newValue, v, Operation);
+                newStates[i] = s;
+            }
+
+            return (newValue, new State(newStates));
+        }
+
+        private bool Zero(AggregateOperation operation)
         {
             switch (operation)
             {
                 case AggregateOperation.And:
-                    while (true) yield return true;
+                    while (true) return true;
                 case AggregateOperation.Or:
                 case AggregateOperation.Xor:
-                    while (true) yield return false;
+                    while (true) return false;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(operation));
             }
