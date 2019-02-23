@@ -104,20 +104,24 @@ namespace Kohctpyktop.Models.Simulation
                 CalculateGates();
                 WriteSimulatedValues(); 
             }
-            var score = 1.0;
+
+            var score = .0;
 
             for (var i = 0; i < maxSimulationSteps + 1; i++)
             {
                 SimulationStep();
-                
-                double scorePart = 0;
-                foreach (var pin in outputPins)
+
+                if (i > 0)
                 {
-                    if (simulatedOutputValues[pin].Last() == correctOutputValues[pin].Last())
-                        scorePart += 1.0 / outputPins.Count;
+                    foreach (var pin in outputPins)
+                    {
+                        if (simulatedOutputValues[pin].Last() == correctOutputValues[pin].Last())
+                            score += 1.0 / outputPins.Count;
+                    }
                 }
-                score = (score * i + scorePart) / (i + 1);
             }
+
+            score /= maxSimulationSteps;
 
             return new SimulationResult(
                 inputPinValues

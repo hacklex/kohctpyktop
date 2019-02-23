@@ -243,6 +243,7 @@
                Source="{Binding Field}"/>
         <StackPanel>
             <Button Click="StartSimulation">Simulate</Button>
+            <TextBlock Text="{Binding Simulation.Score, StringFormat='Score: {0}'}"/>
             <ItemsControl ItemsSource="{Binding Simulation.Pins}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
