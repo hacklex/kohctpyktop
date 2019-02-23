@@ -106,5 +106,10 @@ namespace Kohctpyktop
                     break;
             }
         }
+
+        private void StartSimulation(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Simulate();
+        }
     }
 }

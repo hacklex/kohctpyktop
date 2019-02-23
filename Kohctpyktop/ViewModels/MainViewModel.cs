@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
@@ -8,6 +9,8 @@ using System.Windows.Media.Imaging;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
+using Kohctpyktop.Models.Simulation;
+using Kohctpyktop.Models.Topology;
 using Kohctpyktop.Rendering;
 using Point = System.Windows.Point;
 
@@ -17,6 +20,7 @@ namespace Kohctpyktop.ViewModels
     {
         private readonly Renderer _renderer;
         private ImageSource _field;
+        private SimulationResult _simulation;
 
         private static void InitLayer(ILayer layer)
         {
@@ -42,24 +46,42 @@ namespace Kohctpyktop.ViewModels
                 }
             }
 
+            IEnumerable<bool> AlwaysUp() { while (true) yield return true; }
+
+            Func<IEnumerable<bool>> FlipFlop(int on, int off, int skip = 0)
+            {
+                IEnumerable<bool> FlipFlopFunc()
+                {
+                    for (var i = 0; i < skip; i++) yield return false;
+
+                    while (true)
+                    {
+                        for (var i = 0; i < on; i++) yield return true;
+                        for (var i = 0; i < off; i++) yield return false;
+                    }
+                }
+
+                return FlipFlopFunc;
+            }
+            
             var rightPinCol = layer.Width - 3;
             var powerPins = new[]
             {
-                new Pin { Col = 2, Row = 3, Name = "+VCC"},
-                new Pin { Col = 2, Row = 23, Name = "+VCC" },
-                new Pin { Col = rightPinCol, Row = 3, Name = "+VCC" },
-                new Pin { Col = rightPinCol, Row = 23, Name = "+VCC" },
+                new Pin { Col = 2, Row = 3, Name = "+VCC", ValuesFunction = AlwaysUp },
+                new Pin { Col = 2, Row = 23, Name = "+VCC", ValuesFunction = AlwaysUp },
+                new Pin { Col = rightPinCol, Row = 3, Name = "+VCC", ValuesFunction = AlwaysUp },
+                new Pin { Col = rightPinCol, Row = 23, Name = "+VCC", ValuesFunction = AlwaysUp },
             };
             var dataPins = new[]
             {
-                new Pin { Col = 2, Row = 7, Name = "A0" },
-                new Pin { Col = 2, Row = 11, Name = "A1" },
-                new Pin { Col = 2, Row = 15, Name = "A2" },
-                new Pin { Col = 2, Row = 19, Name = "A3" },
-                new Pin { Col = rightPinCol, Row = 7, Name = "B0" },
-                new Pin { Col = rightPinCol, Row = 11, Name = "B1" },
-                new Pin { Col = rightPinCol, Row = 15, Name = "B2" },
-                new Pin { Col = rightPinCol, Row = 19, Name = "B3" },
+                new Pin { Col = 2, Row = 7, Name = "A0", ValuesFunction = FlipFlop(10, 10) },
+                new Pin { Col = 2, Row = 11, Name = "A1", ValuesFunction = FlipFlop(10, 10, 10) },
+                new Pin { Col = 2, Row = 15, Name = "A2", ValuesFunction = FlipFlop(20, 10) },
+                new Pin { Col = 2, Row = 19, Name = "A3", ValuesFunction = FlipFlop(10, 30) },
+                new Pin { Col = rightPinCol, Row = 7, Name = "B0", IsOutputPin = true, ValuesFunction = AlwaysUp },
+                new Pin { Col = rightPinCol, Row = 11, Name = "B1", IsOutputPin = true, ValuesFunction = AlwaysUp },
+                new Pin { Col = rightPinCol, Row = 15, Name = "B2", IsOutputPin = true, ValuesFunction = AlwaysUp },
+                new Pin { Col = rightPinCol, Row = 19, Name = "B3", IsOutputPin = true, ValuesFunction = AlwaysUp },
             };
 
             var pins = dataPins.Concat(powerPins);
@@ -151,6 +173,18 @@ namespace Kohctpyktop.ViewModels
                 Layer.Redo();
                 Redraw();
             }
+        }
+
+        public void Simulate()
+        {
+            var topology = TopologyBuilder.BuildTopology(Layer);
+            Simulation = Simulator.Simulate(topology, 100);
+        }
+
+        public SimulationResult Simulation
+        {
+            get => _simulation;
+            set { _simulation = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Simulation))); }
         }
 
         private void Redraw()

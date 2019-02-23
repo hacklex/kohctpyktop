@@ -240,6 +240,40 @@
                UseLayoutRounding="True"
                Stretch="None" RenderOptions.BitmapScalingMode="Fant"
                Source="{Binding Field}"/>
+        <StackPanel>
+            <Button Click="StartSimulation">Simulate</Button>
+            <ItemsControl ItemsSource="{Binding Simulation.Pins}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Left" Text="{Binding Name}" Width="100"/>
+                            <ItemsControl ItemsSource="{Binding Values}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <VirtualizingStackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderThickness="0 0 0 3" BorderBrush="Black" Width="1" Height="16">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding}" Value="True">
+                                                            <Setter Property="Background" Value="Black"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
     </DockPanel>
 </Window>
 

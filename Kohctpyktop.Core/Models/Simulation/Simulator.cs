@@ -8,9 +8,9 @@ using Kohctpyktop.Models.Topology;
 
 namespace Kohctpyktop.Models.Simulation
 {
-    public class Simulation
+    public static class Simulator
     {
-        public (double score, Dictionary<Pin, List<bool>> outputPinValues) RateTopology(Topology.Topology topology, int maxSimulationSteps)
+        public static SimulationResult Simulate(Topology.Topology topology, int maxSimulationSteps)
         {
             foreach (var gate in topology.Gates)
             {
@@ -39,10 +39,13 @@ namespace Kohctpyktop.Models.Simulation
             { 
                 foreach (var pin in topology.Pins)
                 {
-                    var currentPinValue = inputs[pin].Current;
-                    currentPinValues[pin] = currentPinValue;
-                    (pin.IsOutputPin ? correctOutputValues[pin]: inputPinValues[pin]).Add(currentPinValue);
-                    inputs[pin].MoveNext();
+                    if (inputs.TryGetValue(pin, out var input))
+                    {
+                        var currentPinValue = input.Current;
+                        currentPinValues[pin] = currentPinValue;
+                        (pin.IsOutputPin ? correctOutputValues[pin] : inputPinValues[pin]).Add(currentPinValue);
+                        inputs[pin].MoveNext();
+                    }
                 }
             }
 
@@ -53,7 +56,7 @@ namespace Kohctpyktop.Models.Simulation
                 {
                     foreach (var p in n.Pins)
                     {
-                        if (currentPinValues[p]) n.IsHigh = true;
+                        if (currentPinValues.TryGetValue(p, out var input) && input) n.IsHigh = true;
                     }
                 }
             }
@@ -98,16 +101,17 @@ namespace Kohctpyktop.Models.Simulation
             for (int i = 0; i < maxSimulationSteps; i++)
             {
                 SimulationStep();
-                double scorePart = 0;
-                foreach (var pin in outputPins)
-                {
-                    if (simulatedOutputValues[pin].Last() == correctOutputValues[pin].Last())
-                        scorePart += 1.0 / outputPins.Count;
-                }
-                score = (score * i + scorePart) / (i + 1);
+//                double scorePart = 0;
+//                foreach (var pin in outputPins)
+//                {
+//                    if (simulatedOutputValues[pin].Last() == correctOutputValues[pin].Last())
+//                        scorePart += 1.0 / outputPins.Count;
+//                }
+//                score = (score * i + scorePart) / (i + 1);
             }
 
-            return (score, simulatedOutputValues);
+            return new SimulationResult(
+                inputPinValues.Concat(simulatedOutputValues).Select(x => new SimulatedPin(x.Key.Name, x.Value)).ToArray(), score);
         }
     }
 }
