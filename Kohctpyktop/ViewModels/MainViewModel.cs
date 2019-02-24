@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Kohctpyktop.Input;
@@ -22,6 +23,7 @@ namespace Kohctpyktop.ViewModels
         private ImageSource _field;
         private SimulationResult _simulation;
         private InputHandler _inputHandler;
+        private bool _isSimulatedOnce;
 
         private DateTimeOffset _lastOpenTime;
 
@@ -111,7 +113,8 @@ namespace Kohctpyktop.ViewModels
             _renderer?.Dispose();
             _renderer = new Renderer(Layer);
 
-            Simulation = null;
+            Simulate();
+            IsSimulatedOnce = false;
 
             _lastOpenTime = DateTimeOffset.Now;
             Redraw();
@@ -192,12 +195,19 @@ namespace Kohctpyktop.ViewModels
         {
             var topology = TopologyBuilder.BuildTopology(Layer);
             Simulation = Simulator.Simulate(topology, 100);
+            IsSimulatedOnce = true;
         }
 
         public SimulationResult Simulation
         {
             get => _simulation;
             set { _simulation = value; OnPropertyChanged(); }
+        }
+
+        public bool IsSimulatedOnce
+        {
+            get => _isSimulatedOnce;
+            set { _isSimulatedOnce = value; OnPropertyChanged(); }
         }
 
         private void Redraw()
