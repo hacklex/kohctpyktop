@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Kohctpyktop"
         xmlns:converters="clr-namespace:Kohctpyktop.Converters"
         xmlns:viewModels="clr-namespace:Kohctpyktop.ViewModels"
+        xmlns:controls="clr-namespace:Kohctpyktop.Controls"
         mc:Ignorable="d" SizeToContent="WidthAndHeight"
         Title="KOHCTPYKTOP II: Return of the fucking PhD"
         PreviewKeyDown="WindowKeyDown"
@@ -21,8 +22,6 @@
         <converters:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="INSERT   VIA" OnTrue="DELETE   VIA"/>
         <converters:BooleanChoiceConverter x:Key="TopologyTypeConverter" OnFalse="TOPOLOGY (METAL)" OnTrue="TOPOLOGY (SILICON)"/>
         <converters:SelectionConverter x:Key="SelectionConverter"/>
-        <converters:PinValuesConverter x:Key="PinValuesConverter"/>
-        <converters:PinValueBorderThicknessConverter x:Key="PinValueBorderThicknessConverter"/>
         <converters:ActualValuesVisibilityConverter x:Key="ActualValuesVisibilityConverter"/>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="#b0000000"></Setter>
@@ -237,82 +236,43 @@
                 </StackPanel>
             </TabItem>
         </TabControl>
-        <TabControl DockPanel.Dock="Bottom">
-            <TabItem Header="Specifications"/>
-            <TabItem Header="Simulation" IsSelected="True">
-                <StackPanel DockPanel.Dock="Bottom" Margin="10" x:Name="SimPanel">
-                    <ItemsControl ItemsSource="{Binding Simulation.Pins}" Grid.IsSharedSizeScope="True">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="0 5">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" SharedSizeGroup="Names"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" BorderBrush="Black" BorderThickness="0 0 0 1">
-                                        <TextBlock 
-                                            FontSize="10"
-                                            FontFamily="pack://application:,,,/Fonts/#Poco"
-                                            Text="{Binding Name}" 
-                                            VerticalAlignment="Center" 
-                                            Margin="10 0 20 0"/>
-                                    </Border>
-                                    <Grid Column="1">
-                                        <ItemsControl ItemsSource="{Binding CorrectValues, Converter={StaticResource PinValuesConverter}}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <VirtualizingStackPanel Orientation="Horizontal"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="Gray" Width="2" Height="16"
-                                                            BorderThickness="{Binding Converter={StaticResource PinValueBorderThicknessConverter}}"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                        <ItemsControl ItemsSource="{Binding ActualValues, Converter={StaticResource PinValuesConverter}}">
-                                            <ItemsControl.Visibility>
-                                                <MultiBinding Converter="{StaticResource ActualValuesVisibilityConverter}">
-                                                    <Binding Path="DataContext.IsSimulatedOnce" ElementName="SimPanel"/>
-                                                    <Binding Path="IsOutputPin"/>
-                                                </MultiBinding>
-                                            </ItemsControl.Visibility>
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <VirtualizingStackPanel Orientation="Horizontal"/>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border BorderBrush="Black" Width="2" Height="16"
-                                                            BorderThickness="{Binding Converter={StaticResource PinValueBorderThicknessConverter}}"/>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Grid>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Text="{Binding Simulation.Score, StringFormat='Score: {0}'}" Margin="0 5">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSimulatedOnce}" Value="False">
-                                        <Setter Property="Visibility" Value="Hidden"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Click="StartSimulation" Margin="0" Padding="5">Simulate</Button>
-                    </StackPanel>
-                </StackPanel>
-            </TabItem>
-            <TabItem Header="Wtf?"/>
-        </TabControl>
+        <StackPanel DockPanel.Dock="Bottom" Margin="10">
+            <ItemsControl ItemsSource="{Binding Simulation.Pins}" Grid.IsSharedSizeScope="True">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Names"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" BorderBrush="Black" BorderThickness="0 0 0 1">
+                                <TextBlock 
+                                    FontSize="10"
+                                    FontFamily="pack://application:,,,/Fonts/#Poco"
+                                    Text="{Binding Name}" 
+                                    VerticalAlignment="Center" 
+                                    Margin="10 0 20 0"/>
+                            </Border>
+                            <controls:PinValuesVisualizer Grid.Column="1" SimulatedPin="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="{Binding Simulation.Score, StringFormat='Score: {0}'}" Margin="0 5">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Simulation}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Button Click="StartSimulation" Margin="0" Padding="5">Simulate</Button>
+            </StackPanel>
+        </StackPanel>
         <Image VerticalAlignment="Center"
                SnapsToDevicePixels="True"
                MouseDown="ImageMouseDown" 

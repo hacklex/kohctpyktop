@@ -48,8 +48,8 @@ namespace Kohctpyktop.Models.Simulation
             var inputPinStates = new Dictionary<Pin, PinState>();
             var outputPinStates = new Dictionary<Pin, PinState>();
 
-            bool Nor(SchemeNode[] nodes) => nodes.Aggregate(true, (b, node) => b && !nodeStates[node].IsHigh);
-            bool Or(SchemeNode[] nodes) => nodes.Aggregate(false, (b, node) => b || nodeStates[node].IsHigh);
+            bool Nor(IEnumerable<SchemeNode> nodes) => nodes.Aggregate(true, (b, node) => b && !nodeStates[node].IsHigh);
+            bool Or(IEnumerable<SchemeNode> nodes) => nodes.Aggregate(false, (b, node) => b || nodeStates[node].IsHigh);
             
             void UpdateGateState(KeyValuePair<SchemeGate, GateState> gateInfo)
             {

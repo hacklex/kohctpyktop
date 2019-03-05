@@ -13,18 +13,28 @@ namespace Kohctpyktop.Models.Topology
 
     public class Topology
     {
-        public CellAssignments [ ,] CellMappings { get; set; }
-        public List<SchemeNode> Nodes { get; set; }
-        public List<SchemeGate> Gates { get; set; }
-        public List<Pin> Pins { get; set; }
+        public Topology(CellAssignments[,] cellMappings, IEnumerable<SchemeGate> gates,
+            IEnumerable<SchemeNode> nodes,
+            IReadOnlyCollection<Pin> pins)
+        {
+            CellMappings = cellMappings;
+            Nodes = nodes.ToArray();
+            Gates = gates.ToArray();
+            Pins = pins;
+        }
+
+        public CellAssignments[,] CellMappings { get; }
+        public IReadOnlyList<SchemeNode> Nodes { get; }
+        public IReadOnlyList<SchemeGate> Gates { get; }
+        public IReadOnlyCollection<Pin> Pins { get; }
     }
 
     public static class TopologyBuilder
     {
         public static Topology BuildTopology(ILayer layer)
         {
-            var nodes = new List<SchemeNode>();
-            var gates = new List<SchemeGate>();
+            var nodes = new List<SchemeNodeTemplate>();
+            var gates = new List<SchemeGateTemplate>();
 
             var assignments = new CellAssignments[layer.Height, layer.Width];
 
@@ -32,7 +42,7 @@ namespace Kohctpyktop.Models.Topology
             var pins = new HashSet<Pin>();
 
             // Flood fill propagates the node to all cells accessible from its origin without passing thru gates
-            void FloodFill(ElementaryPlaceLink origin, SchemeNode logicalNode)
+            void FloodFill(ElementaryPlaceLink origin, SchemeNodeTemplate logicalNode)
             {
                 if (!origin.Cell.HasMetal && origin.IsMetalLayer) return; //via dead end cases
                 if (!origin.Cell.HasN() && !origin.Cell.HasP() && !origin.IsMetalLayer) return;
@@ -77,7 +87,7 @@ namespace Kohctpyktop.Models.Topology
 
                         var startingCell = layer.Cells[i, j]; //the first gate in a chain
                         if (gates.Any(g => g.GateCells.Contains(startingCell))) continue; //we've been there already
-                        var aggregateGate = new SchemeGate //here we will store info on the whole chain
+                        var aggregateGate = new SchemeGateTemplate //here we will store info on the whole chain
                         {
                             GateCells = { startingCell },
                             IsInversionGate = startingCell.IsBaseP()
@@ -93,20 +103,20 @@ namespace Kohctpyktop.Models.Topology
                             var signalNodes = layer.Cells[pos].Links
                                 //TODO: check if it really should be Slave, not Master, below:
                                 .Where(q => q.SiliconLink == SiliconLink.Slave) //expect one or two connections perpendicular to travel direction
-                                .Select(q => new { Node = new SchemeNode(), initCell = q.TargetCell })
+                                .Select(q => new { Node = new SchemeNodeTemplate(), initCell = q.TargetCell })
                                 .ToList(); //we generate nodes for each signal input 
                             signalNodes.ForEach(node => FloodFill(new ElementaryPlaceLink(node.initCell, false), node.Node)); //and floodfill them
                             aggregateGate.GateInputs.Add(signalNodes.Select(q=>q.Node).ToArray()); //and add the array to the aggregate gate's list 
                         }
                         var lastGatePowerCell = layer.Cells[pos]; //the cell next to the last gate cell will inevitably be the second power cell
-                        var powerNode1 = new SchemeNode();
+                        var powerNode1 = new SchemeNodeTemplate();
                         FloodFill(new ElementaryPlaceLink(firstGatePowerCell, false), powerNode1);
-                        var powerNode2 = new SchemeNode();
+                        var powerNode2 = new SchemeNodeTemplate();
                         FloodFill(new ElementaryPlaceLink(lastGatePowerCell, false), powerNode2);
                         gates.Add(aggregateGate);
                         nodes.Add(powerNode1);
                         nodes.Add(powerNode2);
-                        aggregateGate.GatePowerNodes = new List<SchemeNode>{powerNode1, powerNode2};
+                        aggregateGate.GatePowerNodes = new List<SchemeNodeTemplate>{powerNode1, powerNode2};
                         aggregateGate.GateInputs.ForEach(nodes.AddRange);
                     }
                 }
@@ -114,7 +124,7 @@ namespace Kohctpyktop.Models.Topology
             //Stage II. Pin Handling
             foreach (var pin in pins.ToArray()) //ToArray() call avoids exceptions thrown by element removals in FloodFill()
             {
-                var pinNode = new SchemeNode { Pins = { pin } };
+                var pinNode = new SchemeNodeTemplate { Pins = { pin } };
                 FloodFill(new ElementaryPlaceLink(layer.Cells[pin.Row, pin.Col], true), pinNode);
                 nodes.Add(pinNode);
             }
@@ -122,9 +132,9 @@ namespace Kohctpyktop.Models.Topology
             //Stage III. Node Merging
 
             //Two nodes are to be merged if they share one or more Elementary Place
-            void MergeNodes(SchemeNode a, SchemeNode b)
+            void MergeNodes(SchemeNodeTemplate a, SchemeNodeTemplate b)
             {
-                var mergedNode = new SchemeNode
+                var mergedNode = new SchemeNodeTemplate
                 {
                     AssociatedPlaces = a.AssociatedPlaces.Concat(b.AssociatedPlaces.Where(place=>!a.AssociatedPlaces.Any(place.IsSameAs))).ToList()
                 };
@@ -151,7 +161,7 @@ namespace Kohctpyktop.Models.Topology
             do
             {
                 stopMerging = true; //we've merged nothing so far
-                SchemeNode a = null, b = null; //the condition of the loop is such that we would merge the nodes one-by-one, until no collisions left
+                SchemeNodeTemplate a = null, b = null; //the condition of the loop is such that we would merge the nodes one-by-one, until no collisions left
                 for (var i = 0; i < nodes.Count && stopMerging; i++)
                 {
                     var nodeA = nodes[i];
@@ -172,24 +182,22 @@ namespace Kohctpyktop.Models.Topology
                     MergeNodes(a, b);
                 // otherwise we are done.
             } while (!stopMerging);
+            
+            var frozenNodes = nodes.ToDictionary(x => x, x => x.Freeze());
             foreach (var schemeNode in nodes)
             {
                 schemeNode.AssociatedPlaces.ForEach(p =>
                 {
-                    if (p.IsMetalLayer) assignments[p.Cell.Row, p.Cell.Column].LastAssignedMetalNode = schemeNode;
-                    else assignments[p.Cell.Row, p.Cell.Column].LastAssignedSiliconNode = schemeNode;
+                    if (p.IsMetalLayer) assignments[p.Cell.Row, p.Cell.Column].LastAssignedMetalNode = frozenNodes[schemeNode];
+                    else assignments[p.Cell.Row, p.Cell.Column].LastAssignedSiliconNode = frozenNodes[schemeNode];
                 });
             }
             var listOfPins = nodes.Where(n => n.Pins.Any()).SelectMany(m => m.Pins).ToList();
             if(listOfPins.Distinct().Count() != listOfPins.Count)
                 throw new InvalidOperationException("Duplicate pins found. This indicates there is an error in topology builder.");
-            return new Topology
-            {
-                CellMappings = assignments,
-                Gates = gates,
-                Nodes = nodes,
-                Pins = listOfPins
-            }; //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
+
+            //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
+            return new Topology(assignments, gates.Select(x => x.Freeze(frozenNodes)), frozenNodes.Values, listOfPins); 
         }
     }
 }

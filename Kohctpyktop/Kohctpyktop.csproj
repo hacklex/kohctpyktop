@@ -75,11 +75,10 @@
     </ApplicationDefinition>
     <Compile Include="Controls\BeveledSquare.cs" />
     <Compile Include="Converters\ActualValuesVisibilityConverter.cs" />
+    <Compile Include="Controls\PinValuesVisualizer.cs" />
     <Compile Include="Converters\BooleanChoiceConverter.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\NeighborInfoConverter.cs" />
-    <Compile Include="Converters\PinValueBorderThicknessConverter.cs" />
-    <Compile Include="Converters\PinValuesConverter.cs" />
     <Compile Include="Converters\SelectionConverter.cs" />
     <Compile Include="DrawingExts.cs" />
     <Compile Include="Input\DrawMode.cs" />
