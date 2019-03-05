@@ -7,8 +7,8 @@
     <Application.Resources>
          <ResourceDictionary>
              <ResourceDictionary.MergedDictionaries>
-                 <ResourceDictionary Source="/PresentationFramework.Classic, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;component/themes/classic.xaml" />
-                 <ResourceDictionary>
+                <ResourceDictionary Source="/Icons.xaml"></ResourceDictionary>
+                <ResourceDictionary>
                      <ControlTemplate TargetType="RadioButton" x:Key="ToolRadioButtonTemplate">
                          <Grid UseLayoutRounding="True" Margin="0,3,0,5">
                              <Grid.ColumnDefinitions>
