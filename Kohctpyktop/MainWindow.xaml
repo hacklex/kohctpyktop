@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Kohctpyktop"
         xmlns:converters="clr-namespace:Kohctpyktop.Converters"
         xmlns:viewModels="clr-namespace:Kohctpyktop.ViewModels"
+        xmlns:controls="clr-namespace:Kohctpyktop.Controls"
         mc:Ignorable="d" SizeToContent="WidthAndHeight"
         Title="KOHCTPYKTOP II: Return of the fucking PhD"
         PreviewKeyDown="WindowKeyDown"
@@ -21,8 +22,6 @@
         <converters:BooleanChoiceConverter x:Key="ViaTypeConverter" OnFalse="INSERT   VIA" OnTrue="DELETE   VIA"/>
         <converters:BooleanChoiceConverter x:Key="TopologyTypeConverter" OnFalse="TOPOLOGY (METAL)" OnTrue="TOPOLOGY (SILICON)"/>
         <converters:SelectionConverter x:Key="SelectionConverter"/>
-        <converters:PinValuesConverter x:Key="PinValuesConverter"/>
-        <converters:PinValueBorderThicknessConverter x:Key="PinValueBorderThicknessConverter"/>
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="#b0000000"></Setter>
             <Setter Property="HorizontalAlignment" Value="Center"></Setter>
@@ -246,34 +245,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" Margin="0 0 5 0"/>
-                            <Grid Column="1">
-                                <ItemsControl ItemsSource="{Binding CorrectValues, Converter={StaticResource PinValuesConverter}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <VirtualizingStackPanel Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border BorderBrush="Gray" Width="2" Height="16" Margin="0 2"
-                                                    BorderThickness="{Binding Converter={StaticResource PinValueBorderThicknessConverter}}"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                                <ItemsControl ItemsSource="{Binding ActualValues, Converter={StaticResource PinValuesConverter}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <VirtualizingStackPanel Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border BorderBrush="Black" Width="2" Height="16" Margin="0 5"
-                                                    BorderThickness="{Binding Converter={StaticResource PinValueBorderThicknessConverter}}"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
+                            <controls:PinValuesVisualizer Grid.Column="1" SimulatedPin="{Binding}" Margin="2"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
