@@ -16,10 +16,20 @@ namespace Kohctpyktop.Controls
             "SimulatedPin", typeof(SimulatedPin), typeof(PinValuesVisualizer), new FrameworkPropertyMetadata(default(SimulatedPin),
                 FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.AffectsMeasure));
 
+        public static readonly DependencyProperty IsSimulatedOnceProperty = DependencyProperty.Register(
+            "IsSimulatedOnce", typeof(bool), typeof(PinValuesVisualizer), new FrameworkPropertyMetadata(true,
+                FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.AffectsMeasure));
+
         public SimulatedPin SimulatedPin
         {
             get => (SimulatedPin) GetValue(SimulatedPinProperty);
             set => SetValue(SimulatedPinProperty, value);
+        }
+        
+        public bool IsSimulatedOnce
+        {
+            get => (bool) GetValue(IsSimulatedOnceProperty);
+            set => SetValue(IsSimulatedOnceProperty, value);
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -32,6 +42,9 @@ namespace Kohctpyktop.Controls
         protected override void OnRender(DrawingContext drawingContext)
         {
             bool prevCorrect = false, prevActual = false;
+            var pin = SimulatedPin;
+            var isActualVisible = IsSimulatedOnce || !pin.IsOutputPin;
+            
             var correctPath = new PathFigure
             {
                 StartPoint = new Point(.5, TickHeight),
@@ -40,14 +53,14 @@ namespace Kohctpyktop.Controls
                     new LineSegment(new Point(.5, TickHeight - .5), true)
                 }
             };
-            var actualPath = new PathFigure
+            var actualPath = isActualVisible ? new PathFigure
             {
                 StartPoint = new Point(.5, TickHeight),
                 Segments =
                 {
                     new LineSegment(new Point(.5, TickHeight - .5), true)
                 }
-            };
+            } : null;
             
             const int realTickWidth = TickWidth + 1;
 
@@ -67,19 +80,20 @@ namespace Kohctpyktop.Controls
                 path.Segments.Add(new LineSegment(new Point(pos * realTickWidth, prev ? .5 : TickHeight - .5), true));
             }
 
-            var count = SimulatedPin.CorrectValues.Count;
+            var count = pin.CorrectValues.Count;
             
             for (var i = 0; i < count; i++)
             {
-                AppendToPath(correctPath, i, ref prevCorrect, SimulatedPin.CorrectValues[i]);
-                AppendToPath(actualPath, i, ref prevActual, SimulatedPin.ActualValues[i]);
+                AppendToPath(correctPath, i, ref prevCorrect, pin.CorrectValues[i]);
+                if (isActualVisible) AppendToPath(actualPath, i, ref prevActual, pin.ActualValues[i]);
             }
 
             ClosePath(correctPath, count, prevCorrect);
-            ClosePath(actualPath, count, prevActual);
+            if (isActualVisible) ClosePath(actualPath, count, prevActual);
             
             drawingContext.DrawGeometry(null, CorrectValuesPen, new PathGeometry(new[] { correctPath }));
-            drawingContext.DrawGeometry(null, ActualValuesPen, new PathGeometry(new[] { actualPath }));
+            if (isActualVisible)
+                drawingContext.DrawGeometry(null, ActualValuesPen, new PathGeometry(new[] { actualPath }));
         }
     }
 }

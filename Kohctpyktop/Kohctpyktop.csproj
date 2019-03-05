@@ -74,7 +74,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\BeveledSquare.cs" />
-    <Compile Include="Converters\ActualValuesVisibilityConverter.cs" />
     <Compile Include="Controls\PinValuesVisualizer.cs" />
     <Compile Include="Converters\BooleanChoiceConverter.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
