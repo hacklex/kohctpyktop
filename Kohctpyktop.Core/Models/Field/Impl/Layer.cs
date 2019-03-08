@@ -88,11 +88,13 @@ namespace Kohctpyktop.Models.Field
             RemoveLink(position, Side.Right, type);
             RemoveLink(position, Side.Bottom, type);
         }
+
+        private bool IsCellLocked(ILayerCell cell) => false; // todo
         
         public bool AddCellSilicon(Position position, SiliconType siliconType)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || cell.IsLocked || cell.Silicon != SiliconTypes.None) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell) || cell.Silicon != SiliconTypes.None) return false;
 
             var slcType = siliconType == SiliconType.NType ? SiliconTypes.NType : SiliconTypes.PType;
 
@@ -103,7 +105,7 @@ namespace Kohctpyktop.Models.Field
         public bool RemoveCellSilicon(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || cell.IsLocked || cell.Silicon == SiliconTypes.None) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell) || cell.Silicon == SiliconTypes.None) return false;
 
             _cellMatrix.UpdateCellContent(position, new CellContent(cell) {Silicon = SiliconTypes.None});
             RemoveCellLinks(position, LinkType.SiliconLink);
@@ -114,7 +116,7 @@ namespace Kohctpyktop.Models.Field
         public bool AddCellMetal(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || cell.IsLocked || cell.HasMetal) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell) || cell.HasMetal) return false;
 
             _cellMatrix.UpdateCellContent(position, new CellContent(cell) {HasMetal = true});
             return true;
@@ -123,7 +125,7 @@ namespace Kohctpyktop.Models.Field
         public bool RemoveCellMetal(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || cell.IsLocked || !cell.HasMetal) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell) || !cell.HasMetal) return false;
 
             _cellMatrix.UpdateCellContent(position, new CellContent(cell) {HasMetal = false});
             RemoveCellLinks(position, LinkType.MetalLink);
@@ -267,7 +269,7 @@ namespace Kohctpyktop.Models.Field
         public bool AddVia(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || cell.IsLocked) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell)) return false;
             
             if (cell.HasVia() || !cell.HasSilicon() || cell.HasGate()) return false;
 
@@ -278,26 +280,12 @@ namespace Kohctpyktop.Models.Field
         public bool RemoveVia(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || cell.IsLocked) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell)) return false;
             
             if (!cell.HasVia()) return false;
 
             _cellMatrix.UpdateCellContent(position, new CellContent(cell) { Silicon = cell.Silicon.RemoveVia()});
             return true;
-        }
-        
-        public bool SetLockState(Position position, bool isLocked)
-        {
-            var cell = _cellMatrix[position];
-            if (!cell.IsValidCell) return false;
-
-            if (cell.IsLocked != isLocked)
-            {
-                _cellMatrix.UpdateCellContent(position, new CellContent(cell) { IsLocked = isLocked });
-                return true;
-            }
-
-            return false;
         }
         
         public bool SetCellPin(Position position, Pin pin)

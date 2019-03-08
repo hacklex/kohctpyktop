@@ -15,9 +15,7 @@ namespace Kohctpyktop.Models.Field
         public int Column => -1;
         public SiliconTypes Silicon => SiliconTypes.None;
         public bool HasMetal => false;
-        public bool IsLocked => true;
         public Pin Pin { get; } = null;
-        public string Name => null;
         public IReadOnlyDirectionalSet<ICellLink> Links { get; }
         public IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }
     }

@@ -367,7 +367,7 @@ namespace Kohctpyktop.Rendering
                 if (!isTopSideDetached)
                     MetalIntercellular(cell, true, bounds);
             }
-            else if (cell.IsLocked)
+            else if (false /* cell.IsLocked */) // there should be dead zone check 
             {
                 var fillBounds = bounds;
                 fillBounds.X--;

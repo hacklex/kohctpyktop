@@ -36,7 +36,6 @@ namespace Kohctpyktop.Models.Field
 
         bool AddVia(Position position);
         bool RemoveVia(Position position);
-        bool SetLockState(Position position, bool isLocked);
         bool SetCellPin(Position position, Pin pin);
         
         bool MoveCells(Position from, Position to, int offsetX, int offsetY);

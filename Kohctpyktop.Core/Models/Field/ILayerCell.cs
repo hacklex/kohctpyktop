@@ -9,7 +9,6 @@ namespace Kohctpyktop.Models.Field
 
         SiliconTypes Silicon { get; } // todo: rename enum
         bool HasMetal { get; }
-        bool IsLocked { get; }
 
         IReadOnlyDirectionalSet<ICellLink> Links { get; }
         IReadOnlyDirectionalSet<ILayerCell> Neighbors { get; }

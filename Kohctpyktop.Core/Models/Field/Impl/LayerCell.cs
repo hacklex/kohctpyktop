@@ -21,7 +21,6 @@ namespace Kohctpyktop.Models.Field
         public int Column { get; }
         public SiliconTypes Silicon { get; private set; }
         public bool HasMetal { get; private set; }
-        public bool IsLocked { get; private set; }
         public Pin Pin { get; set; }
 
         public IReadOnlyDirectionalSet<ICellLink> Links { get; }
@@ -31,7 +30,6 @@ namespace Kohctpyktop.Models.Field
         {
             Silicon = content.Silicon;
             HasMetal = content.HasMetal;
-            IsLocked = content.IsLocked;
             Pin = content.Pin;
         }
         

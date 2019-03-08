@@ -87,14 +87,7 @@ namespace Kohctpyktop.ViewModels
                 BuildPin(pos);
                 layer.SetCellPin(pos, pin);
             }
-            
-            for (var i = 0; i < layer.Height; i++)
-            for (var j = 0; j < 4; j++)
-            {
-                layer.SetLockState(new Position(j, i), true);
-                layer.SetLockState(new Position(layer.Width - j - 1, i), true);
-            }
-            
+                        
             layer.CommitChanges(false);
         }
 
