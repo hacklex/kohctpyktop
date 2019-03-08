@@ -64,7 +64,7 @@ namespace Kohctpyktop.Controls
             
             const int realTickWidth = TickWidth + 1;
 
-            void AppendToPath(PathFigure path, int pos, ref bool prev, bool cur)
+            bool AppendToPath(PathFigure path, int pos, bool prev, bool cur)
             {
                 if (prev != cur)
                 {
@@ -72,7 +72,7 @@ namespace Kohctpyktop.Controls
                     path.Segments.Add(new LineSegment(new Point(pos * realTickWidth + .5, cur ? .5 : TickHeight - .5), true));
                 }
 
-                prev = cur;
+                return cur;
             }
 
             void ClosePath(PathFigure path, int pos, bool prev)
@@ -84,8 +84,8 @@ namespace Kohctpyktop.Controls
             
             for (var i = 0; i < count; i++)
             {
-                AppendToPath(correctPath, i, ref prevCorrect, pin.CorrectValues[i]);
-                if (isActualVisible) AppendToPath(actualPath, i, ref prevActual, pin.ActualValues[i]);
+                prevCorrect = AppendToPath(correctPath, i, prevCorrect, pin.CorrectValues[i]);
+                if (isActualVisible) prevActual = AppendToPath(actualPath, i, prevActual, pin.ActualValues[i]);
             }
 
             ClosePath(correctPath, count, prevCorrect);
