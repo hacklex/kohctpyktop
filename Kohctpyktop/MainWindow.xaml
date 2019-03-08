@@ -170,10 +170,10 @@
                                 <TextBlock Text="Pick..." VerticalAlignment="Center" Padding="3 0 3 1"></TextBlock>
                             </StackPanel>
                         </Button> 
-                        <Button>
+                        <Button Click="OpenTemplateEditor">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="{StaticResource EditDrawingImage}" Width="16"></Image>
-                                <TextBlock Text="Editor" VerticalAlignment="Center" Padding="3 0 3 1"></TextBlock>
+                                <Image Source="{StaticResource EditDrawingImage}" Width="16"/>
+                                <TextBlock Text="Editor" VerticalAlignment="Center" Padding="3 0 3 1"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using JsonSubTypes;
 using Kohctpyktop.Models.Field;
+using Kohctpyktop.Models.Field.ValuesFunctions;
 using Kohctpyktop.Models.Templates;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -33,6 +34,7 @@ namespace Kohctpyktop.Serialization
                 .RegisterSubtype(typeof(StaticValuesFunction), ValuesFunctionType.Static)
                 .RegisterSubtype(typeof(PeriodicValuesFunction), ValuesFunctionType.Periodic)
                 .RegisterSubtype(typeof(AggregateValuesFunction), ValuesFunctionType.Aggregate)
+                .RegisterSubtype(typeof(RepeatingSequenceValuesFunction), ValuesFunctionType.RepeatingSequence)
                 .Build());
 
             return settings;

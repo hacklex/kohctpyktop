@@ -87,6 +87,9 @@
     <Compile Include="Rendering\Renderer.cs" />
     <Compile Include="Rendering\RenderOpts.cs" />
     <Compile Include="Serialization\LayerSerializer.cs" />
+    <Compile Include="TemplateEditWindow.xaml.cs">
+      <DependentUpon>TemplateEditWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ToolInfoHolder.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">
@@ -105,6 +108,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="TemplateEditWindow.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

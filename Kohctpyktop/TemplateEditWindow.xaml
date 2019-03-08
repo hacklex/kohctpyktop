@@ -1,0 +1,71 @@
+<Window x:Class="Kohctpyktop.TemplateEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:Kohctpyktop"
+        mc:Ignorable="d"
+        Title="TemplateEditWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto" MinWidth="200"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Image Grid.Column="0" Grid.RowSpan="2" Stretch="None"
+               Source="D:\kek.png" SnapsToDevicePixels="True"
+               UseLayoutRounding="True"
+               RenderOptions.BitmapScalingMode="Fant" />
+        <Border BorderBrush="Black" BorderThickness="1,0,0,1" Grid.Column="1" Grid.Row="0">
+            <TreeView BorderThickness="0">
+                <TreeViewItem Header="Info"/>
+                <TreeViewItem Header="Pins">
+                    <TreeViewItem Header="+VCC"/>
+                    <TreeViewItem Header="IN"/>
+                    <TreeViewItem Header="OUT"/>
+                </TreeViewItem>
+                <TreeViewItem Header="Dead zones">
+                </TreeViewItem>
+            </TreeView>
+        </Border>
+        <Border BorderBrush="Black" BorderThickness="1,0,0,0" Grid.Column="1" Grid.Row="1">
+            <Grid Margin="4,2">
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                    <Style TargetType="TextBox">
+                        <Setter Property="Margin" Value="0,2"/>
+                    </Style>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="X"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Y"/>
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Width"/>
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Height"/>
+                
+                <TextBox Grid.Row="0" Grid.Column="2" Text="+VCC"/>
+                <TextBox Grid.Row="1" Grid.Column="2" Text="0"/>
+                <TextBox Grid.Row="2" Grid.Column="2" Text="0"/>
+                <TextBox Grid.Row="3" Grid.Column="2" Text="3"/>
+                <TextBox Grid.Row="4" Grid.Column="2" Text="3"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

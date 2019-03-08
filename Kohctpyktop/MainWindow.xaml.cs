@@ -159,5 +159,11 @@ namespace Kohctpyktop
         {
             ViewModel.Simulate();
         }
+
+        private void OpenTemplateEditor(object sender, RoutedEventArgs e)
+        {
+            var window = new TemplateEditWindow();
+            window.ShowDialog();
+        }
     }
 }

@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 using Kohctpyktop.Input;
 using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
+using Kohctpyktop.Models.Field.ValuesFunctions;
 using Kohctpyktop.Models.Simulation;
 using Kohctpyktop.Models.Topology;
 using Kohctpyktop.Rendering;
