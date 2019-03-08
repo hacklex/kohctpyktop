@@ -162,7 +162,7 @@ namespace Kohctpyktop
 
         private void OpenTemplateEditor(object sender, RoutedEventArgs e)
         {
-            var window = new TemplateEditWindow();
+            var window = new TemplateEditWindow(new TemplateEditViewModel());
             window.ShowDialog();
         }
     }
