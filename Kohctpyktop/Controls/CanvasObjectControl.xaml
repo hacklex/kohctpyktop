@@ -1,0 +1,63 @@
+<UserControl x:Class="Kohctpyktop.Controls.CanvasObjectControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:Kohctpyktop.Converters"
+             mc:Ignorable="d"
+             x:Name="Control">
+    <UserControl.Resources>
+        <converters:EqualityToVisibilityConverter x:Key="EqualityToVisibilityConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <ContentPresenter Content="{Binding Child, ElementName=Control}"/>
+        <Button Margin="5"
+                PreviewMouseDown="MouseDown"
+                PreviewMouseUp="MouseUp"
+                PreviewMouseMove="MouseMove"
+                FocusVisualStyle="{x:Null}">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid Background="Transparent">
+                        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                                   Text="{Binding Name}"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grabbing.cur"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="False">
+                            <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grab.cur"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Top" HorizontalAlignment="Left" Tag="NW"
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Bottom" HorizontalAlignment="Left" Tag="SW" 
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Bottom" HorizontalAlignment="Right" Tag="SE"
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Top" HorizontalAlignment="Right" Tag="NE"
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Left" Tag="W"
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Right" Tag="E"
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Top" Tag="N"
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Bottom" Tag="S"
+              MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
+        <Border
+            BorderThickness="1"
+            BorderBrush="Yellow">
+            <Border.Visibility>
+                <MultiBinding Converter="{StaticResource EqualityToVisibilityConverter}">
+                    <Binding Path="SelectedCanvasObject" ElementName="Control"/>
+                    <Binding Path="CanvasObject" ElementName="Control"/>
+                </MultiBinding>
+            </Border.Visibility>
+        </Border>
+    </Grid>
+</UserControl>

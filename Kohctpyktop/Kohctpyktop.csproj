@@ -79,6 +79,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\BeveledSquare.cs" />
+    <Compile Include="Controls\CanvasObjectControl.xaml.cs">
+      <DependentUpon>CanvasObjectControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\PinValuesVisualizer.cs" />
     <Compile Include="Converters\BooleanChoiceConverter.cs" />
     <Compile Include="Converters\CellSizeConverter.cs" />
@@ -100,6 +103,7 @@
     <Compile Include="ToolInfoHolder.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\TemplateEditViewModel.cs" />
+    <Page Include="Controls\CanvasObjectControl.xaml" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

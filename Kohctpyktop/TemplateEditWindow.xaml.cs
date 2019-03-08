@@ -2,21 +2,21 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Kohctpyktop.Controls;
 using Kohctpyktop.ViewModels;
+using DragEventArgs = Kohctpyktop.Controls.DragEventArgs;
 
 namespace Kohctpyktop
 {
     public partial class TemplateEditWindow
     {
-        private enum ResizeType { NW, SE, NE, SW, W, E, N, S }
-        
         public TemplateEditViewModel ViewModel { get; }
         
         private Point _prevPoint;
         private (int X, int Y) _prevPosition;
         private (int Width, int Height) _prevSize;
         private ICanvasObject _captured;
-        private ResizeType _resizeType;
+        private ResizeDirection _resizeDirection;
         
         public TemplateEditWindow(TemplateEditViewModel viewModel)
         {
@@ -24,7 +24,7 @@ namespace Kohctpyktop
             InitializeComponent();
         }
 
-        private void CanvasItemMouseDown(object sender, MouseButtonEventArgs e)
+        private void CanvasItemMouseDown(object sender, DragEventArgs e)
         {
             var el = (FrameworkElement) sender;
 
@@ -34,29 +34,27 @@ namespace Kohctpyktop
             SelectCanvasObject(item);
 
             _captured = item;
-            _prevPoint = e.GetPosition(ItemsCanvas);
+            _prevPoint = e.MouseEventArgs.GetPosition(ItemsCanvas);
             _prevPosition = (item.X, item.Y);
             
-            Mouse.Capture(el);
+            Mouse.Capture(e.OriginalSource);
         }
 
-        private void CanvasItemMouseUp(object sender, MouseButtonEventArgs e)
+        private void CanvasItemMouseUp(object sender, DragEventArgs e)
         {
-            var el = (FrameworkElement) sender;
-            if (!ReferenceEquals(Mouse.Captured, el)) return;
+            if (!ReferenceEquals(Mouse.Captured, e.OriginalSource)) return;
             
             Mouse.Capture(null);
            
-            MoveItem(e.GetPosition(ItemsCanvas));
+            MoveItem(e.MouseEventArgs.GetPosition(ItemsCanvas));
         }
 
-        private void CanvasItemMouseMove(object sender, MouseEventArgs e)
+        private void CanvasItemMouseMove(object sender, DragEventArgs e)
         {
-            var el = (FrameworkElement) sender;
             if (Mouse.Captured == null) return;
-            if (!ReferenceEquals(Mouse.Captured, el)) return;
+            if (!ReferenceEquals(Mouse.Captured, e.OriginalSource)) return;
             
-            MoveItem(e.GetPosition(ItemsCanvas));
+            MoveItem(e.MouseEventArgs.GetPosition(ItemsCanvas));
         }
 
         private void MoveItem(Point currentPos)
@@ -69,7 +67,7 @@ namespace Kohctpyktop
             ViewModel.Move(_captured, _prevPosition.X + diffX, _prevPosition.Y + diffY);
         }
 
-        private void CanvasItemResizeMouseDown(object sender, MouseButtonEventArgs e)
+        private void CanvasItemResizeMouseDown(object sender, ResizeEventArgs e)
         {
             var el = (FrameworkElement) sender;
             if (!(el.DataContext is ICanvasObject item))
@@ -78,32 +76,30 @@ namespace Kohctpyktop
             SelectCanvasObject(item);
 
             _captured = item;
-            _prevPoint = e.GetPosition(ItemsCanvas);
+            _prevPoint = e.MouseEventArgs.GetPosition(ItemsCanvas);
             _prevPosition = (item.X, item.Y);
             _prevSize = (item.Width, item.Height);
 
-            _resizeType = (ResizeType) Enum.Parse(typeof(ResizeType), (string) el.Tag);
+            _resizeDirection = e.Direction;
             
-            Mouse.Capture(el);
+            Mouse.Capture(e.OriginalSource);
         }
 
-        private void CanvasItemResizeMouseUp(object sender, MouseButtonEventArgs e)
+        private void CanvasItemResizeMouseUp(object sender, ResizeEventArgs e)
         {
-            var el = (FrameworkElement) sender;
-            if (!ReferenceEquals(Mouse.Captured, el)) return;
+            if (!ReferenceEquals(Mouse.Captured, e.OriginalSource)) return;
             
             Mouse.Capture(null);
            
-            ResizeItem(e.GetPosition(ItemsCanvas));
+            ResizeItem(e.MouseEventArgs.GetPosition(ItemsCanvas));
         }
 
-        private void CanvasResizeItemMouseMove(object sender, MouseEventArgs e)
+        private void CanvasItemResizeMouseMove(object sender, ResizeEventArgs e)
         {
-            var el = (FrameworkElement) sender;
             if (Mouse.Captured == null) return;
-            if (!ReferenceEquals(Mouse.Captured, el)) return;
+            if (!ReferenceEquals(Mouse.Captured, e.OriginalSource)) return;
             
-            ResizeItem(e.GetPosition(ItemsCanvas));
+            ResizeItem(e.MouseEventArgs.GetPosition(ItemsCanvas));
         }
         
         private void ResizeItem(Point currentPos)
@@ -116,34 +112,34 @@ namespace Kohctpyktop
             var (x, y) = _prevPosition;
             var (w, h) = _prevSize;
             
-            switch (_resizeType)
+            switch (_resizeDirection)
             {
-                case ResizeType.N:
-                case ResizeType.NW:
-                case ResizeType.NE:
+                case ResizeDirection.N:
+                case ResizeDirection.NW:
+                case ResizeDirection.NE:
                     y += diffY;
                     h -= diffY;
                     break;
                 
-                case ResizeType.S:
-                case ResizeType.SW:
-                case ResizeType.SE:
+                case ResizeDirection.S:
+                case ResizeDirection.SW:
+                case ResizeDirection.SE:
                     h += diffY;
                     break;
             }
             
-            switch (_resizeType)
+            switch (_resizeDirection)
             {
-                case ResizeType.W:
-                case ResizeType.NW:
-                case ResizeType.SW:
+                case ResizeDirection.W:
+                case ResizeDirection.NW:
+                case ResizeDirection.SW:
                     x += diffX;
                     w -= diffX;
                     break;
                 
-                case ResizeType.E:
-                case ResizeType.NE:
-                case ResizeType.SE:
+                case ResizeDirection.E:
+                case ResizeDirection.NE:
+                case ResizeDirection.SE:
                     w += diffX;
                     break;
             }

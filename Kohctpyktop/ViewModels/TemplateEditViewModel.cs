@@ -92,6 +92,8 @@ namespace Kohctpyktop.ViewModels
         
         public void Resize(ICanvasObject obj, int x, int y, int w, int h)
         {
+            if (w < 1 || h < 1) return;
+            
             var preW = Math.Max(1, Math.Min(w, Width - Math.Max(0, x)));
             var preH = Math.Max(1, Math.Min(h, Height - Math.Max(0, y)));
             
