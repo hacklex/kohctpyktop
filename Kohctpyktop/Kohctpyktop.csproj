@@ -89,10 +89,6 @@
     <Compile Include="Serialization\LayerSerializer.cs" />
     <Compile Include="ToolInfoHolder.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
-    <Page Include="Icons.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -105,6 +101,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Resources\Icons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -134,13 +134,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Fonts\Poco.ttf" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Kohctpyktop.Core\Kohctpyktop.Core.csproj">
       <Project>{1d637a7c-0258-4f26-9f93-74919934c372}</Project>
       <Name>Kohctpyktop.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Fonts\Poco.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\LevelTemplates\Simple.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

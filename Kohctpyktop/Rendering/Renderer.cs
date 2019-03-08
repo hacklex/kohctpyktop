@@ -424,9 +424,14 @@ namespace Kohctpyktop.Rendering
             }
 
             foreach (var cell in namedCells)
-            { 
+            {
+                var pin = cell.Pin;
+                
                 var bounds = GetCellBounds(cell.Column, cell.Row);
-                bounds.Inflate(CellSize, CellSize);
+                bounds.Width += CellSize * (pin.Width - 1);
+                bounds.Height += CellSize * (pin.Height - 1);
+                bounds.X += 1;
+                bounds.Y += 1;
                 var centerX = bounds.Left + bounds.Width / 2;
                 var centerY = bounds.Top + bounds.Height / 2;
                 _graphics.FillRectangle(Brushes.WhiteSmoke, bounds);

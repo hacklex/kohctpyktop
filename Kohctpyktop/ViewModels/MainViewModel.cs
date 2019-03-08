@@ -13,6 +13,7 @@ using Kohctpyktop.Models.Field;
 using Kohctpyktop.Models.Simulation;
 using Kohctpyktop.Models.Topology;
 using Kohctpyktop.Rendering;
+using Kohctpyktop.Serialization;
 using Point = System.Windows.Point;
 
 namespace Kohctpyktop.ViewModels
@@ -93,8 +94,8 @@ namespace Kohctpyktop.ViewModels
 
         public MainViewModel()
         {
-            var layer = new Layer(30, 27);
-            InitLayer(layer);
+            var template = LayerSerializer.ReadResourceTemplates().First();
+            var layer = new Layer(template);
             OpenLayer(layer);
         }
 

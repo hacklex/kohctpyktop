@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.Design;
 using System.Drawing;
 using System.IO;
+using Kohctpyktop.Models.Templates;
 
 namespace Kohctpyktop.Models.Field
 {
@@ -15,6 +16,44 @@ namespace Kohctpyktop.Models.Field
             Height = height;
             
             _cellMatrix = new LayerCellMatrix(this);
+        }
+        
+        public Layer(LayerTemplate template)
+        {
+            Width = template.Width;
+            Height = template.Height;
+            
+            void BuildPin(Position pos, int width, int height)
+            {
+                for (var i = 0; i < width; i++)
+                for (var j = 0; j < height; j++)
+                {
+                    AddCellMetal(pos.Offset(i, j));
+                }
+                
+                for (var i = 0; i < width - 1; i++)
+                for (var j = 0; j < height - 1; j++)
+                {
+                    AddLink(pos.Offset(i, j), pos.Offset(i + 1, j), LinkType.MetalLink);
+                    AddLink(pos.Offset(i, j), pos.Offset(i, j + 1), LinkType.MetalLink);
+                }
+                
+                for (var i = 0; i < width; i++)
+                    AddLink(pos.Offset(i, height - 1), pos.Offset(i + 1, height - 1), LinkType.MetalLink);
+                for (var i = 0; i < height; i++)
+                    AddLink(pos.Offset(width - 1, i), pos.Offset(width - 1, i + 1), LinkType.MetalLink);
+            }
+            
+            _cellMatrix = new LayerCellMatrix(this);
+
+            foreach (var pin in template.Pins)
+            {
+                var pos = new Position(pin.Col, pin.Row);
+                BuildPin(pos, pin.Width, pin.Height);
+                SetCellPin(pos, pin);
+            }
+                        
+            CommitChanges(false);
         }
 
         public Layer(LayerData layerData) 

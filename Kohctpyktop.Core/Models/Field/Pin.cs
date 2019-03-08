@@ -12,7 +12,8 @@ namespace Kohctpyktop.Models.Field
     /// </summary>
     public class Pin
     {
-        public int Size { get; set; } = 3;
+        public int Width { get; set; }
+        public int Height { get; set; }
         public int Row { get; set; }
         public int Col { get; set; }
         public string Name { get; set; }

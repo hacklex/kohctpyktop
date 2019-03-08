@@ -8,7 +8,7 @@
          <ResourceDictionary>
              <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/PresentationFramework.Classic, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;component/themes/classic.xaml" />
-                <ResourceDictionary Source="/Icons.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="/Resources/Icons.xaml"></ResourceDictionary>
                 <ResourceDictionary>
                      <ControlTemplate TargetType="RadioButton" x:Key="ToolRadioButtonTemplate">
                          <Grid UseLayoutRounding="True" Margin="0,3,0,5">
@@ -22,7 +22,7 @@
                                  <RowDefinition Height="Auto"/>
                              </Grid.RowDefinitions>
                              <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
-                                        FontFamily="pack://application:,,,/Fonts/#Poco"
+                                        FontFamily="pack://application:,,,/Resources/Fonts/#Poco"
                                         Width="50"
                                         TextOptions.TextFormattingMode="Display"
                                         TextOptions.TextRenderingMode="Grayscale"
@@ -42,7 +42,7 @@
                                                  Width="23" Height="23"/>
                              </Grid>
                              <TextBlock Text="{Binding Tag.(local:ToolInfoHolder.Index), RelativeSource={RelativeSource TemplatedParent}}" Grid.Row="1" Grid.Column="2"
-                                        FontFamily="pack://application:,,,/Fonts/#Poco"
+                                        FontFamily="pack://application:,,,/Resources/Fonts/#Poco"
                                         TextOptions.TextFormattingMode="Display"
                                         TextOptions.TextRenderingMode="Grayscale"
                                         FontSize="10"

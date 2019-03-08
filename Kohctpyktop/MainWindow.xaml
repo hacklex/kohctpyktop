@@ -273,7 +273,7 @@
                     <Border Style="{StaticResource Separator}"></Border>
                     <StackPanel>
                         <Label Content="Status"></Label>
-                        <StackPanel TextElement.FontFamily="pack://application:,,,/Fonts/#Poco" TextElement.FontSize="10">
+                        <StackPanel TextElement.FontFamily="pack://application:,,,/Resources/Fonts/#Poco" TextElement.FontSize="10">
                             <UniformGrid TextOptions.TextFormattingMode="Display"  Width="136" DataContext="{Binding InputHandler}" Columns="2" SnapsToDevicePixels="True">
                                 <TextBlock>HOVERED:</TextBlock>
                                 <TextBlock>
@@ -313,7 +313,7 @@
                             <Border Grid.Column="0" BorderBrush="Black" BorderThickness="0 0 0 1">
                                 <TextBlock 
                                     FontSize="10"
-                                    FontFamily="pack://application:,,,/Fonts/#Poco"
+                                    FontFamily="pack://application:,,,/Resources/Fonts/#Poco"
                                     Text="{Binding Name}" 
                                     VerticalAlignment="Center" 
                                     Margin="10 0 20 0"/>
