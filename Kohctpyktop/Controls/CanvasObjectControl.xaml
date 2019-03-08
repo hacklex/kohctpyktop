@@ -33,31 +33,30 @@
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Top" HorizontalAlignment="Left" Tag="NW"
+        <Grid Background="Transparent" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Top" HorizontalAlignment="Left" Tag="NW"
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Bottom" HorizontalAlignment="Left" Tag="SW" 
+        <Grid Background="Transparent" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Bottom" HorizontalAlignment="Left" Tag="SW" 
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Bottom" HorizontalAlignment="Right" Tag="SE"
+        <Grid Background="Transparent" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Bottom" HorizontalAlignment="Right" Tag="SE"
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Top" HorizontalAlignment="Right" Tag="NE"
+        <Grid Background="Transparent" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Top" HorizontalAlignment="Right" Tag="NE"
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Left" Tag="W"
+        <Grid Background="Transparent" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Left" Tag="W"
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Right" Tag="E"
+        <Grid Background="Transparent" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Right" Tag="E"
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Top" Tag="N"
+        <Grid Background="Transparent" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Top" Tag="N"
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Bottom" Tag="S"
+        <Grid Background="Transparent" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Bottom" Tag="S"
               MouseDown="ResizeMouseDown" MouseUp="ResizeMouseUp" MouseMove="ResizeMouseMove" />
-        <Border
-            BorderThickness="1"
-            BorderBrush="Yellow">
-            <Border.Visibility>
+        <Rectangle StrokeThickness="1" Stroke="Yellow" StrokeDashArray="1 1" StrokeDashOffset=".5" 
+                   SnapsToDevicePixels="True" UseLayoutRounding="True">
+            <Rectangle.Visibility>
                 <MultiBinding Converter="{StaticResource EqualityToVisibilityConverter}">
                     <Binding Path="SelectedCanvasObject" ElementName="Control"/>
                     <Binding Path="CanvasObject" ElementName="Control"/>
                 </MultiBinding>
-            </Border.Visibility>
-        </Border>
+            </Rectangle.Visibility>
+        </Rectangle>
     </Grid>
 </UserControl>
