@@ -6,7 +6,7 @@ using Kohctpyktop.ViewModels;
 
 namespace Kohctpyktop
 {
-    public partial class TemplateEditWindow : Window
+    public partial class TemplateEditWindow
     {
         private enum ResizeType { NW, SE, NE, SW, W, E, N, S }
         
@@ -30,6 +30,8 @@ namespace Kohctpyktop
 
             if (!(el.DataContext is ICanvasObject item))
                 return;
+
+            SelectCanvasObject(item);
 
             _captured = item;
             _prevPoint = e.GetPosition(ItemsCanvas);
@@ -72,6 +74,8 @@ namespace Kohctpyktop
             var el = (FrameworkElement) sender;
             if (!(el.DataContext is ICanvasObject item))
                 return;
+
+            SelectCanvasObject(item);
 
             _captured = item;
             _prevPoint = e.GetPosition(ItemsCanvas);
@@ -146,6 +150,48 @@ namespace Kohctpyktop
             
             ViewModel.Resize(_captured, x, y, w, h);
         }
+
+        private void TreeViewItemSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            ViewModel.SelectedObject = e.NewValue;
+        }
+
+        private void SelectCanvasObject(ICanvasObject obj)
+        {
+            ViewModel.SelectedObject = obj;
+
+            var item = SearchTreeItemByObject(obj, ItemsTreeView);
+            if (item != null)
+            {
+                item.IsSelected = true;
+            }
+        }
+
+        private TreeViewItem SearchTreeItemByObject(object obj, ItemsControl tree)
+        {
+            var item = (TreeViewItem) tree.ItemContainerGenerator.ContainerFromItem(obj);
+            if (item != null) return item;
+
+            var count = tree.ItemContainerGenerator.Items.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var subtree = (TreeViewItem) tree.ItemContainerGenerator.ContainerFromIndex(i);
+                var itemInSubtree = SearchTreeItemByObject(obj, subtree);
+                if (itemInSubtree != null) return itemInSubtree;
+            }
+
+            return null;
+        }
+
+        private void AddPin(object sender, RoutedEventArgs e)
+        {
+            ViewModel.AddPin();
+        }
+
+        private void AddDeadZone(object sender, RoutedEventArgs e)
+        {
+            ViewModel.AddDeadZone();
+        }
     }
 
     public class TemplateCanvasTemplateSelector : DataTemplateSelector
@@ -165,13 +211,33 @@ namespace Kohctpyktop
             }
         }
     }
+    
+    public class TemplateCanvasPropertyGridTemplateSelector : DataTemplateSelector
+    {
+        public override DataTemplate SelectTemplate(object item, DependencyObject container)
+        {
+            var el = (FrameworkElement) container;
+
+            switch (item)
+            {
+                case PinTemplate _:
+                    return (DataTemplate) el.FindResource("PinTemplate");
+                case DeadZoneTemplate _:
+                    return (DataTemplate) el.FindResource("DeadZoneTemplate");
+                case TreeViewItem tvi when "INFO".Equals(tvi.Tag):
+                    return (DataTemplate) el.FindResource("InfoTemplate");
+                default:
+                    return (DataTemplate) el.FindResource("EmptyTemplate");
+            }
+        }
+    }
 
     public class TemplateCanvasStyleSelector : StyleSelector
     {
         public override Style SelectStyle(object item, DependencyObject container)
         {
             var el = (FrameworkElement) container;
-            
+
             switch (item)
             {
                 case PinTemplate _:

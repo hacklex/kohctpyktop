@@ -1,9 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using Kohctpyktop.Models;
-using Kohctpyktop.Models.Field;
+using PropertyChanged;
 
 namespace Kohctpyktop.ViewModels
 {
@@ -18,26 +16,37 @@ namespace Kohctpyktop.ViewModels
     
     public class PinTemplate : ICanvasObject, INotifyPropertyChanged
     {
+        [AlsoNotifyFor(nameof(DisplayName))]
         public int X { get; set; }
+        [AlsoNotifyFor(nameof(DisplayName))]
         public int Y { get; set; }
         
         public int Width { get; set; }
         public int Height { get; set; }
         
+        [AlsoNotifyFor(nameof(DisplayName))]
         public string Name { get; set; }
         
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public string DisplayName => $"{Name} ({X}:{Y})";
     }
     
     public class DeadZoneTemplate : ICanvasObject, INotifyPropertyChanged
     {
+        [AlsoNotifyFor(nameof(DisplayName))]
         public int X { get; set; }
+        [AlsoNotifyFor(nameof(DisplayName))]
         public int Y { get; set; }
         
+        [AlsoNotifyFor(nameof(DisplayName))]
         public int Width { get; set; }
+        [AlsoNotifyFor(nameof(DisplayName))]
         public int Height { get; set; }
         
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public string DisplayName => $"{X}:{Y} - {X + Width - 1}:{Y + Height - 1}";
     }
     
     public class TemplateEditViewModel : INotifyPropertyChanged
@@ -72,6 +81,8 @@ namespace Kohctpyktop.ViewModels
 
         public int Width { get; set; } = 15;
         public int Height { get; set; } = 15;
+        
+        public object SelectedObject { get; set; }
 
         public void Move(ICanvasObject obj, int x, int y)
         {
@@ -94,6 +105,16 @@ namespace Kohctpyktop.ViewModels
             obj.Y = realY;
             obj.Width = Math.Max(1, Math.Min(w, Width - realX));
             obj.Height = Math.Max(1, Math.Min(h, Height - realY));
+        }
+
+        public void AddPin()
+        {
+            Pins.Add(new PinTemplate { Name = "NEW " + Pins.Count, Width = 3, Height = 3 });
+        }
+        
+        public void AddDeadZone()
+        {
+            DeadZones.Add(new DeadZoneTemplate { Width = 3, Height = 3 });
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

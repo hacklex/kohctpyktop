@@ -6,94 +6,62 @@
         xmlns:opts="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
         xmlns:local="clr-namespace:Kohctpyktop"
         xmlns:converters="clr-namespace:Kohctpyktop.Converters"
-        xmlns:models="clr-namespace:Kohctpyktop.Models;assembly=Kohctpyktop.Core"
         xmlns:viewModels="clr-namespace:Kohctpyktop.ViewModels"
-        xmlns:field="clr-namespace:Kohctpyktop.Models.Field;assembly=Kohctpyktop.Core"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:TemplateEditViewModel}"
-        Title="TemplateEditWindow" Height="450" Width="800">
+        Title="TemplateEditWindow" Height="450" Width="800"
+        x:Name="Window">
     <Window.Resources>
         <local:TemplateCanvasTemplateSelector x:Key="TemplateSelector"/>
         <local:TemplateCanvasStyleSelector x:Key="StyleSelector"/>
+        <local:TemplateCanvasPropertyGridTemplateSelector x:Key="PropertyGridTemplateSelector"/>
         <converters:CellSizeConverter x:Key="CellSizeConverter"/>
         <converters:CellOffsetConverter x:Key="CellOffsetConverter"/>
+        <converters:EqualityToVisibilityConverter x:Key="EqualityToVisibilityConverter"/>
         
         <CollectionViewSource Source="{Binding Pins}" x:Key="PinsCollection"/>
         <CollectionViewSource Source="{Binding DeadZones}" x:Key="DeadZonesCollection"/>
     </Window.Resources>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto" MinWidth="200"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <ItemsControl
-            x:Name="ItemsCanvas"
-            Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" 
-            Width="{Binding Width, Converter={StaticResource CellSizeConverter}}" 
-            Height="{Binding Height, Converter={StaticResource CellSizeConverter}}"
-            VerticalAlignment="Center"
-            SnapsToDevicePixels="True"
-            UseLayoutRounding="True"
-            ItemTemplateSelector="{StaticResource TemplateSelector}"
-            ItemContainerStyleSelector="{StaticResource StyleSelector}">
-            <ItemsControl.Resources>
-                <!-- ReSharper disable once Xaml.RedundantResource -->
-                <DataTemplate x:Key="PinTemplate" DataType="{x:Type viewModels:PinTemplate}">
-                    <Grid Width="{Binding Width, Converter={StaticResource CellSizeConverter}}"
-                          Height="{Binding Height, Converter={StaticResource CellSizeConverter}}">
-                        <Border
-                            Margin="1"
-                            Background="#f5f5f5"
-                            BorderThickness="1"
-                            BorderBrush="Black"
-                            CornerRadius="1"/>
-                        <Button Margin="5"
-                                PreviewMouseDown="CanvasItemMouseDown"
-                                PreviewMouseUp="CanvasItemMouseUp"
-                                PreviewMouseMove="CanvasItemMouseMove"
-                                FocusVisualStyle="{x:Null}">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Grid Background="Transparent"/>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsPressed" Value="True">
-                                            <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grabbing.cur"/>
-                                        </Trigger>
-                                        <Trigger Property="IsPressed" Value="False">
-                                            <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grab.cur"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Top" HorizontalAlignment="Left" Tag="NW"
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Bottom" HorizontalAlignment="Left" Tag="SW" 
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Bottom" HorizontalAlignment="Right" Tag="SE"
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                        <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Top" HorizontalAlignment="Right" Tag="NE"
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                        <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Left" Tag="W"
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                        <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Right" Tag="E"
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                        <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Top" Tag="N"
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                        <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Bottom" Tag="S"
-                              MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
-                    </Grid>
-                </DataTemplate>
-                <!-- ReSharper disable once Xaml.RedundantResource -->
-                <DataTemplate x:Key="DeadZoneTemplate" DataType="{x:Type viewModels:DeadZoneTemplate}">
-                    <Border Width="{Binding Width, Converter={StaticResource CellSizeConverter}}"
-                            Height="{Binding Height, Converter={StaticResource CellSizeConverter}}"
-                            Background="#40800000">
-                        <Grid>
+    <DockPanel>
+        <TabControl DockPanel.Dock="Top">
+            <TabItem Header="Edit">
+                <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
+                    <Button Content="Add Pin" Margin="0,5,5,5" Click="AddPin"/>
+                    <Button Content="Add Dead Zone" Margin="0,5,5,5" Click="AddDeadZone"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto" MinWidth="200"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <ItemsControl
+                x:Name="ItemsCanvas"
+                Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" 
+                Width="{Binding Width, Converter={StaticResource CellSizeConverter}}" 
+                Height="{Binding Height, Converter={StaticResource CellSizeConverter}}"
+                VerticalAlignment="Center"
+                SnapsToDevicePixels="True"
+                UseLayoutRounding="True"
+                ItemTemplateSelector="{StaticResource TemplateSelector}"
+                ItemContainerStyleSelector="{StaticResource StyleSelector}">
+                <!-- todo: move resizing parts to separate control --> 
+                <ItemsControl.Resources>
+                    <!-- ReSharper disable once Xaml.RedundantResource -->
+                    <DataTemplate x:Key="PinTemplate" DataType="{x:Type viewModels:PinTemplate}">
+                        <Grid Width="{Binding Width, Converter={StaticResource CellSizeConverter}}"
+                              Height="{Binding Height, Converter={StaticResource CellSizeConverter}}">
+                            <Border
+                                Margin="1"
+                                Background="#f5f5f5"
+                                BorderThickness="1"
+                                BorderBrush="Black"
+                                CornerRadius="1"/>
                             <Button Margin="5"
                                     PreviewMouseDown="CanvasItemMouseDown"
                                     PreviewMouseUp="CanvasItemMouseUp"
@@ -101,7 +69,10 @@
                                     FocusVisualStyle="{x:Null}">
                                 <Button.Template>
                                     <ControlTemplate TargetType="Button">
-                                        <Grid Background="Transparent"/>
+                                        <Grid Background="Transparent">
+                                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                       Text="{Binding Name}"/>
+                                        </Grid>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsPressed" Value="True">
                                                 <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grabbing.cur"/>
@@ -129,93 +100,223 @@
                                   MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
                             <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Bottom" Tag="S"
                                   MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                            <Border
+                                BorderThickness="1"
+                                BorderBrush="Yellow">
+                                <Border.Visibility>
+                                    <MultiBinding Converter="{StaticResource EqualityToVisibilityConverter}">
+                                        <Binding Path="DataContext.SelectedObject" ElementName="Window"/>
+                                        <Binding/>
+                                    </MultiBinding>
+                                </Border.Visibility>
+                            </Border>
                         </Grid>
-                    </Border>
-                </DataTemplate>
-                <!-- ReSharper disable once Xaml.RedundantResource -->
-                <Style x:Key="PinContainerStyle" d:DataContext="{d:DesignInstance viewModels:PinTemplate}">
-                    <Setter Property="Canvas.Left"
-                            Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
-                    <Setter Property="Canvas.Top"
-                            Value="{Binding Y, Converter={StaticResource CellOffsetConverter}}"/>
-                </Style>
-                <!-- ReSharper disable once Xaml.RedundantResource -->
-                <Style x:Key="DeadZoneContainerStyle" d:DataContext="{d:DesignInstance viewModels:DeadZoneTemplate}">
-                    <Setter Property="Canvas.Left"
-                            Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
-                    <Setter Property="Canvas.Top"
-                            Value="{Binding Y, Converter={StaticResource CellOffsetConverter}}"/>
-                </Style>
-            </ItemsControl.Resources>
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Canvas>
-                        <Canvas.Background>
-                            <VisualBrush Viewport="0,0,13,13" ViewportUnits="Absolute" Viewbox="0,0,13,13" ViewboxUnits="Absolute"
-                                         TileMode="Tile" opts:Freeze="True">
-                                <VisualBrush.Visual>
-                                    <Border Background="#959595" SnapsToDevicePixels="True" BorderThickness="1 1 0 0" BorderBrush="#6f6f6f"
-                                            Width="13" Height="13" UseLayoutRounding="True"/>
-                                </VisualBrush.Visual>
-                            </VisualBrush>
-                        </Canvas.Background>
-                    </Canvas>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemsSource>
-                <CompositeCollection>
-                    <CollectionContainer Collection="{Binding Source={StaticResource DeadZonesCollection}}"/>
-                    <CollectionContainer Collection="{Binding Source={StaticResource PinsCollection}}"/>
-                </CompositeCollection>
-            </ItemsControl.ItemsSource>
-        </ItemsControl>
-        <Border BorderBrush="Black" BorderThickness="1,0,0,1" Grid.Column="1" Grid.Row="0">
-            <TreeView BorderThickness="0">
-                <TreeViewItem Header="Info"/>
-                <TreeViewItem Header="Pins">
-                    <TreeViewItem Header="+VCC"/>
-                    <TreeViewItem Header="IN"/>
-                    <TreeViewItem Header="OUT"/>
-                </TreeViewItem>
-                <TreeViewItem Header="Dead zones">
-                </TreeViewItem>
-            </TreeView>
-        </Border>
-        <Border BorderBrush="Black" BorderThickness="1,0,0,0" Grid.Column="1" Grid.Row="1">
-            <Grid Margin="4,2">
-                <Grid.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </DataTemplate>
+                    <!-- ReSharper disable once Xaml.RedundantResource -->
+                    <DataTemplate x:Key="DeadZoneTemplate" DataType="{x:Type viewModels:DeadZoneTemplate}">
+                        <Border Width="{Binding Width, Converter={StaticResource CellSizeConverter}}"
+                                Height="{Binding Height, Converter={StaticResource CellSizeConverter}}"
+                                Background="#40800000">
+                            <Grid>
+                                <Button Margin="5"
+                                        PreviewMouseDown="CanvasItemMouseDown"
+                                        PreviewMouseUp="CanvasItemMouseUp"
+                                        PreviewMouseMove="CanvasItemMouseMove"
+                                        FocusVisualStyle="{x:Null}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Grid Background="Transparent"/>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsPressed" Value="True">
+                                                    <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grabbing.cur"/>
+                                                </Trigger>
+                                                <Trigger Property="IsPressed" Value="False">
+                                                    <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grab.cur"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Top" HorizontalAlignment="Left" Tag="NW"
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Bottom" HorizontalAlignment="Left" Tag="SW" 
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNWSE" VerticalAlignment="Bottom" HorizontalAlignment="Right" Tag="SE"
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Grid Background="Blue" Width="5" Height="5" Cursor="SizeNESW" VerticalAlignment="Top" HorizontalAlignment="Right" Tag="NE"
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Left" Tag="W"
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Grid Background="Green" Width="5" Margin="0 5" Cursor="SizeWE" HorizontalAlignment="Right" Tag="E"
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Top" Tag="N"
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Grid Background="Green" Height="5" Margin="5 0" Cursor="SizeNS" VerticalAlignment="Bottom" Tag="S"
+                                      MouseDown="CanvasItemResizeMouseDown" MouseUp="CanvasItemResizeMouseUp" MouseMove="CanvasResizeItemMouseMove" />
+                                <Border
+                                    BorderThickness="1"
+                                    BorderBrush="Yellow">
+                                    <Border.Visibility>
+                                        <MultiBinding Converter="{StaticResource EqualityToVisibilityConverter}">
+                                            <Binding Path="DataContext.SelectedObject" ElementName="Window"/>
+                                            <Binding/>
+                                        </MultiBinding>
+                                    </Border.Visibility>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                    <!-- ReSharper disable once Xaml.RedundantResource -->
+                    <Style x:Key="PinContainerStyle" d:DataContext="{d:DesignInstance viewModels:PinTemplate}">
+                        <Setter Property="Canvas.Left"
+                                Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
+                        <Setter Property="Canvas.Top"
+                                Value="{Binding Y, Converter={StaticResource CellOffsetConverter}}"/>
                     </Style>
-                    <Style TargetType="TextBox">
-                        <Setter Property="Margin" Value="0,2"/>
+                    <!-- ReSharper disable once Xaml.RedundantResource -->
+                    <Style x:Key="DeadZoneContainerStyle" d:DataContext="{d:DesignInstance viewModels:DeadZoneTemplate}">
+                        <Setter Property="Canvas.Left"
+                                Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
+                        <Setter Property="Canvas.Top"
+                                Value="{Binding Y, Converter={StaticResource CellOffsetConverter}}"/>
                     </Style>
-                </Grid.Resources>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name"/>
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="X"/>
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Y"/>
-                <TextBlock Grid.Row="3" Grid.Column="0" Text="Width"/>
-                <TextBlock Grid.Row="4" Grid.Column="0" Text="Height"/>
-                
-                <TextBox Grid.Row="0" Grid.Column="2" Text="+VCC"/>
-                <TextBox Grid.Row="1" Grid.Column="2" Text="0"/>
-                <TextBox Grid.Row="2" Grid.Column="2" Text="0"/>
-                <TextBox Grid.Row="3" Grid.Column="2" Text="3"/>
-                <TextBox Grid.Row="4" Grid.Column="2" Text="3"/>
-            </Grid>
-        </Border>
-    </Grid>
+                </ItemsControl.Resources>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas>
+                            <Canvas.Background>
+                                <VisualBrush Viewport="0,0,13,13" ViewportUnits="Absolute" Viewbox="0,0,13,13" ViewboxUnits="Absolute"
+                                             TileMode="Tile" opts:Freeze="True">
+                                    <VisualBrush.Visual>
+                                        <Border Background="#959595" SnapsToDevicePixels="True" BorderThickness="1 1 0 0" BorderBrush="#6f6f6f"
+                                                Width="13" Height="13" UseLayoutRounding="True"/>
+                                    </VisualBrush.Visual>
+                                </VisualBrush>
+                            </Canvas.Background>
+                        </Canvas>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemsSource>
+                    <CompositeCollection>
+                        <CollectionContainer Collection="{Binding Source={StaticResource DeadZonesCollection}}"/>
+                        <CollectionContainer Collection="{Binding Source={StaticResource PinsCollection}}"/>
+                    </CompositeCollection>
+                </ItemsControl.ItemsSource>
+            </ItemsControl>
+            <Border BorderBrush="Black" BorderThickness="1,0,0,1" Grid.Column="1" Grid.Row="0" UseLayoutRounding="True">
+                <TreeView BorderThickness="0" SelectedItemChanged="TreeViewItemSelected" Name="ItemsTreeView">
+                    <TreeViewItem Header="Info" Tag="INFO"/>
+                    <TreeViewItem Header="Pins"
+                                  IsExpanded="True" 
+                                  ItemsSource="{Binding Source={StaticResource PinsCollection}}"
+                                  DisplayMemberPath="DisplayName"/>
+                    <TreeViewItem Header="Dead Zones" 
+                                  IsExpanded="True" 
+                                  ItemsSource="{Binding Source={StaticResource DeadZonesCollection}}"
+                                  DisplayMemberPath="DisplayName">
+                    </TreeViewItem>
+                </TreeView>
+            </Border>
+            <Border BorderBrush="Black" BorderThickness="1,0,0,0" Grid.Column="1" Grid.Row="1" UseLayoutRounding="True">
+                <ContentControl ContentTemplateSelector="{StaticResource PropertyGridTemplateSelector}"
+                                Content="{Binding SelectedObject}">
+                    <ContentControl.Resources>
+                        <!-- ReSharper disable once Xaml.RedundantResource -->
+                        <DataTemplate x:Key="EmptyTemplate"/>
+                        <!-- ReSharper disable once Xaml.RedundantResource -->
+                        <DataTemplate x:Key="InfoTemplate">
+                            <Grid Margin="4,2" DataContext="{Binding DataContext, ElementName=Window}">
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Margin" Value="0,2"/>
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Width"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Height"/>
+                                <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding Width}"/>
+                                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Height}"/>
+                            </Grid>
+                        </DataTemplate>
+                        <DataTemplate x:Key="PinTemplate" DataType="viewModels:PinTemplate">
+                            <Grid Margin="4,2">
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Margin" Value="0,2"/>
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="X"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Y"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Width"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Height"/>
+                                <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding Name}"/>
+                                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding X}"/>
+                                <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Y}"/>
+                                <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding Width}"/>
+                                <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Height}"/>
+                            </Grid>
+                        </DataTemplate>
+                        <DataTemplate x:Key="DeadZoneTemplate" DataType="viewModels:DeadZoneTemplate">
+                            <Grid Margin="4,2">
+                                <Grid.Resources>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Margin" Value="0,2"/>
+                                    </Style>
+                                </Grid.Resources>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="X"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Y"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Width"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Height"/>
+                                <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding X}"/>
+                                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Y}"/>
+                                <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Width}"/>
+                                <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding Height}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ContentControl.Resources>
+                </ContentControl>
+            </Border>
+        </Grid>
+    </DockPanel>
 </Window>
