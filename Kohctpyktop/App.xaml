@@ -54,6 +54,33 @@
                          <Setter Property="Template" Value="{StaticResource ToolRadioButtonTemplate}"/>
                          <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                      </Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}" x:Key="TabBarButton">
+                        <Setter Property="Padding" Value="2"></Setter>
+                        <Setter Property="Margin" Value="2"></Setter>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+                        <Setter Property="ContentTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding Tag, RelativeSource={RelativeSource FindAncestor, AncestorType=Button}}"></Image>
+                                        <ContentPresenter Content="{Binding}"></ContentPresenter>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <Style TargetType="Label" x:Key="TabBarLabel">
+                        <Setter Property="Foreground" Value="#b0000000"></Setter>
+                        <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+                    </Style>
+                    <Style TargetType="Border" x:Key="Separator">
+                        <Setter Property="Margin" Value="5"></Setter>
+                        <Setter Property="MinWidth" Value="2"></Setter>
+                        <Setter Property="MinHeight" Value="2"></Setter>
+                        <Setter Property="BorderBrush" Value="#40FFFFFF"></Setter>
+                        <Setter Property="Background" Value="#40000000"></Setter>
+                        <Setter Property="BorderThickness" Value="1 1 0 0"></Setter>
+                    </Style>
                  </ResourceDictionary>
              </ResourceDictionary.MergedDictionaries>
          </ResourceDictionary>

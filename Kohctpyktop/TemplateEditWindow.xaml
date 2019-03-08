@@ -25,10 +25,23 @@
     </Window.Resources>
     <DockPanel>
         <TabControl DockPanel.Dock="Top">
+            <TabControl.Resources>
+                <Style TargetType="Button" BasedOn="{StaticResource TabBarButton}"/>
+                <Style TargetType="Label" BasedOn="{StaticResource TabBarLabel}"/>
+            </TabControl.Resources>
             <TabItem Header="Edit">
-                <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
-                    <Button Content="Add Pin" Margin="0,5,5,5" Click="AddPin"/>
-                    <Button Content="Add Dead Zone" Margin="0,5,5,5" Click="AddDeadZone"/>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <Label>File</Label>
+                        <Button Content="Open"/>
+                        <Button Content="Save"/>
+                    </StackPanel>
+                    <Border Style="{StaticResource Separator}"></Border>
+                    <StackPanel>
+                        <Label>Add</Label>
+                        <Button Content="Pin" Click="AddPin"/>
+                        <Button Content="Dead Zone" Click="AddDeadZone"/>
+                    </StackPanel>
                 </StackPanel>
             </TabItem>
         </TabControl>
@@ -87,7 +100,7 @@
                             ResizeMove="CanvasItemResizeMouseMove"
                             Width="{Binding Width, Converter={StaticResource CellSizeConverter}}"
                             Height="{Binding Height, Converter={StaticResource CellSizeConverter}}">
-                            <Border Background="#40800000"/>
+                            <Border Background="#40800000" BorderBrush="Black" BorderThickness="1"/>
                         </controls:CanvasObjectControl>
                     </DataTemplate>
                     <!-- ReSharper disable once Xaml.RedundantResource -->
