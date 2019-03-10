@@ -1,7 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using Kohctpyktop.Models;
+using Kohctpyktop.Models.Field;
 using Kohctpyktop.Models.Field.ValuesFunctions;
+using Kohctpyktop.Models.Templates;
 using PropertyChanged;
 
 namespace Kohctpyktop.ViewModels
@@ -25,6 +29,34 @@ namespace Kohctpyktop.ViewModels
 
     public class ValuesFunctionTemplate : INotifyPropertyChanged
     {
+        public ValuesFunctionTemplate() {}
+        
+        public ValuesFunctionTemplate(ValuesFunction func)
+        {
+            Type = func.Type;
+            
+            switch (func)
+            {
+                case StaticValuesFunction svf:
+                    StaticValue = svf.Value;
+                    break;
+                case PeriodicValuesFunction pvf:
+                    PeriodicOn = pvf.On;
+                    PeriodicOff = pvf.Off;
+                    PeriodicSkip = pvf.Skip;
+                    break;
+                case RepeatingSequenceValuesFunction rsvf:
+                    foreach (var part in rsvf.Sequence)
+                        Sequence.Add(new SequencePartTemplate { Value = part.Value, Length = part.Length });
+                    break;
+                case AggregateValuesFunction avf:
+                    AggregateOperation = avf.Operation;
+                    foreach (var fn in avf.Functions)
+                        AggregateParts.Add(new ValuesFunctionTemplate(fn));
+                    break;
+            }
+        }
+
         [AlsoNotifyFor(nameof(DisplayName))]
         public ValuesFunctionType Type { get; set; }
         
@@ -67,6 +99,23 @@ namespace Kohctpyktop.ViewModels
         }
         
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public ValuesFunction Build()
+        {
+            switch (Type)
+            {
+                case ValuesFunctionType.Static:
+                    return new StaticValuesFunction(StaticValue);
+                case ValuesFunctionType.Periodic:
+                    return new PeriodicValuesFunction(PeriodicOn, PeriodicOff, PeriodicSkip);
+                case ValuesFunctionType.RepeatingSequence:
+                    return new RepeatingSequenceValuesFunction(Sequence.Select(x => new SequencePart(x.Value, x.Length)).ToArray());
+                case ValuesFunctionType.Aggregate:
+                    return new AggregateValuesFunction(AggregateOperation, AggregateParts.Select(x => x.Build()).ToArray());
+                default:
+                    throw new Exception("Unknown type");
+            }
+        }
     }
     
     public class PinTemplate : ICanvasObject, INotifyPropertyChanged
@@ -82,11 +131,14 @@ namespace Kohctpyktop.ViewModels
         [AlsoNotifyFor(nameof(DisplayName))]
         public string Name { get; set; }
         
+        public bool IsSignificant { get; set; }
+        public bool IsOutputPin { get; set; }
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string DisplayName => $"{Name} ({X}:{Y})";
 
-        public ValuesFunctionTemplate ValuesFunction { get; } = new ValuesFunctionTemplate();
+        public ValuesFunctionTemplate ValuesFunction { get; set; } = new ValuesFunctionTemplate();
     }
     
     public class DeadZoneTemplate : ICanvasObject, INotifyPropertyChanged
@@ -165,6 +217,58 @@ namespace Kohctpyktop.ViewModels
                     DeadZones.Remove(dzt);
                     break;
             }
+        }
+
+        public void OpenTemplate(LayerTemplate template)
+        {
+            Width = template.Width;
+            Height = template.Height;
+
+            Pins.Clear();
+            DeadZones.Clear();
+
+            foreach (var pin in template.Pins)
+            {
+                Pins.Add(new PinTemplate
+                {
+                    X = pin.Col,
+                    Y = pin.Row,
+                    Width = pin.Width,
+                    Height = pin.Height,
+                    Name = pin.Name,
+                    IsSignificant = pin.IsSignificant,
+                    IsOutputPin = pin.IsOutputPin,
+                    ValuesFunction = new ValuesFunctionTemplate(pin.ValuesFunction)
+                });
+            }
+
+            foreach (var zone in template.DeadZones)
+            {
+                DeadZones.Add(new DeadZoneTemplate
+                {
+                    X = zone.Origin.X,
+                    Y = zone.Origin.Y,
+                    Width = zone.Width,
+                    Height = zone.Height
+                });
+            }
+        }
+
+        public LayerTemplate SaveTemplate()
+        {
+            return new LayerTemplate(Width, Height,
+                Pins.Select(x => new Pin
+                {
+                    Col = x.X,
+                    Row = x.Y,
+                    Name = x.Name,
+                    Width = x.Width, 
+                    Height = x.Height, 
+                    IsSignificant = x.IsSignificant,
+                    IsOutputPin = x.IsOutputPin,
+                    ValuesFunction = x.ValuesFunction.Build()
+                }).ToArray(),
+                DeadZones.Select(x => new Zone(new Position(x.X, x.Y), x.Width, x.Height)).ToArray());
         }
     }
 }

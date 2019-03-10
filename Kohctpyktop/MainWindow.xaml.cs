@@ -154,6 +154,26 @@ namespace Kohctpyktop
                 }
             }
         }
+        
+        private void OnOpenTemplateMenuItemClick(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() ?? false)
+            {
+                try
+                {
+                    using (var file = File.OpenRead(ofd.FileName))
+                    {
+                        ViewModel.OpenLayer(new Layer(LayerSerializer.ReadTemplate(file)));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // todo: handling
+                    MessageBox.Show("Failed to open layer data", "Error", MessageBoxButton.OK);
+                }
+            }
+        }
 
         private void StartSimulation(object sender, RoutedEventArgs e)
         {

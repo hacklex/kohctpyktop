@@ -139,7 +139,7 @@
                     <Border Style="{StaticResource Separator}"></Border>
                     <StackPanel>
                         <Label Content="Level"></Label>
-                        <Button>
+                        <Button Click="OnOpenTemplateMenuItemClick">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="{StaticResource ItemsDrawingImage}" Width="16"></Image>
                                 <TextBlock Text="Pick..." VerticalAlignment="Center" Padding="3 0 3 1"></TextBlock>

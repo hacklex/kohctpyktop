@@ -37,8 +37,8 @@
                 <StackPanel Orientation="Horizontal">
                     <StackPanel>
                         <Label>File</Label>
-                        <Button Content="Open"/>
-                        <Button Content="Save"/>
+                        <Button Content="Open" Click="OpenTemplate"/>
+                        <Button Content="Save" Click="SaveTemplate"/>
                     </StackPanel>
                     <Border Style="{StaticResource Separator}"></Border>
                     <StackPanel>
@@ -306,6 +306,8 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Name"/>
                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="X"/>
@@ -317,6 +319,10 @@
                                     <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Y}"/>
                                     <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding Width}"/>
                                     <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Height}"/>
+                                    <CheckBox Grid.Row="5" Grid.ColumnSpan="2" Grid.Column="0" Content="Output"
+                                              IsChecked="{Binding IsOutputPin}" Margin="0,2"/>
+                                    <CheckBox Grid.Row="6" Grid.ColumnSpan="2" Grid.Column="0" Content="Significant"
+                                              IsChecked="{Binding IsSignificant}" Margin="0,2"/>
                                 </Grid>
                                 <Border Style="{StaticResource Separator}"/>
                                 <TextBlock Text="Values Function:" Margin="4,2,4,2"/>

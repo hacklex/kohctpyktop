@@ -1,10 +1,14 @@
 using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using Kohctpyktop.Controls;
+using Kohctpyktop.Models.Field;
+using Kohctpyktop.Serialization;
 using Kohctpyktop.ViewModels;
+using Microsoft.Win32;
 using DragEventArgs = Kohctpyktop.Controls.DragEventArgs;
 
 namespace Kohctpyktop
@@ -210,6 +214,47 @@ namespace Kohctpyktop
             var sel = (ValuesFunctionTemplate) cv.CurrentItem;
             if (sel != null)
                 agg.AggregateParts.Remove(sel);
+        }
+
+        private void OpenTemplate(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            if (ofd.ShowDialog() ?? false)
+            {
+                try
+                {
+                    using (var file = File.OpenRead(ofd.FileName))
+                    {
+                        ViewModel.OpenTemplate(LayerSerializer.ReadTemplate(file));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // todo: handling
+                    MessageBox.Show("Failed to open layer data", "Error", MessageBoxButton.OK);
+                }
+            }
+        }
+
+        private void SaveTemplate(object sender, RoutedEventArgs e)
+        {
+            var sfd = new SaveFileDialog();
+            if (sfd.ShowDialog() ?? false)
+            {
+                try
+                {
+                    using (var file = File.OpenWrite(sfd.FileName))
+                    {
+                        file.SetLength(0);
+                        LayerSerializer.WriteTemplate(file, ViewModel.SaveTemplate());
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // todo: handling
+                    MessageBox.Show("Failed to save layer data", "Error", MessageBoxButton.OK);
+                }
+            }
         }
     }
 
