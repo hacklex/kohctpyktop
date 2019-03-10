@@ -108,36 +108,12 @@ namespace Kohctpyktop.ViewModels
     
     public class TemplateEditViewModel : INotifyPropertyChanged
     {
-        public ObservableCollection<PinTemplate> Pins { get; } = new ObservableCollection<PinTemplate>
-        {
-            new PinTemplate
-            {
-                X = 2,
-                Y = 2,
-                Height = 3,
-                Width = 3,
-                Name = "+VCC"
-            }
-        };
-        
-        public ObservableCollection<DeadZoneTemplate> DeadZones { get; } = new ObservableCollection<DeadZoneTemplate>
-        {
-            new DeadZoneTemplate {
-                X = 0,
-                Y = 0,
-                Width = 2,
-                Height = 2
-            },
-            new DeadZoneTemplate {
-                X = 4,
-                Y = 6,
-                Width = 5,
-                Height = 3
-            }
-        };
+        public ObservableCollection<PinTemplate> Pins { get; } = new ObservableCollection<PinTemplate>();
 
-        public int Width { get; set; } = 15;
-        public int Height { get; set; } = 15;
+        public ObservableCollection<DeadZoneTemplate> DeadZones { get; } = new ObservableCollection<DeadZoneTemplate>();
+
+        public int Width { get; set; } = 27;
+        public int Height { get; set; } = 27;
         
         public object SelectedObject { get; set; }
 
