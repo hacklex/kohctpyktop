@@ -49,15 +49,15 @@ namespace Kohctpyktop.Serialization
             using (var reader = new StreamReader(gzipStream))
             {
                 var json = reader.ReadToEnd();
-                var layerData = JsonConvert.DeserializeObject<LayerData>(json, Settings);
+                var save = JsonConvert.DeserializeObject<SavedLayer>(json, Settings);
                 
-                return new Layer(layerData);
+                return new Layer(save);
             }
         } 
         
         public static void WriteLayer(Stream stream, ILayer layer)
         {
-            var layerData = layer.ExportLayerData();
+            var layerData = layer.Save();
             var json = JsonConvert.SerializeObject(layerData, Settings);
 
             using (var gzipStream = new GZipStream(stream, CompressionMode.Compress))

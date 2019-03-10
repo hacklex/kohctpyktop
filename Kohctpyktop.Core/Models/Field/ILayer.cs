@@ -43,6 +43,6 @@ namespace Kohctpyktop.Models.Field
         
         bool MoveCells(Position from, Position to, int offsetX, int offsetY);
 
-        LayerData ExportLayerData();
+        SavedLayer Save();
     }
 }

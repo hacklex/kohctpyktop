@@ -50,12 +50,17 @@ namespace Kohctpyktop.Models.Field
             CommitChanges(false);
         }
 
-        [Obsolete("Should be rewritten with SavedLayer class")]
-        public Layer(LayerData layerData) 
+        public Layer(SavedLayer savedLayer)
         {
+            Template = savedLayer.Template;
+            var layerData = savedLayer.Data;
+            
             // todo: verification
             var height = layerData.Cells.GetLength(0);
             var width = layerData.Cells.GetLength(1);
+
+            if (width != Template.Width || height != Template.Height) 
+                throw new ArgumentException();
             
             if (layerData.RightLinks.GetLength(0) != height || layerData.RightLinks.GetLength(1) != width) 
                 throw new ArgumentException();
@@ -77,7 +82,7 @@ namespace Kohctpyktop.Models.Field
             CommitChanges(false);
         }
 
-        public LayerData ExportLayerData()
+        public SavedLayer Save()
         {
             var cells = new CellContent[Height, Width];
             var rightLinks = new LinkContent[Height, Width];
@@ -92,7 +97,8 @@ namespace Kohctpyktop.Models.Field
                 bottomLinks[i, j] = new LinkContent(cell.Links[Side.Bottom].SiliconLink, cell.Links[Side.Bottom].HasMetalLink);
             }
 
-            return new LayerData(cells, rightLinks, bottomLinks);
+            var data = new LayerData(cells, rightLinks, bottomLinks);
+            return new SavedLayer(Template, data);
         }
         
         public int Width { get; }
