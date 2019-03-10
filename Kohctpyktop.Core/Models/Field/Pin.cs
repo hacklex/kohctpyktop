@@ -13,13 +13,25 @@ namespace Kohctpyktop.Models.Field
     /// </summary>
     public class Pin
     {
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public int Row { get; set; }
-        public int Col { get; set; }
-        public string Name { get; set; }
-        public ValuesFunction ValuesFunction { get; set; } = StaticValuesFunction.AlwaysOn;
-        public bool IsOutputPin { get; set; }
-        public bool IsSignificant { get; set; } = true;
+        public Pin(int width, int height, int row, int col, string name, ValuesFunction valuesFunction, bool isOutputPin, bool isSignificant)
+        {
+            Width = width;
+            Height = height;
+            Row = row;
+            Col = col;
+            Name = name;
+            ValuesFunction = valuesFunction;
+            IsOutputPin = isOutputPin;
+            IsSignificant = isSignificant;
+        }
+
+        public int Width { get; }
+        public int Height { get; }
+        public int Row { get; }
+        public int Col { get;}
+        public string Name { get; }
+        public ValuesFunction ValuesFunction { get; }
+        public bool IsOutputPin { get; }
+        public bool IsSignificant { get; }
     }
 }

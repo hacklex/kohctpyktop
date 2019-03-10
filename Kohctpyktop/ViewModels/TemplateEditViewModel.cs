@@ -257,17 +257,7 @@ namespace Kohctpyktop.ViewModels
         public LayerTemplate SaveTemplate()
         {
             return new LayerTemplate(Width, Height,
-                Pins.Select(x => new Pin
-                {
-                    Col = x.X,
-                    Row = x.Y,
-                    Name = x.Name,
-                    Width = x.Width, 
-                    Height = x.Height, 
-                    IsSignificant = x.IsSignificant,
-                    IsOutputPin = x.IsOutputPin,
-                    ValuesFunction = x.ValuesFunction.Build()
-                }).ToArray(),
+                Pins.Select(x => new Pin(x.Width, x.Height, x.Y, x.X, x.Name, x.ValuesFunction.Build(), x.IsOutputPin, x.IsSignificant)).ToArray(),
                 DeadZones.Select(x => new Zone(new Position(x.X, x.Y), x.Width, x.Height)).ToArray());
         }
     }
