@@ -13,5 +13,8 @@ namespace Kohctpyktop.Models
         public Position Origin { get; }
         public int Width { get; }
         public int Height { get; }
+
+        public bool Contains(int x, int y) =>
+            Origin.X <= x && Origin.Y <= y && Origin.X + Width > x && Origin.Y + Height > y;
     }
 }

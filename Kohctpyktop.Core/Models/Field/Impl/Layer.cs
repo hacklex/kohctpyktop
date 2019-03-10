@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using Kohctpyktop.Models.Templates;
 
 namespace Kohctpyktop.Models.Field
@@ -13,6 +14,8 @@ namespace Kohctpyktop.Models.Field
         
         public Layer(LayerTemplate template)
         {
+            _isLockCheckEnabled = false;
+            
             Template = template;
             Width = template.Width;
             Height = template.Height;
@@ -48,11 +51,12 @@ namespace Kohctpyktop.Models.Field
             }
                         
             CommitChanges(false);
+            
+            _isLockCheckEnabled = true;
         }
 
-        public Layer(SavedLayer savedLayer)
+        public Layer(SavedLayer savedLayer) : this(savedLayer.Template)
         {
-            Template = savedLayer.Template;
             var layerData = savedLayer.Data;
             
             // todo: verification
@@ -130,7 +134,13 @@ namespace Kohctpyktop.Models.Field
             RemoveLink(position, Side.Bottom, type);
         }
 
-        private bool IsCellLocked(ILayerCell cell) => false; // todo
+        // ReSharper disable once FieldCanBeMadeReadOnly.Local
+        private bool _isLockCheckEnabled;
+        
+        private bool IsCellLocked(ILayerCell cell)
+        {
+            return _isLockCheckEnabled && Template.DeadZones.Any(x => x.Contains(cell.Column, cell.Row));
+        }
         
         public bool AddCellSilicon(Position position, SiliconType siliconType)
         {

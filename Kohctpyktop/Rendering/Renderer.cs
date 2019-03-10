@@ -367,15 +367,6 @@ namespace Kohctpyktop.Rendering
                 if (!isTopSideDetached)
                     MetalIntercellular(cell, true, bounds);
             }
-            else if (false /* cell.IsLocked */) // there should be dead zone check 
-            {
-                var fillBounds = bounds;
-                fillBounds.X--;
-                fillBounds.Y--;
-                fillBounds.Width++;
-                fillBounds.Height++;
-                _graphics.FillRectangle(LockedRegionBrush, fillBounds);
-            }
             if (opts.Assignments != null)
             {
                 var assignments = opts.Assignments[i, j];
@@ -421,6 +412,17 @@ namespace Kohctpyktop.Rendering
                 {
                     DrawCell(opts, i, j, from, to, namedCells);
                 }
+            }
+
+            foreach (var zone in _layer.Template.DeadZones)
+            {
+                var zoneRect = new Rectangle(
+                    zone.Origin.X * (CellSize + 1), 
+                    zone.Origin.Y * (CellSize + 1),
+                    zone.Width * (CellSize + 1) + 1,
+                    zone.Height * (CellSize + 1) + 1);
+                
+                _graphics.FillRectangle(LockedRegionBrush, zoneRect);
             }
 
             foreach (var cell in namedCells)
