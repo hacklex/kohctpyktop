@@ -12,7 +12,7 @@
         xmlns:valuesFunctions="clr-namespace:Kohctpyktop.Models.Field.ValuesFunctions;assembly=Kohctpyktop.Core"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:TemplateEditViewModel}"
-        Title="TemplateEditWindow" Height="650" Width="800"
+        Title="KOHCTPYKTOP II: Template Editor" Height="650" Width="800"
         x:Name="Window"
         KeyDown="WindowKeyDown">
     <Window.Resources>
