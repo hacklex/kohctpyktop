@@ -179,6 +179,11 @@ namespace Kohctpyktop.ViewModels
     
     public class TemplateEditViewModel : INotifyPropertyChanged
     {
+        public TemplateEditViewModel(LayerTemplate layerTemplate)
+        {
+            OpenTemplate(layerTemplate);
+        }
+
         public ObservableCollection<PinTemplate> Pins { get; } = new ObservableCollection<PinTemplate>();
 
         public ObservableCollection<DeadZoneTemplate> DeadZones { get; } = new ObservableCollection<DeadZoneTemplate>();
