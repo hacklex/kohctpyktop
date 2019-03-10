@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Kohctpyktop.Controls;
 using Kohctpyktop.ViewModels;
@@ -199,6 +200,16 @@ namespace Kohctpyktop
         {
             var agg = (ValuesFunctionTemplate) ((FrameworkElement) sender).DataContext;
             agg.AggregateParts.Add(new ValuesFunctionTemplate());
+        }
+
+        private void RemoveAggregatePart(object sender, RoutedEventArgs e)
+        {
+            var agg = (ValuesFunctionTemplate) ((FrameworkElement) sender).DataContext;
+            var parts = agg.AggregateParts;
+            var cv = CollectionViewSource.GetDefaultView(parts);
+            var sel = (ValuesFunctionTemplate) cv.CurrentItem;
+            if (sel != null)
+                agg.AggregateParts.Remove(sel);
         }
     }
 
