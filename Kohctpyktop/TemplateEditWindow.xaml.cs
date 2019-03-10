@@ -194,6 +194,11 @@ namespace Kohctpyktop
             ViewModel.AddDeadZone();
         }
 
+        private void AddFunction(object sender, RoutedEventArgs e)
+        {
+            ViewModel.AddFunction();
+        }
+
         private void WindowKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
@@ -288,6 +293,8 @@ namespace Kohctpyktop
                     return (DataTemplate) el.FindResource("PinTemplate");
                 case DeadZoneTemplate _:
                     return (DataTemplate) el.FindResource("DeadZoneTemplate");
+                case NamedFunctionTemplate _:
+                    return (DataTemplate) el.FindResource("NamedFunctionTemplate");
                 case TreeViewItem tvi when "INFO".Equals(tvi.Tag):
                     return (DataTemplate) el.FindResource("InfoTemplate");
                 default:

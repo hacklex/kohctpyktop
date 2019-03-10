@@ -172,7 +172,7 @@ namespace Kohctpyktop.ViewModels
     public class NamedFunctionTemplate : INotifyPropertyChanged
     {
         public string Name { get; set; }
-        public ValuesFunctionTemplate Function { get; set; }
+        public ValuesFunctionTemplate Function { get; set; } = new ValuesFunctionTemplate();
         
         public event PropertyChangedEventHandler PropertyChanged;
     }
@@ -224,6 +224,11 @@ namespace Kohctpyktop.ViewModels
         {
             DeadZones.Add(new DeadZoneTemplate { Width = 3, Height = 3 });
         }
+        
+        public void AddFunction()
+        {
+            Functions.Add(new NamedFunctionTemplate { Name = "NEW " + Functions.Count });
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -272,6 +277,11 @@ namespace Kohctpyktop.ViewModels
                     Width = zone.Width,
                     Height = zone.Height
                 });
+            }
+
+            foreach (var fun in template.Functions)
+            {
+                Functions.Add(new NamedFunctionTemplate { Name = fun.Key, Function = new ValuesFunctionTemplate(fun.Value) });
             }
         }
 
