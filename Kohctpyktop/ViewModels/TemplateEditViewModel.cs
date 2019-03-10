@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using Kohctpyktop.Models.Field.ValuesFunctions;
 using PropertyChanged;
 
 namespace Kohctpyktop.ViewModels
@@ -12,6 +13,60 @@ namespace Kohctpyktop.ViewModels
         
         int Width { get; set; }
         int Height { get; set; }
+    }
+    
+    public class SequencePartTemplate : INotifyPropertyChanged
+    {
+        public bool Value { get; set; }
+        public int Length { get; set; }
+        
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    public class ValuesFunctionTemplate : INotifyPropertyChanged
+    {
+        [AlsoNotifyFor(nameof(DisplayName))]
+        public ValuesFunctionType Type { get; set; }
+        
+        // static
+        [AlsoNotifyFor(nameof(DisplayName))]
+        public bool StaticValue { get; set; }
+        
+        // periodic
+        [AlsoNotifyFor(nameof(DisplayName))]
+        public int PeriodicOn { get; set; }
+        [AlsoNotifyFor(nameof(DisplayName))]
+        public int PeriodicOff { get; set; }
+        [AlsoNotifyFor(nameof(DisplayName))]
+        public int PeriodicSkip { get; set; }
+        
+        // sequential
+        public ObservableCollection<SequencePartTemplate> Sequence { get; } = new ObservableCollection<SequencePartTemplate>();
+        
+        // aggregate
+        [AlsoNotifyFor(nameof(DisplayName))]
+        public AggregateOperation AggregateOperation { get; set; }
+        public ObservableCollection<ValuesFunctionTemplate> AggregateParts { get; } = new ObservableCollection<ValuesFunctionTemplate>();
+
+        public string DisplayName
+        {
+            get
+            {
+                switch (Type)
+                {
+                    case ValuesFunctionType.Static: return $"Static - {StaticValue}";
+                    case ValuesFunctionType.Periodic:
+                        return $"Periodic - {PeriodicOn}:{PeriodicOff} (skip {PeriodicSkip})";
+                    case ValuesFunctionType.RepeatingSequence: return "Sequence";
+                    case ValuesFunctionType.Aggregate:
+                        return $"Aggregate ({AggregateOperation})";
+                }
+
+                return null;
+            }
+        }
+        
+        public event PropertyChangedEventHandler PropertyChanged;
     }
     
     public class PinTemplate : ICanvasObject, INotifyPropertyChanged
@@ -30,6 +85,8 @@ namespace Kohctpyktop.ViewModels
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string DisplayName => $"{Name} ({X}:{Y})";
+
+        public ValuesFunctionTemplate ValuesFunction { get; } = new ValuesFunctionTemplate();
     }
     
     public class DeadZoneTemplate : ICanvasObject, INotifyPropertyChanged
@@ -120,5 +177,18 @@ namespace Kohctpyktop.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public void RemoveSelectedObject()
+        {
+            switch (SelectedObject)
+            {
+                case PinTemplate pt:
+                    Pins.Remove(pt);
+                    break;
+                case DeadZoneTemplate dzt:
+                    DeadZones.Remove(dzt);
+                    break;
+            }
+        }
     }
 }

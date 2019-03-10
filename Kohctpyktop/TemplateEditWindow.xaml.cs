@@ -188,6 +188,18 @@ namespace Kohctpyktop
         {
             ViewModel.AddDeadZone();
         }
+
+        private void WindowKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+                ViewModel.RemoveSelectedObject();
+        }
+
+        private void AddAggregatePart(object sender, RoutedEventArgs e)
+        {
+            var agg = (ValuesFunctionTemplate) ((FrameworkElement) sender).DataContext;
+            agg.AggregateParts.Add(new ValuesFunctionTemplate());
+        }
     }
 
     public class TemplateCanvasTemplateSelector : DataTemplateSelector

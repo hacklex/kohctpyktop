@@ -8,12 +8,16 @@
         xmlns:converters="clr-namespace:Kohctpyktop.Converters"
         xmlns:viewModels="clr-namespace:Kohctpyktop.ViewModels"
         xmlns:controls="clr-namespace:Kohctpyktop.Controls"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:valuesFunctions="clr-namespace:Kohctpyktop.Models.Field.ValuesFunctions;assembly=Kohctpyktop.Core"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance viewModels:TemplateEditViewModel}"
-        Title="TemplateEditWindow" Height="450" Width="800"
-        x:Name="Window">
+        Title="TemplateEditWindow" Height="650" Width="800"
+        x:Name="Window"
+        KeyDown="WindowKeyDown">
     <Window.Resources>
-        <converters:EqualityToVisibilityConverter x:Key="EqualityToVisibilityConverter"/>
+        <converters:ParEqualityToVisibilityConverter x:Key="ParEqualityToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <local:TemplateCanvasTemplateSelector x:Key="TemplateSelector"/>
         <local:TemplateCanvasStyleSelector x:Key="StyleSelector"/>
         <local:TemplateCanvasPropertyGridTemplateSelector x:Key="PropertyGridTemplateSelector"/>
@@ -51,7 +55,7 @@
                 <ColumnDefinition Width="Auto" MinWidth="200"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height=".5*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <ItemsControl
@@ -187,38 +191,133 @@
                             </Grid>
                         </DataTemplate>
                         <DataTemplate x:Key="PinTemplate" DataType="viewModels:PinTemplate">
-                            <Grid Margin="4,2">
-                                <Grid.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                    </Style>
-                                    <Style TargetType="TextBox">
-                                        <Setter Property="Margin" Value="0,2"/>
-                                    </Style>
-                                </Grid.Resources>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name"/>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="X"/>
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Y"/>
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Width"/>
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Height"/>
-                                <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding Name}"/>
-                                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding X}"/>
-                                <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Y}"/>
-                                <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding Width}"/>
-                                <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Height}"/>
-                            </Grid>
+                            <StackPanel Grid.IsSharedSizeScope="True">
+                                <StackPanel.Resources>
+                                    <DataTemplate DataType="viewModels:ValuesFunctionTemplate" x:Key="ValuesFunctionTemplate">
+                                        <!-- todo: simulation preview -->
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" SharedSizeGroup="TitleColumn"/>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Type"/>
+                                                <ComboBox Grid.Row="0" Grid.Column="2" SelectedItem="{Binding Type}">
+                                                    <valuesFunctions:ValuesFunctionType>Static</valuesFunctions:ValuesFunctionType>
+                                                    <valuesFunctions:ValuesFunctionType>Periodic</valuesFunctions:ValuesFunctionType>
+                                                    <valuesFunctions:ValuesFunctionType>RepeatingSequence</valuesFunctions:ValuesFunctionType>
+                                                    <valuesFunctions:ValuesFunctionType>Aggregate</valuesFunctions:ValuesFunctionType>
+                                                </ComboBox>
+                                            </Grid>
+                                            <StackPanel Visibility="{Binding Type, Converter={StaticResource ParEqualityToVisibilityConverter}, 
+                                                ConverterParameter={x:Static valuesFunctions:ValuesFunctionType.Static},
+                                                FallbackValue=Collapsed}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" SharedSizeGroup="TitleColumn"/>
+                                                        <ColumnDefinition Width="10"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Value"/>
+                                                    <ComboBox Grid.Row="0" Grid.Column="2" SelectedItem="{Binding StaticValue}">
+                                                        <system:Boolean>False</system:Boolean>
+                                                        <system:Boolean>True</system:Boolean>
+                                                    </ComboBox>
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Visibility="{Binding Type, Converter={StaticResource ParEqualityToVisibilityConverter}, 
+                                                ConverterParameter={x:Static valuesFunctions:ValuesFunctionType.Periodic},
+                                                FallbackValue=Collapsed}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" SharedSizeGroup="TitleColumn"/>
+                                                        <ColumnDefinition Width="10"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="On"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Off"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Skip"/>
+                                                    <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding PeriodicOn}"/>
+                                                    <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding PeriodicOff}"/>
+                                                    <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding PeriodicSkip}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Visibility="{Binding Type, Converter={StaticResource ParEqualityToVisibilityConverter}, 
+                                                ConverterParameter={x:Static valuesFunctions:ValuesFunctionType.RepeatingSequence},
+                                                FallbackValue=Collapsed}">
+                                                <TextBlock Text="NOT SUPPORTED NOW"/>
+                                            </StackPanel>
+                                            <StackPanel Visibility="{Binding Type, Converter={StaticResource ParEqualityToVisibilityConverter}, 
+                                                ConverterParameter={x:Static valuesFunctions:ValuesFunctionType.Aggregate},
+                                                FallbackValue=Collapsed}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" SharedSizeGroup="TitleColumn"/>
+                                                        <ColumnDefinition Width="10"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Operation"/>
+                                                    <ComboBox Grid.Row="0" Grid.Column="2" SelectedItem="{Binding AggregateOperation}">
+                                                        <valuesFunctions:AggregateOperation>Or</valuesFunctions:AggregateOperation>
+                                                        <valuesFunctions:AggregateOperation>And</valuesFunctions:AggregateOperation>
+                                                        <valuesFunctions:AggregateOperation>Xor</valuesFunctions:AggregateOperation>
+                                                    </ComboBox>
+                                                </Grid>
+                                                <Button Click="AddAggregatePart">Add</Button>
+                                                <ListBox ItemsSource="{Binding AggregateParts}" IsSynchronizedWithCurrentItem="True"
+                                                         DisplayMemberPath="DisplayName"/>
+                                                <ContentPresenter ContentTemplate="{DynamicResource ValuesFunctionTemplate}"
+                                                                  Content="{Binding AggregateParts/}"
+                                                                  Visibility="{Binding AggregateParts/, Converter={StaticResource NullToVisibilityConverter}}"
+                                                                  Margin="10,0,0,0"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </StackPanel.Resources>
+                                <Grid Margin="4,2,4,0">
+                                    <Grid.Resources>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="Margin" Value="0,2"/>
+                                        </Style>
+                                    </Grid.Resources>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="TitleColumn"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="X"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Y"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Width"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Height"/>
+                                    <TextBox Grid.Row="0" Grid.Column="2" Text="{Binding Name}"/>
+                                    <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding X}"/>
+                                    <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Y}"/>
+                                    <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding Width}"/>
+                                    <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Height}"/>
+                                </Grid>
+                                <Border Style="{StaticResource Separator}"/>
+                                <TextBlock Text="Values Function:" Margin="4,2,4,2"/>
+                                <ContentControl ContentTemplate="{StaticResource ValuesFunctionTemplate}"
+                                                Content="{Binding ValuesFunction}"
+                                                Margin="4,0,4,44"/>
+                            </StackPanel>
                         </DataTemplate>
                         <DataTemplate x:Key="DeadZoneTemplate" DataType="viewModels:DeadZoneTemplate">
                             <Grid Margin="4,2">

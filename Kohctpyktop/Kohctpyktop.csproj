@@ -88,6 +88,7 @@
     <Compile Include="Converters\EnumBooleanConverter.cs" />
     <Compile Include="Converters\NeighborInfoConverter.cs" />
     <Compile Include="Converters\EqualityToVisibilityConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
     <Compile Include="Converters\SelectionConverter.cs" />
     <Compile Include="DrawingExts.cs" />
     <Compile Include="Input\DrawMode.cs" />
