@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Kohctpyktop.Models.Field.ValuesFunctions
@@ -36,7 +37,8 @@ namespace Kohctpyktop.Models.Field.ValuesFunctions
             Operation = operation;
         }
 
-        public override object Begin() => new State(Functions.Select(x => x.Begin()).ToArray());
+        public override object Begin(IReadOnlyDictionary<string, ValuesFunction> funcs) 
+            => new State(Functions.Select(x => x.Begin(funcs)).ToArray());
 
         public override (bool, State) Step(State state)
         {

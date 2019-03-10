@@ -54,6 +54,9 @@ namespace Kohctpyktop.ViewModels
                     foreach (var fn in avf.Functions)
                         AggregateParts.Add(new ValuesFunctionTemplate(fn));
                     break;
+                case ReferenceValuesFunction rvf:
+                    Reference = rvf.Reference;
+                    break;
             }
         }
 
@@ -80,6 +83,10 @@ namespace Kohctpyktop.ViewModels
         public AggregateOperation AggregateOperation { get; set; }
         public ObservableCollection<ValuesFunctionTemplate> AggregateParts { get; } = new ObservableCollection<ValuesFunctionTemplate>();
 
+        // reference
+        [AlsoNotifyFor(nameof(DisplayName))]
+        public string Reference { get; set; }
+        
         public string DisplayName
         {
             get
@@ -92,6 +99,8 @@ namespace Kohctpyktop.ViewModels
                     case ValuesFunctionType.RepeatingSequence: return "Sequence";
                     case ValuesFunctionType.Aggregate:
                         return $"Aggregate ({AggregateOperation})";
+                    case ValuesFunctionType.Reference:
+                        return $"Reference: {Reference}";
                 }
 
                 return null;
@@ -112,6 +121,8 @@ namespace Kohctpyktop.ViewModels
                     return new RepeatingSequenceValuesFunction(Sequence.Select(x => new SequencePart(x.Value, x.Length)).ToArray());
                 case ValuesFunctionType.Aggregate:
                     return new AggregateValuesFunction(AggregateOperation, AggregateParts.Select(x => x.Build()).ToArray());
+                case ValuesFunctionType.Reference:
+                    return new ReferenceValuesFunction(Reference);
                 default:
                     throw new Exception("Unknown type");
             }
@@ -157,12 +168,22 @@ namespace Kohctpyktop.ViewModels
 
         public string DisplayName => $"{X}:{Y} - {X + Width - 1}:{Y + Height - 1}";
     }
+
+    public class NamedFunctionTemplate : INotifyPropertyChanged
+    {
+        public string Name { get; set; }
+        public ValuesFunctionTemplate Function { get; set; }
+        
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
     
     public class TemplateEditViewModel : INotifyPropertyChanged
     {
         public ObservableCollection<PinTemplate> Pins { get; } = new ObservableCollection<PinTemplate>();
 
         public ObservableCollection<DeadZoneTemplate> DeadZones { get; } = new ObservableCollection<DeadZoneTemplate>();
+        
+        public ObservableCollection<NamedFunctionTemplate> Functions { get; } = new ObservableCollection<NamedFunctionTemplate>();
 
         public int Width { get; set; } = 27;
         public int Height { get; set; } = 27;
@@ -258,7 +279,8 @@ namespace Kohctpyktop.ViewModels
         {
             return new LayerTemplate(Width, Height,
                 Pins.Select(x => new Pin(x.Width, x.Height, x.Y, x.X, x.Name, x.ValuesFunction.Build(), x.IsOutputPin, x.IsSignificant)).ToArray(),
-                DeadZones.Select(x => new Zone(new Position(x.X, x.Y), x.Width, x.Height)).ToArray());
+                DeadZones.Select(x => new Zone(new Position(x.X, x.Y), x.Width, x.Height)).ToArray(),
+                Functions.ToDictionary(x => x.Name, x => x.Function.Build()));
         }
     }
 }

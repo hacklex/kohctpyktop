@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
 using System.IO;
@@ -10,16 +11,9 @@ namespace Kohctpyktop.Models.Field
     {
         private readonly LayerCellMatrix _cellMatrix;
         
-        public Layer(int width, int height)
-        {
-            Width = width;
-            Height = height;
-            
-            _cellMatrix = new LayerCellMatrix(this);
-        }
-        
         public Layer(LayerTemplate template)
         {
+            Template = template;
             Width = template.Width;
             Height = template.Height;
             
@@ -56,6 +50,7 @@ namespace Kohctpyktop.Models.Field
             CommitChanges(false);
         }
 
+        [Obsolete("Should be rewritten with SavedLayer class")]
         public Layer(LayerData layerData) 
         {
             // todo: verification
@@ -104,6 +99,7 @@ namespace Kohctpyktop.Models.Field
         public int Height { get; }
 
         public IReadOnlyMatrix<ILayerCell> Cells => _cellMatrix;
+        public LayerTemplate Template { get; }
 
         public bool HasUncommitedChanges => _cellMatrix.HasUncommitedChanges;
         

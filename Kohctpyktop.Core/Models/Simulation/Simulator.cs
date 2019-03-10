@@ -120,7 +120,7 @@ namespace Kohctpyktop.Models.Simulation
                 state.OutputPins.ToDictionary(pin => pin, pin => state.PinNodes[pin].Any(node => nodeStates[node].IsHigh)));
         }
 
-        private static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key,
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key,
             out TValue value)
         {
             key = pair.Key;

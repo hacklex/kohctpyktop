@@ -5,30 +5,6 @@ using Kohctpyktop.Models.Field;
 
 namespace Kohctpyktop.Models.Topology
 {
-    public struct CellAssignments
-    {
-        public SchemeNode LastAssignedMetalNode { get; set; }
-        public SchemeNode LastAssignedSiliconNode { get; set; }
-    }
-
-    public class Topology
-    {
-        public Topology(CellAssignments[,] cellMappings, IEnumerable<SchemeGate> gates,
-            IEnumerable<SchemeNode> nodes,
-            IReadOnlyCollection<Pin> pins)
-        {
-            CellMappings = cellMappings;
-            Nodes = nodes.ToArray();
-            Gates = gates.ToArray();
-            Pins = pins;
-        }
-
-        public CellAssignments[,] CellMappings { get; }
-        public IReadOnlyList<SchemeNode> Nodes { get; }
-        public IReadOnlyList<SchemeGate> Gates { get; }
-        public IReadOnlyCollection<Pin> Pins { get; }
-    }
-
     public static class TopologyBuilder
     {
         public static Topology BuildTopology(ILayer layer)
@@ -197,7 +173,8 @@ namespace Kohctpyktop.Models.Topology
                 throw new InvalidOperationException("Duplicate pins found. This indicates there is an error in topology builder.");
 
             //hopefully this contains a complete non-intersecting set containing all gates and all logical nodes describing the entire level.
-            return new Topology(assignments, gates.Select(x => x.Freeze(frozenNodes)), frozenNodes.Values, listOfPins); 
+            return new Topology(assignments, gates.Select(x => x.Freeze(frozenNodes)), frozenNodes.Values, listOfPins,
+                layer.Template.Functions); 
         }
     }
 }

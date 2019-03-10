@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Kohctpyktop.Models.Field.ValuesFunctions
 {
     public class PeriodicValuesFunction : ValuesFunction<PeriodicValuesFunction.State>
@@ -32,6 +34,6 @@ namespace Kohctpyktop.Models.Field.ValuesFunctions
                 : (false, new State(state.Skipped, 0));
         }
 
-        public override object Begin() => new State(0, 0);
+        public override object Begin(IReadOnlyDictionary<string, ValuesFunction> _) => new State(0, 0);
     }
 }

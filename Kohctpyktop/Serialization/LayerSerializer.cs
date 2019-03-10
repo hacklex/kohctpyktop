@@ -37,6 +37,7 @@ namespace Kohctpyktop.Serialization
                 .RegisterSubtype(typeof(PeriodicValuesFunction), ValuesFunctionType.Periodic)
                 .RegisterSubtype(typeof(AggregateValuesFunction), ValuesFunctionType.Aggregate)
                 .RegisterSubtype(typeof(RepeatingSequenceValuesFunction), ValuesFunctionType.RepeatingSequence)
+                .RegisterSubtype(typeof(ReferenceValuesFunction), ValuesFunctionType.Reference)
                 .Build());
 
             return settings;

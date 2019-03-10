@@ -1,13 +1,14 @@
 using System;
+using System.Collections.Generic;
 
 namespace Kohctpyktop.Models.Field.ValuesFunctions
 {
-    public enum ValuesFunctionType { Static, Periodic, Aggregate, RepeatingSequence }
+    public enum ValuesFunctionType { Static, Periodic, Aggregate, RepeatingSequence, Reference }
     
     public abstract class ValuesFunction
     {
         public abstract ValuesFunctionType Type { get; }
-        public abstract object Begin();
+        public abstract object Begin(IReadOnlyDictionary<string, ValuesFunction> declaredFunctions);
         public abstract (bool, object) Step(object state);
 
         public static implicit operator ValuesFunction(bool v) =>

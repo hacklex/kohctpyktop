@@ -1,3 +1,5 @@
+using Kohctpyktop.Models.Templates;
+
 namespace Kohctpyktop.Models.Field
 {
     public sealed class LayerData
@@ -24,6 +26,7 @@ namespace Kohctpyktop.Models.Field
         int Height { get; }
         
         IReadOnlyMatrix<ILayerCell> Cells { get; }
+        LayerTemplate Template { get; }
 
         bool AddCellSilicon(Position position, SiliconType siliconType);
         bool RemoveCellSilicon(Position position);

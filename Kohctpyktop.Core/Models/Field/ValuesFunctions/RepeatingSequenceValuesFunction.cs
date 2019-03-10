@@ -49,7 +49,7 @@ namespace Kohctpyktop.Models.Field.ValuesFunctions
 
         public override ValuesFunctionType Type => ValuesFunctionType.RepeatingSequence;
 
-        public override object Begin() => new State(0);
+        public override object Begin(IReadOnlyDictionary<string, ValuesFunction> _) => new State(0);
 
         public override (bool, State) Step(State state)
         {

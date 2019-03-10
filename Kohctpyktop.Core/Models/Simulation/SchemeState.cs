@@ -34,8 +34,8 @@ namespace Kohctpyktop.Models.Simulation
                 p => p, 
                 p => (IReadOnlyList<SchemeNode>) topology.Nodes.Where(n => n.Pins.Contains(p)).ToArray());
 
-            InputPinStates = InputPins.ToDictionary(x => x, x => new PinState(x, false, x.ValuesFunction.Begin()));
-            OutputPinStates = OutputPins.ToDictionary(x => x, x => new PinState(x, false, x.ValuesFunction.Begin()));
+            InputPinStates = InputPins.ToDictionary(x => x, x => new PinState(x, false, x.ValuesFunction.Begin(topology.ValuesFunctions)));
+            OutputPinStates = OutputPins.ToDictionary(x => x, x => new PinState(x, false, x.ValuesFunction.Begin(topology.ValuesFunctions)));
             GeneratedOutputPinsStates = OutputPins.ToDictionary(x => x, _ => false);
         }
 

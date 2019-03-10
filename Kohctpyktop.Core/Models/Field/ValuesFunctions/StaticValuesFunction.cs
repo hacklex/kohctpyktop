@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Kohctpyktop.Models.Field.ValuesFunctions
 {
     public class StaticValuesFunction : ValuesFunction
@@ -12,7 +14,7 @@ namespace Kohctpyktop.Models.Field.ValuesFunctions
         }
 
         public override (bool, object) Step(object state) => (Value, null);
-        public override object Begin() => null;
+        public override object Begin(IReadOnlyDictionary<string, ValuesFunction> _) => null;
 
         public static StaticValuesFunction AlwaysOn { get; } = new StaticValuesFunction(true);
         public static StaticValuesFunction AlwaysOff { get; } = new StaticValuesFunction(false);
