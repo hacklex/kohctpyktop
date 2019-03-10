@@ -217,6 +217,8 @@ namespace Kohctpyktop.Models.Field
             var toCell = _cellMatrix[to];
             if (!fromCell.IsValidCell || !toCell.IsValidCell) return false;
             
+            if (IsCellLocked(fromCell) && IsCellLocked(toCell)) return false;
+            
             var side = from.GetAdjacentSide(to);
             
             var existingLink = fromCell.Links[side];
@@ -271,6 +273,8 @@ namespace Kohctpyktop.Models.Field
             var fromCell = _cellMatrix[from];
             var toCell = _cellMatrix[to];
             if (!fromCell.IsValidCell || !toCell.IsValidCell) return false;
+
+            if (IsCellLocked(fromCell) && IsCellLocked(toCell)) return false;
             
             var side = from.GetAdjacentSide(to);
             
@@ -339,6 +343,7 @@ namespace Kohctpyktop.Models.Field
             return true;
         }
         
+        [Obsolete("Set pins via template")]
         public bool SetCellPin(Position position, Pin pin)
         {
             var cell = _cellMatrix[position];
