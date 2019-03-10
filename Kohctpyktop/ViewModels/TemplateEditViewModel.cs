@@ -247,6 +247,9 @@ namespace Kohctpyktop.ViewModels
                 case DeadZoneTemplate dzt:
                     DeadZones.Remove(dzt);
                     break;
+                case NamedFunctionTemplate nft:
+                    Functions.Remove(nft);
+                    break;
             }
         }
 

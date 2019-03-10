@@ -86,6 +86,7 @@
     <Compile Include="Converters\BooleanChoiceConverter.cs" />
     <Compile Include="Converters\CellSizeConverter.cs" />
     <Compile Include="Converters\EnumBooleanConverter.cs" />
+    <Compile Include="Converters\FunctionsDerefConverter.cs" />
     <Compile Include="Converters\NeighborInfoConverter.cs" />
     <Compile Include="Converters\EqualityToVisibilityConverter.cs" />
     <Compile Include="Converters\NullToVisibilityConverter.cs" />

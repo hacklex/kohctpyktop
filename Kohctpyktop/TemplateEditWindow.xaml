@@ -23,6 +23,7 @@
         <local:TemplateCanvasPropertyGridTemplateSelector x:Key="PropertyGridTemplateSelector"/>
         <converters:CellSizeConverter x:Key="CellSizeConverter"/>
         <converters:CellOffsetConverter x:Key="CellOffsetConverter"/>
+        <converters:FunctionsDerefConverter x:Key="FunctionsDerefConverter" />
         
         <CollectionViewSource Source="{Binding Pins}" x:Key="PinsCollection"/>
         <CollectionViewSource Source="{Binding DeadZones}" x:Key="DeadZonesCollection"/>
@@ -269,8 +270,17 @@
                                             <ColumnDefinition Width="10"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock VerticalAlignment="Center" Grid.Row="0" Grid.Column="0" Text="Target"/>
-                                        <TextBox Grid.Row="0" Margin="0,2,0,2" Grid.Column="2" Text="{Binding Reference}"/>
+                                        <TextBlock VerticalAlignment="Center" Grid.Column="0" Text="Target"/>
+                                        <ComboBox ItemsSource="{Binding DataContext.Functions, ElementName=Window}"
+                                                  Margin="0,2,0,2" Grid.Column="2"
+                                                  DisplayMemberPath="Name">
+                                            <ComboBox.SelectedItem>
+                                                <MultiBinding Converter="{StaticResource FunctionsDerefConverter}">
+                                                    <Binding Path="Reference" Mode="TwoWay"/>
+                                                    <Binding Path="DataContext.Functions" ElementName="Window" Mode="OneWay"/>
+                                                </MultiBinding>
+                                            </ComboBox.SelectedItem>
+                                        </ComboBox>
                                     </Grid>
                                 </StackPanel>
                             </StackPanel>
