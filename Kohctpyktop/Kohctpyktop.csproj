@@ -161,11 +161,11 @@
     <Resource Include="Resources\Fonts\Poco.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\LevelTemplates\Simple.json" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\Cursors\grab.cur" />
     <Resource Include="Resources\Cursors\grabbing.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\LevelTemplates\QuadInverterGate.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Fody.3.3.2\build\Fody.targets" Condition="Exists('..\packages\Fody.3.3.2\build\Fody.targets')" />
