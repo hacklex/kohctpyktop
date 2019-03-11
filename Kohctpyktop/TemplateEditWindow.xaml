@@ -113,14 +113,20 @@
                         </controls:CanvasObjectControl>
                     </DataTemplate>
                     <!-- ReSharper disable once Xaml.RedundantResource -->
-                    <Style x:Key="PinContainerStyle" d:DataContext="{d:DesignInstance viewModels:PinTemplate}">
+                    <Style x:Key="PinContainerStyle">
+                        <d:Style.DataContext>
+                            <d:DesignInstance Type="{x:Type viewModels:PinTemplate}"/>
+                        </d:Style.DataContext>
                         <Setter Property="Canvas.Left"
                                 Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
                         <Setter Property="Canvas.Top"
                                 Value="{Binding Y, Converter={StaticResource CellOffsetConverter}}"/>
                     </Style>
                     <!-- ReSharper disable once Xaml.RedundantResource -->
-                    <Style x:Key="DeadZoneContainerStyle" d:DataContext="{d:DesignInstance viewModels:DeadZoneTemplate}">
+                    <Style x:Key="DeadZoneContainerStyle">
+                        <d:Style.DataContext>
+                            <d:DesignInstance Type="{x:Type viewModels:DeadZoneTemplate}"/>
+                        </d:Style.DataContext>
                         <Setter Property="Canvas.Left"
                                 Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
                         <Setter Property="Canvas.Top"

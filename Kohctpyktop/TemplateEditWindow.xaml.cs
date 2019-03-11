@@ -276,7 +276,7 @@ namespace Kohctpyktop
                 case DeadZoneTemplate _:
                     return (DataTemplate) el.FindResource("DeadZoneTemplate");
                 default:
-                    throw new Exception("Invalid object type");
+                    return null;
             }
         }
     }
@@ -316,7 +316,7 @@ namespace Kohctpyktop
                 case DeadZoneTemplate _:
                     return (Style) el.FindResource("DeadZoneContainerStyle");
                 default:
-                    throw new Exception("Invalid object type");
+                    return null;
             }
         }
     }
