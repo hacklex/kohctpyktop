@@ -11,10 +11,12 @@
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:valuesFunctions="clr-namespace:Kohctpyktop.Models.Field.ValuesFunctions;assembly=Kohctpyktop.Core"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance viewModels:TemplateEditViewModel}"
         Title="KOHCTPYKTOP II: Template Editor" Height="650" Width="800"
         x:Name="Window"
         KeyDown="WindowKeyDown">
+    <d:Window.DataContext>
+        <viewModels:TemplateEditViewModel/>
+    </d:Window.DataContext>
     <Window.Resources>
         <converters:ParEqualityToVisibilityConverter x:Key="ParEqualityToVisibilityConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
@@ -39,16 +41,24 @@
                 <StackPanel Orientation="Horizontal">
                     <StackPanel>
                         <Label>File</Label>
-                        <Button Content="Open" Click="OpenTemplate"/>
-                        <Button Content="Save" Click="SaveTemplate"/>
+                        <Button Tag="{StaticResource OpenDrawingImage}" Click="OpenTemplate"/>
+                        <Button Tag="{StaticResource SaveDrawingImage}" Click="SaveTemplate"/>
                     </StackPanel>
                     <Border Style="{StaticResource Separator}"></Border>
                     <StackPanel>
                         <Label>Add</Label>
                         <UniformGrid Columns="2" Rows="2">
-                            <Button Content="Pin" Click="AddPin"/>
-                            <Button Content="Function" Click="AddFunction"/>
-                            <Button Content="Dead Zone" Click="AddDeadZone"/>
+                            <Button Click="AddPin">
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid Width="36" Height="36" Background="#959595">
+                                        <Path StrokeThickness="1" Fill="White" Stroke="#80000000" Data="M 3 3 h 30 v 30 h -30 v -30"></Path>
+                                        <TextBlock HorizontalAlignment="Center" Text="+VCC" VerticalAlignment="Center" FontFamily="Courier New"></TextBlock>
+                                    </Grid>
+                                    <TextBlock Text="Pin" Margin="5" Padding="0 0 0 1" VerticalAlignment="Center"></TextBlock>
+                                </StackPanel>
+                            </Button>
+                            <Button HorizontalContentAlignment="Center" Content="Function" Click="AddFunction"/>
+                            <Button HorizontalContentAlignment="Center" Content="Dead Zone" Click="AddDeadZone"/>
                         </UniformGrid>
                     </StackPanel>
                 </StackPanel>
@@ -115,7 +125,7 @@
                     <!-- ReSharper disable once Xaml.RedundantResource -->
                     <Style x:Key="PinContainerStyle">
                         <d:Style.DataContext>
-                            <d:DesignInstance Type="{x:Type viewModels:PinTemplate}"/>
+                            <viewModels:PinTemplate />
                         </d:Style.DataContext>
                         <Setter Property="Canvas.Left"
                                 Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
@@ -125,7 +135,7 @@
                     <!-- ReSharper disable once Xaml.RedundantResource -->
                     <Style x:Key="DeadZoneContainerStyle">
                         <d:Style.DataContext>
-                            <d:DesignInstance Type="{x:Type viewModels:DeadZoneTemplate}"/>
+                            <viewModels:DeadZoneTemplate></viewModels:DeadZoneTemplate>
                         </d:Style.DataContext>
                         <Setter Property="Canvas.Left"
                                 Value="{Binding X, Converter={StaticResource CellOffsetConverter}}"/>
@@ -419,3 +429,4 @@
         </Grid>
     </DockPanel>
 </Window>
+

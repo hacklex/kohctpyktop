@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -182,6 +183,15 @@ namespace Kohctpyktop.ViewModels
         public TemplateEditViewModel(LayerTemplate layerTemplate)
         {
             OpenTemplate(layerTemplate);
+        }
+
+        public TemplateEditViewModel() : this(new LayerTemplate(10, 10, new Pin[]{ new Pin(3,3,1,1,"+VCC", new StaticValuesFunction(true),false, false ), }, new Zone[]
+            {
+                new Zone(new Position(0,0), 4,10), 
+            },
+            new Dictionary<string, ValuesFunction>()))
+        {
+
         }
 
         public ObservableCollection<PinTemplate> Pins { get; } = new ObservableCollection<PinTemplate>();

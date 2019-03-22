@@ -24,10 +24,10 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grabbing.cur"/>
+                            <Setter Property="Cursor" Value="pack://application:,,,/Kohctpyktop;component/Resources/Cursors/grabbing.cur"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="False">
-                            <Setter Property="Cursor" Value="pack://application:,,,/Resources/Cursors/grab.cur"/>
+                            <Setter Property="Cursor" Value="pack://application:,,,/Kohctpyktop;component/Resources/Cursors/grab.cur"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
