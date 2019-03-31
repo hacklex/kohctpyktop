@@ -37,12 +37,15 @@ namespace Kohctpyktop.Models
 
         public Position Offset(int offsetX, int offsetY) => new Position(X + offsetX, Y + offsetY);
 
-        public static Position Invalid { get; } = new Position(-1, -1); 
+        public static Position Invalid { get; } = new Position(-1, -1);
+
+        public static double DpiFactorX = 1;
+        public static double DpiFactorY = 1;
 
         public static Position FromScreenPoint(int x, int y) =>
             new Position((x - 1) / (12 + 1), (y - 1) / (12 + 1));
         
-        public static Position FromScreenPoint(double x, double y) => FromScreenPoint((int) x, (int) y);
+        public static Position FromScreenPoint(double x, double y) => FromScreenPoint((int) (x*DpiFactorX), (int) (y*DpiFactorY));
         
         public int ManhattanDistance(Position target) => Math.Abs(X - target.X) + Math.Abs(Y - target.Y);
 

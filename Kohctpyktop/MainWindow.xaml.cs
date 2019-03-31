@@ -1,34 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using JsonSubTypes;
 using Kohctpyktop.Input;
+using Kohctpyktop.Models;
 using Kohctpyktop.Models.Field;
 using Kohctpyktop.Serialization;
 using Kohctpyktop.ViewModels;
 using Microsoft.Win32;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using Image = System.Windows.Controls.Image;
 
 namespace Kohctpyktop
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
@@ -36,6 +24,7 @@ namespace Kohctpyktop
 
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
+            SetScaleFactors();
         }
 
         public MainViewModel ViewModel { get; }
@@ -184,6 +173,23 @@ namespace Kohctpyktop
         {
             var window = new TemplateEditWindow(new TemplateEditViewModel(ViewModel.Layer.Template));
             window.ShowDialog();
+        }
+
+        public static double XDpiFactor = 1;
+        public static double YDpiFactor = 1;
+
+        private void OnWindowDpiChanged(object sender, DpiChangedEventArgs e)
+        {
+            SetScaleFactors();
+        }
+
+        private void SetScaleFactors()
+        {
+            using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                Position.DpiFactorX = g.DpiX / 96.0;
+                Position.DpiFactorY = g.DpiY / 96.0;
+            }
         }
     }
 }

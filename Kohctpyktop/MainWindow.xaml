@@ -12,6 +12,7 @@
         PreviewKeyDown="WindowKeyDown"
         PreviewKeyUp="WindowKeyUp"
         d:DesignWidth="800"
+        DpiChanged="OnWindowDpiChanged"
         d:DesignHeight="600"
         d:DataContext="{d:DesignInstance viewModels:MainViewModel, IsDesignTimeCreatable=False}">
     <Window.Resources>
