@@ -11,24 +11,24 @@ namespace Kohctpyktop.Models.Field
         public static bool HasGate(this ILayerCell cell) => HasNGate(cell) || HasPGate(cell);
         
         public static bool HasNGate(this ILayerCell cell) =>
-            cell.Silicon == SiliconTypes.NTypeHGate || cell.Silicon == SiliconTypes.NTypeVGate;
+            cell.Silicon == SiliconLayerContent.NTypeHGate || cell.Silicon == SiliconLayerContent.NTypeVGate;
         
         public static bool HasPGate(this ILayerCell cell) =>
-            cell.Silicon == SiliconTypes.PTypeHGate || cell.Silicon == SiliconTypes.PTypeVGate;
+            cell.Silicon == SiliconLayerContent.PTypeHGate || cell.Silicon == SiliconLayerContent.PTypeVGate;
         
         public static bool HasN(this ILayerCell cell) =>
-            cell.Silicon == SiliconTypes.NType || cell.Silicon == SiliconTypes.NTypeVia;
+            cell.Silicon == SiliconLayerContent.NType || cell.Silicon == SiliconLayerContent.NTypeVia;
         
         public static bool HasP(this ILayerCell cell) =>
-            cell.Silicon == SiliconTypes.PType || cell.Silicon == SiliconTypes.PTypeVia;
+            cell.Silicon == SiliconLayerContent.PType || cell.Silicon == SiliconLayerContent.PTypeVia;
         
         public static bool HasVia(this ILayerCell cell) =>
-            cell.Silicon == SiliconTypes.NTypeVia || cell.Silicon == SiliconTypes.PTypeVia;
+            cell.Silicon == SiliconLayerContent.NTypeVia || cell.Silicon == SiliconLayerContent.PTypeVia;
         
         public static bool HasSilicon(this ILayerCell cell) =>
-            cell.Silicon != SiliconTypes.None;
+            cell.Silicon != SiliconLayerContent.None;
         
         public static bool IsVerticalGate(this ILayerCell cell) =>
-            cell.Silicon == SiliconTypes.NTypeVGate || cell.Silicon == SiliconTypes.PTypeVGate;
+            cell.Silicon == SiliconLayerContent.NTypeVGate || cell.Silicon == SiliconLayerContent.PTypeVGate;
     }
 }

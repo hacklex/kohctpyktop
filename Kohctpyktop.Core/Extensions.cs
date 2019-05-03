@@ -25,18 +25,18 @@ namespace Kohctpyktop
             return (byte) ( 16 * alp.IndexOf(lower[0]) +alp.IndexOf(lower[1]));
         }
         
-        public static SiliconTypes RemoveGate(this SiliconTypes type)
+        public static SiliconLayerContent RemoveGate(this SiliconLayerContent layerContent)
         {
-            switch (type)
+            switch (layerContent)
             {
-                case SiliconTypes.NTypeHGate:
-                case SiliconTypes.NTypeVGate:
-                    return SiliconTypes.NType;
-                case SiliconTypes.PTypeHGate:
-                case SiliconTypes.PTypeVGate:
-                    return SiliconTypes.PType;
+                case SiliconLayerContent.NTypeHGate:
+                case SiliconLayerContent.NTypeVGate:
+                    return SiliconLayerContent.NType;
+                case SiliconLayerContent.PTypeHGate:
+                case SiliconLayerContent.PTypeVGate:
+                    return SiliconLayerContent.PType;
                 default:
-                    return type;
+                    return layerContent;
             }
         }
 
@@ -58,32 +58,32 @@ namespace Kohctpyktop
 
         public static bool IsVertical(this Side side) => side == Side.Top || side == Side.Bottom;
 
-        public static SiliconTypes ConvertToGate(this SiliconType slcBase, bool isVertical)
+        public static SiliconLayerContent ConvertToGate(this SiliconType slcBase, bool isVertical)
         {
             switch (slcBase)
             {
-                case SiliconType.NType: return isVertical ? SiliconTypes.NTypeVGate : SiliconTypes.NTypeHGate;
-                case SiliconType.PType: return isVertical ? SiliconTypes.PTypeVGate : SiliconTypes.PTypeHGate;
+                case SiliconType.NType: return isVertical ? SiliconLayerContent.NTypeVGate : SiliconLayerContent.NTypeHGate;
+                case SiliconType.PType: return isVertical ? SiliconLayerContent.PTypeVGate : SiliconLayerContent.PTypeHGate;
                 default: throw new ArgumentException(nameof(slcBase));
             }
         }
         
-        public static SiliconTypes AddVia(this SiliconTypes silicon)
+        public static SiliconLayerContent AddVia(this SiliconLayerContent silicon)
         {
             switch (silicon)
             {
-                case SiliconTypes.NType: return SiliconTypes.NTypeVia;
-                case SiliconTypes.PType: return SiliconTypes.PTypeVia;
+                case SiliconLayerContent.NType: return SiliconLayerContent.NTypeVia;
+                case SiliconLayerContent.PType: return SiliconLayerContent.PTypeVia;
                 default: throw new ArgumentException(nameof(silicon));
             }
         }
         
-        public static SiliconTypes RemoveVia(this SiliconTypes silicon)
+        public static SiliconLayerContent RemoveVia(this SiliconLayerContent silicon)
         {
             switch (silicon)
             {
-                case SiliconTypes.NTypeVia: return SiliconTypes.NType;
-                case SiliconTypes.PTypeVia: return SiliconTypes.PType;
+                case SiliconLayerContent.NTypeVia: return SiliconLayerContent.NType;
+                case SiliconLayerContent.PTypeVia: return SiliconLayerContent.PType;
                 default: throw new ArgumentException(nameof(silicon));
             }
         }

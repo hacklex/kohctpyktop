@@ -13,7 +13,7 @@ namespace Kohctpyktop.Models.Field
         public bool IsValidCell => false;
         public int Row => -1;
         public int Column => -1;
-        public SiliconTypes Silicon => SiliconTypes.None;
+        public SiliconLayerContent Silicon => SiliconLayerContent.None;
         public bool HasMetal => false;
         public Pin Pin { get; } = null;
         public IReadOnlyDirectionalSet<ICellLink> Links { get; }

@@ -7,7 +7,7 @@ namespace Kohctpyktop.Models.Field
         int Row { get; }
         int Column { get; }
 
-        SiliconTypes Silicon { get; } // todo: rename enum
+        SiliconLayerContent Silicon { get; } // todo: rename enum
         bool HasMetal { get; }
 
         IReadOnlyDirectionalSet<ICellLink> Links { get; }

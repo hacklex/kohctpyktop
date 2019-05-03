@@ -277,14 +277,16 @@ namespace Kohctpyktop.Rendering
         {
             if (siliconLink == SiliconLink.None) return;
 
-            var pen = // todo: simplify
-                cell.HasN()
-                    ? NPen
-                    : cell.HasP()
-                        ? PPen
-                        : siliconLink != SiliconLink.Slave ^ cell.HasPGate()
-                            ? NPen
-                            : PPen;
+            Pen pen;
+
+            if (cell.HasN())
+	            pen = NPen;
+            else if (cell.HasP())
+	            pen = PPen;
+            else if (siliconLink != SiliconLink.Slave ^ cell.HasPGate())
+	            pen = NPen;
+            else
+	            pen = PPen;
 
             GenericIntercellular(cellBounds, pen, isVertical);
         }
