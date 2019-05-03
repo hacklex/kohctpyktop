@@ -9,7 +9,7 @@ namespace Kohctpyktop.Models.Field
             Pin = cell.Pin;
         }
 
-        public SiliconTypes Silicon { get; set; }
+        public SiliconLayerContent Silicon { get; set; }
         public bool HasMetal { get; set; }
         public Pin Pin { get; set; }
     }

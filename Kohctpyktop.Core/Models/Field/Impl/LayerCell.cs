@@ -19,7 +19,7 @@ namespace Kohctpyktop.Models.Field
         
         public int Row { get; }
         public int Column { get; }
-        public SiliconTypes Silicon { get; private set; }
+        public SiliconLayerContent Silicon { get; private set; }
         public bool HasMetal { get; private set; }
         public Pin Pin { get; set; }
 

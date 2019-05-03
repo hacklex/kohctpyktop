@@ -145,9 +145,9 @@ namespace Kohctpyktop.Models.Field
         public bool AddCellSilicon(Position position, SiliconType siliconType)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || IsCellLocked(cell) || cell.Silicon != SiliconTypes.None) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell) || cell.Silicon != SiliconLayerContent.None) return false;
 
-            var slcType = siliconType == SiliconType.NType ? SiliconTypes.NType : SiliconTypes.PType;
+            var slcType = siliconType == SiliconType.NType ? SiliconLayerContent.NType : SiliconLayerContent.PType;
 
             _cellMatrix.UpdateCellContent(position, new CellContent(cell) {Silicon = slcType});
             return true;
@@ -156,9 +156,9 @@ namespace Kohctpyktop.Models.Field
         public bool RemoveCellSilicon(Position position)
         {
             var cell = _cellMatrix[position];
-            if (!cell.IsValidCell || IsCellLocked(cell) || cell.Silicon == SiliconTypes.None) return false;
+            if (!cell.IsValidCell || IsCellLocked(cell) || cell.Silicon == SiliconLayerContent.None) return false;
 
-            _cellMatrix.UpdateCellContent(position, new CellContent(cell) {Silicon = SiliconTypes.None});
+            _cellMatrix.UpdateCellContent(position, new CellContent(cell) {Silicon = SiliconLayerContent.None});
             RemoveCellLinks(position, LinkType.SiliconLink);
             
             return true;
@@ -184,7 +184,7 @@ namespace Kohctpyktop.Models.Field
             return true;
         }
 
-        private (bool, SiliconLink, SiliconTypes) CheckSiliconLink(ILayerCell fromCell, ILayerCell toCell, Side side)
+        private (bool, SiliconLink, SiliconLayerContent) CheckSiliconLink(ILayerCell fromCell, ILayerCell toCell, Side side)
         {
             var fromBase = fromCell.IsBaseN() ? SiliconType.NType : SiliconType.PType;
             var toBase = toCell.IsBaseN() ? SiliconType.NType : SiliconType.PType;
@@ -198,12 +198,12 @@ namespace Kohctpyktop.Models.Field
                        toCell.Links[side].SiliconLink != SiliconLink.BiDirectional &&
                        !toCell.HasVia()
                     ? (true, SiliconLink.Master, toCell.HasGate() ? toCell.Silicon : toBase.ConvertToGate(!side.IsVertical()))
-                    : (false, SiliconLink.None, SiliconTypes.None);
+                    : (false, SiliconLink.None, SiliconLayerContent.None);
             }
             else
             {
                 return fromCell.HasGate() || toCell.HasGate()
-                    ? (false, SiliconLink.None, SiliconTypes.None)
+                    ? (false, SiliconLink.None, SiliconLayerContent.None)
                     : (true, SiliconLink.BiDirectional, toCell.Silicon);
             }
         }
@@ -436,7 +436,7 @@ namespace Kohctpyktop.Models.Field
                 ref var tmpCell = ref tempCells[irel, jrel];
                 
                 var isSourceOccupied = levelCell.HasSilicon() || levelCell.HasMetal;
-                var isTargetOccupied = tmpCell.Silicon != SiliconTypes.None || tmpCell.HasMetal;
+                var isTargetOccupied = tmpCell.Silicon != SiliconLayerContent.None || tmpCell.HasMetal;
 
                 if (isSourceOccupied)
                 {
@@ -455,19 +455,19 @@ namespace Kohctpyktop.Models.Field
                 var tmpCell = tempCells[irel, jrel];
                 ref var tmpLinks = ref tempLinks[irel + 1, jrel + 1];
                 
-                if (tmpCell.Silicon != SiliconTypes.None)
+                if (tmpCell.Silicon != SiliconLayerContent.None)
                 {
                     var rightSiliconLink =
                         tmpLinks.right.SiliconLink == SiliconLink.None
                             ? jrel + 1 < width &&
-                              tempCells[irel, jrel + 1].Silicon != SiliconTypes.None
+                              tempCells[irel, jrel + 1].Silicon != SiliconLayerContent.None
                                 ? levelCell.Links[Side.Right].SiliconLink
                                 : SiliconLink.None
                             : tmpLinks.right.SiliconLink;
                     var bottomSiliconLink =
                         tmpLinks.bottom.SiliconLink == SiliconLink.None
                             ? irel + 1 < height &&
-                              tempCells[irel + 1, jrel].Silicon != SiliconTypes.None
+                              tempCells[irel + 1, jrel].Silicon != SiliconLayerContent.None
                                 ? levelCell.Links[Side.Bottom].SiliconLink
                                 : SiliconLink.None
                             : tmpLinks.bottom.SiliconLink;

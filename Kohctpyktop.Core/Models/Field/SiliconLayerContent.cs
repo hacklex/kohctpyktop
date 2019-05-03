@@ -1,10 +1,9 @@
 ﻿namespace Kohctpyktop.Models.Field
 {
-    // todo: rename?
     /// <summary>
     /// All types of content for the silicon layer
     /// </summary>
-    public enum SiliconTypes
+    public enum SiliconLayerContent
     {
         None,
         PType,
@@ -15,11 +14,5 @@
         NTypeVGate,
         PTypeHGate,
         PTypeVGate,
-    }
-    
-    public enum SiliconType
-    {
-        PType,
-        NType
     }
 }
