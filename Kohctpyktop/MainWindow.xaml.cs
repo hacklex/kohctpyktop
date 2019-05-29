@@ -191,5 +191,10 @@ namespace Kohctpyktop
                 Position.DpiFactorY = g.DpiY / 96.0;
             }
         }
+
+        private void OnDeleteSelectionClick(object sender, RoutedEventArgs e)
+        {
+	        ViewModel.DeleteSelectionContent();
+        }
     }
 }
