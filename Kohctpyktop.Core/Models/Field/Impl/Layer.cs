@@ -184,6 +184,24 @@ namespace Kohctpyktop.Models.Field
             return true;
         }
 
+        public bool RemoveCellAny(Position position)
+        {
+	        var cell = _cellMatrix[position];
+
+	        if (!cell.IsValidCell || IsCellLocked(cell)) return false;
+
+	        _cellMatrix.UpdateCellContent(position, new CellContent(cell)
+		        {
+			        HasMetal = false,
+			        Silicon = SiliconLayerContent.None
+		        });
+
+	        RemoveCellLinks(position, LinkType.SiliconLink);
+	        RemoveCellLinks(position, LinkType.MetalLink);
+
+			return true;
+		}
+
         private (bool, SiliconLink, SiliconLayerContent) CheckSiliconLink(ILayerCell fromCell, ILayerCell toCell, Side side)
         {
             var fromBase = fromCell.IsBaseN() ? SiliconType.NType : SiliconType.PType;
@@ -542,8 +560,21 @@ namespace Kohctpyktop.Models.Field
             DestroyBrokenGates();
             return true;
         }
-        
-        private void DestroyBrokenGates()
+
+        public bool RemoveContent(Position from, Position to)
+        {
+	        for (var i = from.Y; i < to.Y; i++)
+	        for (var j = from.X; j < to.X; j++)
+	        {
+		        RemoveCellAny(new Position(j, i));
+	        }
+
+	        DestroyBrokenGates();
+			return true;
+		}
+
+
+		private void DestroyBrokenGates()
         {
             // assuming links are valid 
             
@@ -562,6 +593,7 @@ namespace Kohctpyktop.Models.Field
                 }
             }
         }
+
         private bool CheckGate(ILayerCell cell, SiliconType gateType, bool isVertical)
         {
             // todo check gate type

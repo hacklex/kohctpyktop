@@ -161,6 +161,15 @@ namespace Kohctpyktop.Input
                 return ProcessDrawing(pt);
         }
 
+        public void ProcessDeletionOfSelectedItems()
+        {
+	        if (SelectionState == SelectionState.HasSelection)
+	        {
+		        var (from, to) = Selection.ToFieldPositions();
+		        Layer.RemoveContent(from, to);
+			}
+        }
+
         private bool ProcessSelection(Point pt)
         {
             var position = Position.FromScreenPoint(pt.X, pt.Y);

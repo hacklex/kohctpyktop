@@ -42,7 +42,8 @@ namespace Kohctpyktop.Models.Field
         bool SetCellPin(Position position, Pin pin);
         
         bool MoveCells(Position from, Position to, int offsetX, int offsetY);
+        bool RemoveContent(Position from, Position to);
 
-        SavedLayer Save();
+		SavedLayer Save();
     }
 }

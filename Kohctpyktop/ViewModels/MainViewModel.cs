@@ -141,6 +141,12 @@ namespace Kohctpyktop.ViewModels
             set { _isSimulatedOnce = value; OnPropertyChanged(); }
         }
 
+        public void DeleteSelectionContent()
+        {
+	        InputHandler.ProcessDeletionOfSelectedItems();
+	        Redraw();
+		}
+
         private void Redraw()
         {
             _renderer.Render(new RenderOpts(InputHandler.SelectionState, InputHandler.Selection, InputHandler.Assignments, InputHandler.HoveredNode));

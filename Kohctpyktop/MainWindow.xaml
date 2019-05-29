@@ -213,7 +213,7 @@
                                 <Button Tag="{StaticResource CopyDrawingImage}"></Button>
                                 <Button Tag="{StaticResource PasteDrawingImage}"></Button>
                             </StackPanel>
-                            <Button HorizontalContentAlignment="Center">
+							<Button HorizontalContentAlignment="Center" Click="OnDeleteSelectionClick">
                                 <Image HorizontalAlignment="Center" Source="{StaticResource DeleteDrawingImage}" Width="32"></Image>
                             </Button>
                         </UniformGrid>
