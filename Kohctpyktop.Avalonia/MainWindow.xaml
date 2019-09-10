@@ -36,26 +36,25 @@
         </DockPanel>
       </Button>
     </StackPanel>
-    <Canvas>
-      <Canvas.Styles>
-        <Style Selector="Border.animated">
-          <Style.Animations>
-            <Animation Duration="0:0:2"
-                       IterationCount="Infinite"
-                       FillMode="None">
-              <KeyFrame Cue="0%">
-                <Setter Property="RotateTransform.Angle" Value="0"/>
-              </KeyFrame>
-              <KeyFrame Cue="100%">
-                <Setter Property="RotateTransform.Angle" Value="360"/>
-              </KeyFrame>
-            </Animation>
-          </Style.Animations>
+    <ItemsControl Items="{Binding Cells}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <Canvas />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.Styles>
+        <Style Selector="ItemsControl > ContentPresenter">
+          <Setter Property="Canvas.Left" Value="{Binding DisplayX}"/>
+          <Setter Property="Canvas.Top" Value="{Binding DisplayY}"/>
         </Style>
-      </Canvas.Styles>
-      <Border Classes="non-animated" Width="100" Height="100" Background="Red" Canvas.Left="100" Canvas.Top="100">
-        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="LightGreen" FontWeight="Bold">METAN</TextBlock>
-      </Border>
-    </Canvas>
+      </ItemsControl.Styles>
+      <ItemsControl.DataTemplates>
+        <DataTemplate>
+          <Canvas>
+            <Rectangle Fill="{Binding DisplayColor}" Width="16" Height="16" Canvas.Left="0" Canvas.Top="0"/>
+          </Canvas>
+        </DataTemplate>
+      </ItemsControl.DataTemplates>
+    </ItemsControl>
   </DockPanel>
 </Window>
